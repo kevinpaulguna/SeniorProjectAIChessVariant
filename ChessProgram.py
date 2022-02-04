@@ -56,7 +56,7 @@ class Pawn(Piece):
 
     def move(self, target):
         if self.hasAttacked == 1:
-            print("This piece has already attack you can no longer make actions with this piece")
+            print("This piece has already attacked you can no longer make actions with this piece")
             return
         # eventually bP1 will be changed to an actual piece name or something of the sort
         # if the pawn is white you would just increase by 1
