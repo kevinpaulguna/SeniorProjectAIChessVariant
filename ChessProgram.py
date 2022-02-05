@@ -281,7 +281,7 @@ class Knight(Piece):
         #print('recursion ', current.x_loc, current.y_loc)
 
         #print(self.move_list.length())
-        if self.move_list.length() == 5:
+        if self.move_list.length() == 5:         #change this value to use for movement for any non-knight classes
             return False
 
         for item in x_steps:
@@ -313,7 +313,7 @@ class Knight(Piece):
     
     #checks whether the piece can move to the target spot
     def canMove(self, target):
-        if abs(target.x_loc - self.x_loc) > 4 and abs(target.y_loc - self.y_loc) > 4:
+        if abs(target.x_loc - self.x_loc) > 4 and abs(target.y_loc - self.y_loc) > 4:          #change this value when using this code for non-knight classes
             print("can't too many squares")
             return False
         elif self.moveBlocked(target) == False:
