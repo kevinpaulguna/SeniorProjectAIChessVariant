@@ -188,7 +188,7 @@ class Game:
                         if self.__board[target.y_loc + item2][target.x_loc + item] in self.__move_list:
                             continue
                         self.__move_list.append(self.__board[target.y_loc + item2][target.x_loc + item])
-                        if not self.__is_clear_path(current_piece, self.__move_list[-1]):
+                        if not self.__is_clear_path(from_x, from_y, self.__move_list[-1].x_loc, self.__move_list[-1].y_loc):
                             self.__move_list.pop()
                         else:
                             return True
@@ -254,7 +254,8 @@ class Game:
         return dice>=capture_table_mins[attack_piece_type][defend_piece_type]
 
     def get_board(self):
-        return self.__board.copy()
+        # return self.__board.copy()
+        return [[(item2.piece.name if item2.piece else "___") for item2 in item]for item in self.__board]
 
     def print_board(self):
         print()
@@ -298,3 +299,7 @@ game.move_piece(from_x=0,from_y=6,to_x=1,to_y=4)
 game.move_piece(from_x=1,from_y=4,to_x=4,to_y=1)
 
 game.print_board()
+
+g=game.get_board()
+for line in g:
+    print(line)
