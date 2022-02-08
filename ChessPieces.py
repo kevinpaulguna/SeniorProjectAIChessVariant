@@ -15,7 +15,6 @@ class Pawn(Piece):
     x_loc = None
     y_loc = None
     name = None
-    hasMoved = 0
 
     def __init__(self, x, y, name, white):
         self.x_loc = x
@@ -27,8 +26,7 @@ class Bishop(Piece):
     x_loc = None
     y_loc = None
     name = None
-    hasMoved = 0
-
+    
     def __init__(self, x, y, name, white):
         self.x_loc = x
         self.y_loc = y
@@ -39,8 +37,7 @@ class Rook(Piece):
     x_loc = None
     y_loc = None
     name = None
-    hasMoved = 0
-
+    
     def __init__(self, x, y, name, white):
         self.x_loc = x
         self.y_loc = y
@@ -51,7 +48,6 @@ class Knight(Piece):
     x_loc = None
     y_loc = None
     name = None
-    hasMoved = 0
 
     def __init__(self, x, y, name, white):
         self.x_loc = x
@@ -63,7 +59,6 @@ class Queen(Piece):
     x_loc = None
     y_loc = None
     name = None
-    hasMoved = 0
 
     def __init__(self, x, y, name, white):
         self.x_loc = x
@@ -75,7 +70,6 @@ class King(Piece):
     x_loc = None
     y_loc = None
     name = None
-    hasMoved = 0
 
     def __init__(self, x, y, name, white):
         self.x_loc = x
