@@ -15,12 +15,12 @@ class Spot:
         self.piece = piece
 
 class Game:
-    __move_list = []
     def __init__(self):
         #Creation of the board
         self.__board = [[Spot(x,y,None) for x in range(0,8)] for y in range(0,8)]
         
         #game helpers
+        self.__move_list = []
         self.__valid_move_dict = {
             "Pawn": 1,
             "Bishop": 2,
@@ -50,6 +50,8 @@ class Game:
         from_spot=self.__board[from_y][from_x]
         to_spot=self.__board[to_y][to_x]
 
+        self.__move_list = []
+
         #check for piece at spot
         if from_spot.piece == None:
             print("Error! no piece to move")
@@ -58,7 +60,6 @@ class Game:
         print(from_spot.piece.name, end=": ")
         if not self.__is_valid_move(from_x, from_y, to_x, to_y):
             print("invalid move")
-            return
         else:
             from_spot=self.__board[from_y][from_x]
             to_spot=self.__board[to_y][to_x]
@@ -85,9 +86,7 @@ class Game:
             from_spot.piece = None
             to_spot.piece.x_loc = to_x
             to_spot.piece.y_loc = to_y
-            to_spot.piece.hasMoved = 1
-            self.__move_list = []
-            return
+        return
     
     def __is_valid_move(self, from_x, from_y, to_x, to_y):
         #check for bounds
@@ -190,6 +189,7 @@ class Game:
                         self.__move_list.append(self.__board[target.y_loc + item2][target.x_loc + item])
                         if not self.__is_clear_path(from_x, from_y, self.__move_list[-1].x_loc, self.__move_list[-1].y_loc):
                             self.__move_list.pop()
+                            continue
                         else:
                             return True
             return False
