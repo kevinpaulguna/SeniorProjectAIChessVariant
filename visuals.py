@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton 
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont
+import sys
 
 from ChessGame import Game
 
@@ -135,8 +136,9 @@ class TileVis(QLabel):
 
 
 class BoardVis(QMainWindow):
-    def __init__(self, game: Game):
+    def __init__(self):
         super(BoardVis,self).__init__()
+        game = Game()
         self.controller = game
         #This block sets up the window properties
         self.setGeometry(500, 200, 300, 300)
@@ -144,10 +146,7 @@ class BoardVis(QMainWindow):
 
         
         # This button allow you can stop your turn
-        self.stopButton = QPushButton("Stop", self)
-
-        # This button allow you can pause game
-        self.pauseButton = QPushButton("Pause", self)
+        self.stopButton = QPushButton("End Turn", self)
 
         # This button allow you can reset the game when you want to start new game
         self.newGameButton = QPushButton("Restart", self)
@@ -200,8 +199,15 @@ class BoardVis(QMainWindow):
                         ["7", "0", "0", "0", "0", "0", "0", "0", "0"],
                         ["8", "0", "0", "0", "0", "0", "0", "0", "0"]]
 
-        self.showBoard()
+        self.chooseSideText = QLabel(self)
+        self.startScreen = QLabel(self)
 
+        # Choose side button on start screen
+        self.whiteButton = QPushButton("White side", self)
+        self.blackButton = QPushButton("Black side", self)
+
+        self.showBoard()
+        self.showSideChoice()
 
 
 
@@ -246,18 +252,11 @@ class BoardVis(QMainWindow):
         self.moveIndicator.move(int(self.boardSize), int(self.boardSize /2)
                                 - (self.moveIndicator.height()) * 0.5)
 
-    #Create pause button properties
-        font = QFont()
-        font.setFamily("Arial")
-        font.setPixelSize(self.pauseButton.height() * 0.8)
-        self.pauseButton.setFont(font)
-        self.pauseButton.move(int(self.boardSize - ((self.pauseButton.width()-self.tableOption.width())/2)),
-                              int(self.boardSize /2 + 200)- (self.pauseButton.height() * 0.5))
 
     #Create stop button properties
         font = QFont()
         font.setFamily("Arial")
-        font.setPixelSize(self.stopButton.height() * 0.8)
+        font.setPixelSize(self.stopButton.height() * 0.7)
         self.stopButton.setFont(font)
         self.stopButton.move(int(self.boardSize - ((self.stopButton.width() - self.tableOption.width()) / 2)),
                               int(self.boardSize / 2 + 250) - (self.stopButton.height() * 0.5))
@@ -269,6 +268,96 @@ class BoardVis(QMainWindow):
         self.newGameButton.setFont(font)
         self.newGameButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)),
                              int(self.boardSize / 2 + 300) - (self.newGameButton.height() * 0.5))
+        # Create StartScreen properties
+        self.startScreen.setAlignment(Qt.AlignCenter)
+        self.startScreen.resize(self.boardSize, self.boardSize)
+        self.startScreen.setStyleSheet("background-image: url(./picture/startscreen.jpg);"
+                                       "background-repeat: no-repeat;"
+                                       "background-position: center;")
+        self.startScreen.move(0, 0)
+        self.startScreen.hide()
+
+        # Set up choose side text properties
+        self.chooseSideText.setAlignment(Qt.AlignCenter)
+        self.chooseSideText.setText("Welcome to the chess game!"
+                                    "\nPlease Choose Your Side")
+        self.chooseSideText.resize(900, 100)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.chooseSideText.height() * 0.4)
+        self.chooseSideText.setFont(font)
+        self.chooseSideText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255)')
+        self.chooseSideText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)),
+                                 int((self.boardSize / 2) - 300))
+        self.chooseSideText.hide()
+
+        # Set up for white button properties
+        self.whiteButton.clicked.connect(self.whiteButtonClicked)
+        self.whiteButton.resize(150, 40)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.whiteButton.height() * 0.4)
+        self.whiteButton.setFont(font)
+        self.whiteButton.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2))
+                              , int((self.boardSize / 2) - 150))
+
+        # Set up for black button properties
+        self.blackButton.clicked.connect(self.blackButtonClicked)
+        self.blackButton.resize(150, 40)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.blackButton.height() * 0.4)
+        self.blackButton.setFont(font)
+        self.blackButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
+                              , int((self.boardSize / 2) - 50))
+
+    def stopButtonClicked(self):
+        self.switchTurn()
+
+
+    def swictchTurn(self):
+        if self.turn == "white":
+            self.turn = "black"
+            self.tableOption.setText("Turn: black")
+            self.moveIndicator.setText("Remaining Move:"
+                                       "\nLeft Side  :  " +
+                                       "\nRight Side: " +
+                                       "\n Center     : ")
+        else:
+            self.turn = "white"
+            self.tableOption.setText("Turn: White")
+            self.moveIndicator.setText("Remaining Move:"
+                                       "\nLeft Side  :  " +
+                                       "\nRight Side: " +
+                                       "\n Center     : ")
+
+
+    def showSideChoice(self):
+        self.startScreen.show()
+        self.startScreen.raise_()
+        self.chooseSideText.show()
+        self.chooseSideText.raise_()
+        self.whiteButton.show()
+        self.whiteButton.raise_()
+        self.blackButton.show()
+        self.blackButton.raise_()
+
+    def hideStartScreen(self):
+        self.startScreen.hide()
+        self.chooseSideText.hide()
+        self.whiteButton.hide()
+        self.blackButton.hide()
+
+    def whiteButtonClicked(self):
+        self.player = 0
+        self.hideStartScreen()
+
+
+    def blackButtonClicked(self):
+        self.player = 1
+        #the AI runsnings
+        self.hideStartScreen()
+
     
     def addBoardComponents(self, sender, destination):
         # These are used as iterators to move through the arrays.
@@ -308,7 +397,7 @@ class BoardVis(QMainWindow):
     def mousePressEvent(self, a0: QMouseEvent) -> None:
         x = self.screen_to_board(a0.pos().x())
         y = self.screen_to_board(a0.pos().y())
-        
+
         return super().mousePressEvent(a0)
 
     #This function is snap the piece back to it place when the person releases wrong place
@@ -324,3 +413,15 @@ class BoardVis(QMainWindow):
 
     def screen_to_board(self, screen_val):
         return round( (screen_val - 37.5) / 75 )
+
+def chessBoard():
+    app = QApplication(sys.argv)
+    window = BoardVis()
+    window.show()
+    sys.exit(app.exec_())
+
+def main():
+    chessBoard()
+
+if __name__ == '__main__':
+    main()
