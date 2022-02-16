@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton 
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont
+import matplotlib.pyplot as plt
 
 from ChessGame import game as chess_game
 
@@ -426,3 +427,5 @@ class BoardVis(QMainWindow):
 
     def screen_to_board(self, screen_val):
         return round( (screen_val - 37.5) / 75 )
+    def pixel_to_coordinates(self, pixel_val):
+        
