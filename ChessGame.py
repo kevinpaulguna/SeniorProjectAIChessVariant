@@ -268,37 +268,38 @@ class Game:
             print('\n')
 
 game = Game()
-
 game.print_board()
 
-game.move_piece(from_x=0,from_y=6,to_x=1,to_y=5)
-game.move_piece(from_x=1,from_y=5,to_x=0,to_y=5)
-game.move_piece(from_x=2,from_y=7,to_x=2,to_y=6)
-game.move_piece(from_x=2,from_y=5,to_x=1,to_y=5)
-game.move_piece(from_x=2,from_y=6,to_x=3,to_y=5)
-game.move_piece(from_x=2,from_y=7,to_x=2,to_y=6)
-game.move_piece(from_x=2,from_y=6,to_x=2,to_y=4)
+def test_move():
+    game.move_piece(from_x=0,from_y=6,to_x=1,to_y=5)
+    game.move_piece(from_x=1,from_y=5,to_x=0,to_y=5)
+    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=6)
+    game.move_piece(from_x=2,from_y=5,to_x=1,to_y=5)
+    game.move_piece(from_x=2,from_y=6,to_x=3,to_y=5)
+    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=6)
+    game.move_piece(from_x=2,from_y=6,to_x=2,to_y=4)
 
-game.print_board()
 
-game.move_piece(from_x=3,from_y=7,to_x=2,to_y=7)
-game.move_piece(from_x=2,from_y=7,to_x=2,to_y=4)
-game.move_piece(from_x=2,from_y=7,to_x=2,to_y=3)
-game.move_piece(from_x=2,from_y=7,to_x=2,to_y=5)
-game.move_piece(from_x=2,from_y=5,to_x=6,to_y=1)
-game.move_piece(from_x=2,from_y=5,to_x=3,to_y=4)
-game.move_piece(from_x=3,from_y=4,to_x=6,to_y=1)
+    game.print_board()
 
-game.print_board()
+    game.move_piece(from_x=3,from_y=7,to_x=2,to_y=7)
+    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=4)
+    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=3)
+    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=5)
+    game.move_piece(from_x=2,from_y=5,to_x=6,to_y=1)
+    game.move_piece(from_x=2,from_y=5,to_x=3,to_y=4)
+    game.move_piece(from_x=3,from_y=4,to_x=6,to_y=1)
 
-game.move_piece(from_x=0,from_y=7,to_x=0,to_y=5)
-game.move_piece(from_x=1,from_y=7,to_x=0,to_y=5)
-game.move_piece(from_x=0,from_y=5,to_x=0,to_y=3)
-game.move_piece(from_x=0,from_y=3,to_x=0,to_y=6)
-game.move_piece(from_x=0,from_y=6,to_x=1,to_y=4)
-game.move_piece(from_x=1,from_y=4,to_x=4,to_y=1)
+    game.print_board()
 
-game.print_board()
+    game.move_piece(from_x=0,from_y=7,to_x=0,to_y=5)
+    game.move_piece(from_x=1,from_y=7,to_x=0,to_y=5)
+    game.move_piece(from_x=0,from_y=5,to_x=0,to_y=3)
+    game.move_piece(from_x=0,from_y=3,to_x=0,to_y=6)
+    game.move_piece(from_x=0,from_y=6,to_x=1,to_y=4)
+    game.move_piece(from_x=1,from_y=4,to_x=4,to_y=1)
+
+    game.print_board()
 
 g=game.get_board()
 for line in g:

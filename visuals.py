@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont
 import sys
 
-from ChessGame import Game
+from ChessGame import game as chess_game
 
 def board_to_screen(x, y, size):
     new_x = x * size
@@ -43,7 +43,7 @@ class PieceVis(QLabel):
             self.setPixmap(self.default_vis)
 
     def mousePressEvent(self, ev: QMouseEvent) -> None:
-
+                print (ev.globalX() - self.parent().pos())
                 #If user clicks on a piece, it will be moved to the starting position
                 self.labelPos = ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30))
                 self.startingPosition = [int(self.labelPos.x() / self.parent().tileSize),
@@ -138,8 +138,7 @@ class TileVis(QLabel):
 class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
-        game = Game()
-        self.controller = game
+        self.controller = chess_game
         #This block sets up the window properties
         self.setGeometry(500, 200, 300, 300)
         self.setWindowTitle("Chess Board")
@@ -225,7 +224,7 @@ class BoardVis(QMainWindow):
 
         #get data from controller and display it
         board = self.controller.get_board()
-        self.addBoardComponents(self.pieceSet, self.piecePos)
+        self._update_pieces(board)
     
     #Create table option properties
         self.tableOption.setText("First Turn: White")
@@ -358,14 +357,35 @@ class BoardVis(QMainWindow):
         #the AI runsnings
         self.hideStartScreen()
 
-    
+    #def update_pieces(self, ):
+    def _update_pieces(self, pieces_array):
+        k_pieces = {
+            "wKt": "wk",
+            "bKt": "bk",
+            "wKg": "wki",
+            "bKg": "bki"
+        }
+
+        for y in range(8):
+            for x in range(8):
+                piece = pieces_array[y][x]
+                if piece[:3] in k_pieces.keys():
+                     piece = k_pieces[piece[:3]]
+                else:
+                    piece = piece[:2]
+                label = PieceVis(piece, piece + 'bl', parent=self)
+                    # Set the image based on the array element.
+                label.resize(75, 75)
+                label.setScaledContents(True)
+                label.move(int((x+1) * self.tileSize), int((y+1) * self.tileSize))
+                label.show()
+                self.piecePos[y+1][x+1] = label
+
     def addBoardComponents(self, sender, destination):
         # These are used as iterators to move through the arrays.
         x_iter = 0
         y_iter = 0
-        piece_imgs = {
-            "wP": "wp"
-        }
+        
         # Iterate through all tiles in the tile set array and create images for them.
         # The images are stored in another array that can be manipulated.
         for row in sender:
@@ -394,12 +414,6 @@ class BoardVis(QMainWindow):
                 x_iter += 1
             y_iter += 1
 
-    def mousePressEvent(self, a0: QMouseEvent) -> None:
-        x = self.screen_to_board(a0.pos().x())
-        y = self.screen_to_board(a0.pos().y())
-
-        return super().mousePressEvent(a0)
-
     #This function is snap the piece back to it place when the person releases wrong place
     def movePieceRelease(self, fromPos, toPos):
         if not fromPos == toPos and not self.piecePos[fromPos[1]][fromPos[0]] == "0":
@@ -413,15 +427,3 @@ class BoardVis(QMainWindow):
 
     def screen_to_board(self, screen_val):
         return round( (screen_val - 37.5) / 75 )
-
-def chessBoard():
-    app = QApplication(sys.argv)
-    window = BoardVis()
-    window.show()
-    sys.exit(app.exec_())
-
-def main():
-    chessBoard()
-
-if __name__ == '__main__':
-    main()
