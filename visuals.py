@@ -1,7 +1,6 @@
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton 
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont
-import sys
 
 from ChessGame import Game
 
@@ -137,8 +136,7 @@ class TileVis(QLabel):
 
 class BoardVis(QMainWindow):
     def __init__(self):
-        super(BoardVis,self).__init__()
-        game = Game()
+        super(BoardVis,game: Game, self).__init__()
         self.controller = game
         #This block sets up the window properties
         self.setGeometry(500, 200, 300, 300)
@@ -414,14 +412,3 @@ class BoardVis(QMainWindow):
     def screen_to_board(self, screen_val):
         return round( (screen_val - 37.5) / 75 )
 
-def chessBoard():
-    app = QApplication(sys.argv)
-    window = BoardVis()
-    window.show()
-    sys.exit(app.exec_())
-
-def main():
-    chessBoard()
-
-if __name__ == '__main__':
-    main()
