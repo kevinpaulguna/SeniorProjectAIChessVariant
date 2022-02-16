@@ -1,7 +1,6 @@
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton 
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont
-import sys
 
 from ChessGame import game as chess_game
 
