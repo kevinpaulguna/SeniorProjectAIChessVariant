@@ -1,21 +1,41 @@
 import random
-from ChessPieces import *
+
+class Piece:
+    def __init__(self, x: int, y: int, name: str, white: bool, type: str):
+        self.killed = False
+        self.x_loc  = x
+        self.y_loc= y
+        self.__name = name
+        self.__white = white
+        self.__type = type
+
+    def set_killed(self):
+        self.killed = True
+
+    def is_white(self):
+        return self.__white
+    
+    def get_name(self):
+        return self.__name
+
+    def get_type(self):
+        return self.__type
 
 class Spot:
-    x_loc = None
-    y_loc = None
-    piece = None
-
-    def __init__(self, x, y, piece):
+    def __init__(self, x: int, y: int, piece: Piece):
         self.x_loc = x
         self.y_loc = y
         self.piece = piece
 
-    def set_piece(self, piece):
+    def set_piece(self, piece: Piece):
         self.piece = piece
 
 class Game:
     def __init__(self):
+        #TODO: this is only for demo
+        self.move_failed = False
+
+
         #Creation of the board
         self.__board = [[Spot(x,y,None) for x in range(0,8)] for y in range(0,8)]
         
@@ -31,22 +51,57 @@ class Game:
         }
         
         #create pieces
-        pieces = ([Pawn(s, 6, 'wP'+str(s+1), white=True) for s in range(0,8)] +
-                  [Pawn(s, 1, 'bP'+str(s+1), white=False) for s in range(0,8)] +
-                  [Bishop(2, 7, 'wB1', white=True), Bishop(5, 7, 'wB2', white=True),
-                   Bishop(2, 0, 'bB1', white=False), Bishop(5, 0, 'bB2', white=False),
-                   Rook(0, 7, 'wR1', white=True), Rook(7, 7, 'wR2', white=True),
-                   Rook(0, 0, 'bR1', white=False), Rook(7, 0, 'bR2', white=False),
-                   Knight(1, 7, 'wKt1', white=True), Knight(6, 7, 'wKt2', white=True),
-                   Knight(1, 0, 'bKt1', white=False), Knight(6, 0, 'bKt2', white=False),
-                   Queen(3, 7, 'wQ', white=True), Queen(3, 0, 'bQ', white=False),
-                   King(4, 7, 'wKg', white=True), King(4, 0, 'bKg', white=False)])
+        pieces = ([Piece(s, 6, 'wP'+str(s+1), white=True, type="Pawn") for s in range(0,8)] +
+                  [Piece(s, 1, 'bP'+str(s+1), white=False, type="Pawn") for s in range(0,8)] +
+                  [Piece(2, 7, 'wB1', white=True, type="Bishop"), Piece(5, 7, 'wB2', white=True, type="Bishop"),
+                   Piece(2, 0, 'bB1', white=False, type="Bishop"), Piece(5, 0, 'bB2', white=False, type="Bishop"),
+                   Piece(0, 7, 'wR1', white=True, type="Rook"), Piece(7, 7, 'wR2', white=True, type="Rook"),
+                   Piece(0, 0, 'bR1', white=False, type="Rook"), Piece(7, 0, 'bR2', white=False, type="Rook"),
+                   Piece(1, 7, 'wKt1', white=True, type="Knight"), Piece(6, 7, 'wKt2', white=True, type="Knight"),
+                   Piece(1, 0, 'bKt1', white=False, type="Knight"), Piece(6, 0, 'bKt2', white=False, type="Knight"),
+                   Piece(3, 7, 'wQ', white=True, type="Queen"), Piece(3, 0, 'bQ', white=False, type="Queen"),
+                   Piece(4, 7, 'wKg', white=True, type="King"), Piece(4, 0, 'bKg', white=False, type="King")])
 
         #assign pieces to board
         for p in pieces:
             self.__board[p.y_loc][p.x_loc].set_piece(p)
     
-    def move_piece(self, *, from_x, from_y, to_x, to_y):
+    #returns possible array of tuples containing co-ords of possible move spots
+    #does not check to see if path is blocked, only excludes out of bound and allies
+    def get_possible_moves_for_piece_at(self, *, x:int, y:int):
+        possibles = []
+
+        piece = self.__board[y][x].piece
+        piece_type = piece.get_type()
+
+        #gets possible moves
+        if piece_type=='Pawn':
+            potential_y_coord = y-1 if piece.is_white() else y+1
+            possibles=[(x, potential_y_coord), (x-1,potential_y_coord), (x+1, potential_y_coord)]
+        elif piece_type=='Bishop':
+            possibles=[(x,y+1), (x,y-1), (x,y+2), (x,y-2),
+                    (x+1,y+1), (x+1,y-1), (x-1,y+1), (x-1,y-1),
+                    (x+2,y+2), (x+2,y-2), (x-2,y+2), (x-2,y-2)]
+        elif piece_type in ('Rook', 'Knight', 'King', 'Queen'):
+            limit = self.__valid_move_dict[piece_type]+1
+            for i in range(limit):
+                for j in range(limit):
+                    if (i,j)!=(0,0):
+                        for candidate in [(x+i,y+j),(x+i,y-j),(x-i,y+j),(x-i,y-j)]:
+                            if candidate not in possibles:
+                                possibles.append(candidate)
+
+        #removes any out of bounds or ally spots
+        for coord in possibles.copy():
+            potential_x, potential_y = coord
+            if (potential_x>7 or potential_y>7 or potential_x<0 or potential_y<0 or
+                (self.__board[potential_y][potential_x].piece and 
+                self.__board[potential_y][potential_x].piece.is_white()==piece.is_white())):
+                possibles.remove(coord)
+
+        return possibles
+
+    def move_piece(self, *, from_x: int, from_y: int, to_x: int, to_y: int):
         from_spot=self.__board[from_y][from_x]
         to_spot=self.__board[to_y][to_x]
 
@@ -57,16 +112,17 @@ class Game:
             print("Error! no piece to move")
             return
         #move
-        print(from_spot.piece.name, end=": ")
+        print(from_spot.piece.get_name(), end=": ")
         if not self.__is_valid_move(from_x, from_y, to_x, to_y):
             print("invalid move")
+            return
         else:
             from_spot=self.__board[from_y][from_x]
             to_spot=self.__board[to_y][to_x]
             #non empty spot
             if to_spot.piece:
                 #ally spot
-                if to_spot.piece.is_white == from_spot.piece.is_white:
+                if to_spot.piece.is_white() == from_spot.piece.is_white():
                     print("cant target ally piece")
                     return
                 #enemy spot
@@ -74,9 +130,17 @@ class Game:
                     print("attempting capture of piece at target", end=". ")
                     if self.__is_attack_successful(from_spot.piece, to_spot.piece):
                         print("attack successful!", end=" ")
+                        
+                        #TODO: this is only for demo
+                        self.move_failed=False
+
                         to_spot.piece.set_killed()
                     else:
                         print("attack failed. move unsuccesful.")
+                        
+                        #TODO: this is only for demo
+                        self.move_failed=True
+
                         return
             #empty spot
             else:
@@ -86,17 +150,20 @@ class Game:
             from_spot.piece = None
             to_spot.piece.x_loc = to_x
             to_spot.piece.y_loc = to_y
+            to_spot.piece.hasMoved = 1
+        print("~~~~~")
+        self.print_board()
         return
     
-    def __is_valid_move(self, from_x, from_y, to_x, to_y):
+    def __is_valid_move(self, from_x: int, from_y: int, to_x: int, to_y: int):
         #check for bounds
         if to_x>7 or to_y>7 or to_x<0 or to_y<0: 
             print("target out of bounds", end=". ")
             return False
         p = self.__board[from_y][from_x].piece
-        piece_type = type(p).__name__
+        piece_type = p.get_type()
         if piece_type=='Pawn':
-            if p.is_white:
+            if p.is_white():
                 return (((to_y-from_y)==-1 and (to_x-from_x)==0) or
                         ((to_y-from_y)==-1 and abs(to_x-from_x)==1))
             else:
@@ -113,14 +180,14 @@ class Game:
                 print("too far away", end=". ")
                 return False
             elif not self.__is_clear_path(from_x,from_y,to_x,to_y):
-                print('Path is blocked', end=". ")
+                print('No clear path', end=". ")
                 return False
         return True
 
-    def __is_clear_path(self, from_x, from_y, to_x, to_y):
+    def __is_clear_path(self, from_x: int, from_y:int, to_x: int, to_y: int):
         current_piece = self.__board[from_y][from_x].piece
         target = self.__board[to_y][to_x]
-        piece_type = type(current_piece).__name__
+        piece_type = current_piece.get_type()
         if piece_type=='Bishop':
             if (to_x-from_x==2 and (to_y-from_y)==0):
                 return (self.__board[from_y][from_x+1] == None)
@@ -193,12 +260,13 @@ class Game:
                         else:
                             return True
             return False
-        else: return True
-        
-    def __is_attack_successful(self, current_piece, target_piece):
+        else: return True   
+
+    def __is_attack_successful(self, current_piece: Piece, target_piece: Piece):
         dice = random.randint(1, 6)
         print("The roll on the dice is", dice, end=". ")
 
+        #format: capture_table_mins[attacking piece][defending piece] = min reqd for successful attack
         capture_table_mins = {
             "Pawn": {
                 "Pawn": 4,
@@ -249,58 +317,20 @@ class Game:
                 "King": 4
             }
         }
-        attack_piece_type=type(current_piece).__name__
-        defend_piece_type=type(target_piece).__name__
+        attack_piece_type=current_piece.get_type()
+        defend_piece_type=target_piece.get_type()
         return dice>=capture_table_mins[attack_piece_type][defend_piece_type]
 
     def get_board(self):
-        # return self.__board.copy()
-        return [[(item2.piece.name if item2.piece else "___") for item2 in item]for item in self.__board]
+        return [[(item2.piece.get_name() if item2.piece else "___") for item2 in item]for item in self.__board]
 
     def print_board(self):
         print()
         for item in self.__board:
             for item2 in item:
                 if item2.piece:
-                    print(item2.piece.name, end =" ")
+                    print(item2.piece.get_name(), end =" ")
                 else:
                     print("___", end =" ")
             print('\n')
-
-game = Game()
-game.print_board()
-
-def test_move():
-    game.move_piece(from_x=0,from_y=6,to_x=1,to_y=5)
-    game.move_piece(from_x=1,from_y=5,to_x=0,to_y=5)
-    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=6)
-    game.move_piece(from_x=2,from_y=5,to_x=1,to_y=5)
-    game.move_piece(from_x=2,from_y=6,to_x=3,to_y=5)
-    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=6)
-    game.move_piece(from_x=2,from_y=6,to_x=2,to_y=4)
-
-
-    game.print_board()
-
-    game.move_piece(from_x=3,from_y=7,to_x=2,to_y=7)
-    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=4)
-    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=3)
-    game.move_piece(from_x=2,from_y=7,to_x=2,to_y=5)
-    game.move_piece(from_x=2,from_y=5,to_x=6,to_y=1)
-    game.move_piece(from_x=2,from_y=5,to_x=3,to_y=4)
-    game.move_piece(from_x=3,from_y=4,to_x=6,to_y=1)
-
-    game.print_board()
-
-    game.move_piece(from_x=0,from_y=7,to_x=0,to_y=5)
-    game.move_piece(from_x=1,from_y=7,to_x=0,to_y=5)
-    game.move_piece(from_x=0,from_y=5,to_x=0,to_y=3)
-    game.move_piece(from_x=0,from_y=3,to_x=0,to_y=6)
-    game.move_piece(from_x=0,from_y=6,to_x=1,to_y=4)
-    game.move_piece(from_x=1,from_y=4,to_x=4,to_y=1)
-
-    game.print_board()
-
-g=game.get_board()
-for line in g:
-    print(line)
+        print("---------------------------------\n")
