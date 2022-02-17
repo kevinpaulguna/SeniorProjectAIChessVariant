@@ -96,7 +96,8 @@ class Game:
             potential_x, potential_y = coord
             if (potential_x>7 or potential_y>7 or potential_x<0 or potential_y<0 or
                 (self.__board[potential_y][potential_x].piece and 
-                self.__board[potential_y][potential_x].piece.is_white()==piece.is_white())):
+                self.__board[potential_y][potential_x].piece.is_white()==piece.is_white()) or
+                not self.__is_clear_path(x,y, potential_x, potential_y)):
                 possibles.remove(coord)
 
         return possibles
