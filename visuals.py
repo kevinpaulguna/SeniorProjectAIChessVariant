@@ -48,7 +48,6 @@ class PieceVis(QLabel):
 
     def mousePressEvent(self, ev: QMouseEvent) -> None:
         #If user clicks on a piece, it will be moved to the starting position
-        self.labelPos = ev.windowPos()
         self.startingPosition =  screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
         print("starting pos: ", self.startingPosition)
         self.parent().remove_all_h()
@@ -114,7 +113,11 @@ class PieceVis(QLabel):
             ending_adjust = (self.endingPosition[0] - 1, self.endingPosition[1] - 1)
             print("ending pos: ", self.endingPosition)
             if ending_adjust in self.moves:
-                self.move(self.endingPosition[0] * self.parent().tileSize, self.endingPosition[1] * self.parent().tileSize)
+                new_spot = board_to_screen(self.endingPosition[0], self.endingPosition[1], self.parent().tileSize)
+            
+            else:
+                new_spot = board_to_screen(self.startingPosition[0], self.startingPosition[1], self.parent().tileSize)
+            self.move(new_spot[0], new_spot[1])
             #self.parent().movePieceRelease(self.startingPosition, self.endingPosition)
 
 
