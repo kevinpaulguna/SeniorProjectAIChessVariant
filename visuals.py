@@ -115,7 +115,7 @@ class PieceVis(QLabel):
             print("ending pos: ", self.endingPosition)
             if ending_adjust in self.moves:
                 new_spot = board_to_screen(self.endingPosition[0], self.endingPosition[1], self.parent().tileSize)
-            
+                self.parent().controller.move_piece(from_x=self.startingPosition[0] -1, from_y=self.startingPosition[1] -1, to_x=ending_adjust[0], to_y=ending_adjust[1])
             else:
                 new_spot = board_to_screen(self.startingPosition[0], self.startingPosition[1], self.parent().tileSize)
             self.move(new_spot[0], new_spot[1])
@@ -457,7 +457,7 @@ class BoardVis(QMainWindow):
     def movePieceRelease(self, fromPos, toPos):
         return
 
-    def screen_to_board(self, screen_val):
-        return round( (screen_val - 37.5) / 75 )
-    def pixel_to_coordinates(self, pixel_val):
+    #def screen_to_board(self, screen_val):
+    #    return round( (screen_val - 37.5) / 75 )
+    #def pixel_to_coordinates(self, pixel_val):
         
