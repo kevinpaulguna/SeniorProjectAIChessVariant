@@ -4,12 +4,6 @@ from PyQt5.QtWidgets import QApplication
 from visuals import BoardVis, PieceVis
 from ChessGame import game as chess_game
 
-
-
-
-
-
-
 def main():
     #game = chess_game
     app = QApplication(sys.argv)

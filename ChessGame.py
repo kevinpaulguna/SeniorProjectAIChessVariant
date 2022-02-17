@@ -334,3 +334,5 @@ class Game:
                     print("___", end =" ")
             print('\n')
         print("---------------------------------\n")
+
+game = Game()

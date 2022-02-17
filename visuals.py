@@ -1,3 +1,5 @@
+from typing import Tuple
+from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton 
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont
@@ -10,7 +12,9 @@ def board_to_screen(x, y, size):
     return (new_x, new_y)
 
 def screen_to_board(x, y, size):
-    return ((x - (size/2)) / size, (y - (size/2)) / size)
+    b_x = int(x / size)
+    b_y = int(y / size)
+    return (b_x, b_y)
 
 
 class PieceVis(QLabel):
@@ -21,8 +25,9 @@ class PieceVis(QLabel):
         self.labelPos = QPoint()
 
         self.onBoarder = False
-        self.startingPosition = [0, 0]
-        self.endingPosition = [0, 0]
+        self.moves = []                    # is only accurate between picking up and placing a piece
+        self.startingPosition = [0, 0]     # and boardvis will no longer be in charge of whether a piece can move. 
+        self.endingPosition = [0, 0]       # pieces will ask chessgame if they can move
         self.default_vis = QPixmap('./picture/' + visual)
         self.active_vis = QPixmap('./picture/' + visual_h)
         self.is_active = False
@@ -42,70 +47,75 @@ class PieceVis(QLabel):
             self.setPixmap(self.default_vis)
 
     def mousePressEvent(self, ev: QMouseEvent) -> None:
-                print (ev.globalX() - self.parent().pos())
-                #If user clicks on a piece, it will be moved to the starting position
-                self.labelPos = ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30))
-                self.startingPosition = [int(self.labelPos.x() / self.parent().tileSize),
-                                         int(self.labelPos.y() / self.parent().tileSize)]
-                self.raise_()
+        #If user clicks on a piece, it will be moved to the starting position
+        self.labelPos = ev.windowPos()
+        self.startingPosition =  screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
+        print("starting pos: ", self.startingPosition)
+        self.parent().remove_all_h()
+        self.moves = self.parent().controller.get_possible_moves_for_piece_at(x=self.startingPosition[0] -1, y=self.startingPosition[1] -1)
+        self.parent().add_group_h(self.moves)
+        self.raise_()
     # Set the region limits of the board that the piece can move to
     def mouseMoveEvent(self, ev: QMouseEvent) -> None:
-            if ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() < (0 + (self.parent().tileSize / 2)) \
-                    and ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() < \
-                    (0 + (self.parent().tileSize / 2)):
-                self.labelPos = QPoint(0 + (self.parent().tileSize / 2),
-                                       0 + (self.parent().tileSize / 2))
-                self.onBoarder = True
-            elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() < (0 + (self.parent().tileSize / 2)) \
-                    and ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() > \
-                    (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
-                self.labelPos = QPoint(self.parent().tileSize * 9.25 - (self.parent().tileSize / 2),
-                                       0 + (self.parent().tileSize / 2))
-                self.onBoarder = True
-            elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() > \
-                    (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)) and \
-                    ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() > \
-                    (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
-                self.labelPos = QPoint(self.parent().tileSize * 9.25 - (self.parent().tileSize / 2),
-                                       self.parent().tileSize * 9.25 - (self.parent().tileSize / 2))
-                self.onBoarder = True
-            elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() < (0 + (self.parent().tileSize / 2)) \
-                    and ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() > \
-                    (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
-                self.labelPos = QPoint(0 + (self.parent().tileSize / 2),
-                                       self.parent().tileSize * 9.25 - (self.parent().tileSize / 2))
-                self.onBoarder = True
-            elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() < (0 + (self.parent().tileSize / 2)):
-                self.labelPos = QPoint(0 + (self.parent().tileSize / 2),
-                                       (ev.globalPos().y() - self.parent().pos().y()) - 30)
-                self.onBoarder = True
-            elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() < (0 + (self.parent().tileSize / 2)):
-                self.labelPos = QPoint((ev.globalPos().x() - self.parent().pos().x()) - 0,
-                                       0 + (self.parent().tileSize / 2))
-                self.onBoarder = True
-            elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() > \
-                    (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
-                self.labelPos = QPoint(self.parent().tileSize * 9.25 - (self.parent().tileSize / 2),
-                                       (ev.globalPos().y() - self.parent().pos().y()) - 30)
-                self.onBoarder = True
-            elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() > \
-                    (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
-                self.labelPos = QPoint((ev.globalPos().x() - self.parent().pos().x()) - 0,
-                                       (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)))
-                self.onBoarder = True
+        if ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() < (0 + (self.parent().tileSize / 2)) \
+                and ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() < \
+                (0 + (self.parent().tileSize / 2)):
+            self.labelPos = QPoint(0 + (self.parent().tileSize / 2),
+                                    0 + (self.parent().tileSize / 2))
+            self.onBoarder = True
+        elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() < (0 + (self.parent().tileSize / 2)) \
+                and ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() > \
+                (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
+            self.labelPos = QPoint(self.parent().tileSize * 9.25 - (self.parent().tileSize / 2),
+                                    0 + (self.parent().tileSize / 2))
+            self.onBoarder = True
+        elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() > \
+                (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)) and \
+                ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() > \
+                (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
+            self.labelPos = QPoint(self.parent().tileSize * 9.25 - (self.parent().tileSize / 2),
+                                    self.parent().tileSize * 9.25 - (self.parent().tileSize / 2))
+            self.onBoarder = True
+        elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() < (0 + (self.parent().tileSize / 2)) \
+                and ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() > \
+                (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
+            self.labelPos = QPoint(0 + (self.parent().tileSize / 2),
+                                    self.parent().tileSize * 9.25 - (self.parent().tileSize / 2))
+            self.onBoarder = True
+        elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() < (0 + (self.parent().tileSize / 2)):
+            self.labelPos = QPoint(0 + (self.parent().tileSize / 2),
+                                    (ev.globalPos().y() - self.parent().pos().y()) - 30)
+            self.onBoarder = True
+        elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() < (0 + (self.parent().tileSize / 2)):
+            self.labelPos = QPoint((ev.globalPos().x() - self.parent().pos().x()) - 0,
+                                    0 + (self.parent().tileSize / 2))
+            self.onBoarder = True
+        elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() > \
+                (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
+            self.labelPos = QPoint(self.parent().tileSize * 9.25 - (self.parent().tileSize / 2),
+                                    (ev.globalPos().y() - self.parent().pos().y()) - 30)
+            self.onBoarder = True
+        elif ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() > \
+                (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)):
+            self.labelPos = QPoint((ev.globalPos().x() - self.parent().pos().x()) - 0,
+                                    (self.parent().tileSize * 9.25 - (self.parent().tileSize / 2)))
+            self.onBoarder = True
 
-            if not self.onBoarder:
-                self.lablePos = ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30))
-            self.move(self.lablePos - QPoint(self.parent().tileSize / 2, (self.parent().tileSize / 2)))
-            self.onBoarder = False
+        if not self.onBoarder:
+            self.lablePos = ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30))
+        self.move(self.lablePos - QPoint(self.parent().tileSize / 2, (self.parent().tileSize / 2)))
+        self.onBoarder = False
 
 
     def mouseReleaseEvent(self, ev: QMouseEvent) -> None:
         # Make sure it is the right turn for the piece and that the commander has command points.
             self.onBoarder = False
-            self.endingPosition = [int(self.labelPos.x() / self.parent().tileSize),
-                                   int(self.labelPos.y() / self.parent().tileSize)]
-            self.parent().movePieceRelease(self.startingPosition, self.endingPosition)
+            self.endingPosition = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
+            ending_adjust = (self.endingPosition[0] - 1, self.endingPosition[1] - 1)
+            print("ending pos: ", self.endingPosition)
+            if ending_adjust in self.moves:
+                self.move(self.endingPosition[0] * self.parent().tileSize, self.endingPosition[1] * self.parent().tileSize)
+            #self.parent().movePieceRelease(self.startingPosition, self.endingPosition)
 
 
 class TileVis(QLabel):
@@ -131,18 +141,21 @@ class TileVis(QLabel):
         return self.is_active
 
     def mousePressEvent(self, ev: QMouseEvent) -> None:
-        self.set_active(not self.is_active)
+        if self.is_active:
+            self.parent().list_remove(self)
+        else:
+            self.parent().add_to_h(self)
 
 
 class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
         self.controller = chess_game
+        self.h_mode = False
         #This block sets up the window properties
         self.setGeometry(500, 200, 300, 300)
         self.setWindowTitle("Chess Board")
-
-        
+        self.highlighted = []
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
 
@@ -176,16 +189,6 @@ class BoardVis(QMainWindow):
                         ["7","0", "0", "0", "0", "0", "0", "0", "0"],
                         ["8","0", "0", "0", "0", "0", "0", "0", "0"]]
 
-        # Holds initial setup commands for the pieces.
-        self.pieceSet = [[" ", "A", "B", "C", "D", "E", "F", "G", "H"],
-                         ["1","br", "bk", "bb", "bq", "bki", "bb", "bk", "br"],
-                         ["2","bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
-                         ["3","0", "0", "0", "0", "0", "0", "0", "0"],
-                         ["4","0", "0", "0", "0", "0", "0", "0", "0"],
-                         ["5","0", "0", "0", "0", "0", "0", "0", "0"],
-                         ["6","0", "0", "0", "0", "0", "0", "0", "0"],
-                         ["7","wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
-                         ["8","wr", "wk", "wb", "wq", "wki", "wb", "wk", "wr"]]
         # Holds labels for the pieces on the board.
         self.piecePos = [[" ", "A", "B", "C", "D", "E", "F", "G", "H"],
                         ["1", "0", "0", "0", "0", "0", "0", "0", "0"],
@@ -207,7 +210,38 @@ class BoardVis(QMainWindow):
         self.showBoard()
         self.showSideChoice()
 
+    def set_h_mode(self, val: Boolean):
+        self.h_mode = val
 
+    def add_to_h(self, tile: TileVis):
+        if not self.h_mode:
+            return
+        if tile not in self.highlighted:
+            tile.set_active(True)
+            self.highlighted.append(tile)
+
+    def add_group_h(self, squares: Tuple):
+        if not self.h_mode:
+            return
+        for pos in squares:
+            tile = self.tilePos[pos[1] + 1][pos[0] + 1]
+            tile.set_active(True)
+            self.highlighted.append(tile)
+
+    def remove_all_h(self):
+        if not self.highlighted:
+            #print("highlighted empty")
+            return
+        for row in self.tilePos:
+            for tile in row:
+                if type(tile) is TileVis:
+                    tile.set_active(False)
+        for tile in self.highlighted:
+            self.list_remove(tile)
+
+    def list_remove(self, tile:TileVis):
+        tile.set_active(False)
+        self.highlighted.remove(tile)
 
     def showBoard(self):
         # Initialize the board.
@@ -368,6 +402,8 @@ class BoardVis(QMainWindow):
         for y in range(8):
             for x in range(8):
                 piece = pieces_array[y][x]
+                if piece == "___":
+                    continue
                 if piece[:3] in k_pieces.keys():
                      piece = k_pieces[piece[:3]]
                 else:
@@ -415,14 +451,7 @@ class BoardVis(QMainWindow):
 
     #This function is snap the piece back to it place when the person releases wrong place
     def movePieceRelease(self, fromPos, toPos):
-        if not fromPos == toPos and not self.piecePos[fromPos[1]][fromPos[0]] == "0":
-            # Snap the piece back to its start position when the person releases it.
-            self.piecePos[fromPos[1]][fromPos[0]].move(int(fromPos[0] * self.tileSize),
-                                                       int(fromPos[1] * self.tileSize))
-
-        elif not self.piecePos[fromPos[1]][fromPos[0]] == "0":
-            # Snap the piece back to its start position when the person releases it.
-            self.piecePos[fromPos[1]][fromPos[0]].move(int(fromPos[0] * self.tileSize), int(fromPos[1] * self.tileSize))
+        return
 
     def screen_to_board(self, screen_val):
         return round( (screen_val - 37.5) / 75 )
