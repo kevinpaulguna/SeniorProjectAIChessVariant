@@ -66,8 +66,7 @@ class Game:
         for p in pieces:
             self.__board[p.y_loc][p.x_loc].set_piece(p)
     
-    #returns possible array of tuples containing co-ords of possible move spots
-    #does not check to see if path is blocked, only excludes out of bound and allies
+    #returns array of tuples containing co-ords of possible move spots
     def get_possible_moves_for_piece_at(self, *, x:int, y:int):
         possibles = []
 
