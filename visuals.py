@@ -25,7 +25,11 @@ def dice_roller():
     root.geometry("400x400")
     root.title("Roll the Dice")
     root.configure(bg="#B9C6C9")
-    root.mainloop()
+    l0 = tkinter.Label(root, text="")
+    lo.pack()
+    l1 = tkinter.Label(root, text="Make your roll on the dice", fg="red", bg="#B9C6C9", font="Helvetica 16 Bold Italic")
+    l1.pack()
+    dice = []
 
 
 class PieceVis(QLabel):
