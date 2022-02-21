@@ -30,6 +30,10 @@ def dice_roller():
     l1 = tkinter.Label(root, text="Make your roll on the dice", fg="red", bg="#B9C6C9", font="Helvetica 16 Bold Italic")
     l1.pack()
     dice = ["picture/die1.png", "picture/die2.png", "picture/die3.png", "picture/die4.png", "picture/die5.png", "picture/die6.png"]
+    image2 = ImageTk.PhotoImage(file="picture/dice.png")
+    label1 = tkinter.Label(root, image=image2)
+    label1.image = image2
+    label1.pack(expand=True)
 
 
 class PieceVis(QLabel):
