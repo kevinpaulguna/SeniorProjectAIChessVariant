@@ -4,6 +4,9 @@ from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton 
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont
 import matplotlib.pyplot as plt
+import tkinter
+from PIL import Image, ImageTk
+import random
 
 from ChessGame import game as chess_game
 
@@ -16,6 +19,13 @@ def screen_to_board(x, y, size):
     b_x = int(x / size)
     b_y = int(y / size)
     return (b_x, b_y)
+
+def dice_roller():
+    root = Tkinter.Tk()
+    root.geometry("400x400")
+    root.title("Roll the Dice")
+    root.configure(bg="#B9C6C9")
+    root.mainloop()
 
 
 class PieceVis(QLabel):
