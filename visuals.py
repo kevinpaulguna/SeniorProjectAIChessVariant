@@ -8,13 +8,13 @@ import matplotlib.pyplot as plt
 from ChessGame import game as chess_game
 
 def board_to_screen(x, y, size):
-    new_x = x * size
-    new_y = y * size
+    new_x = (x+1) * size
+    new_y = (y+1) * size
     return (new_x, new_y)
 
 def screen_to_board(x, y, size):
-    b_x = int(x / size)
-    b_y = int(y / size)
+    b_x = int(x / size) -1
+    b_y = int(y / size) -1
     return (b_x, b_y)
 
 
@@ -26,9 +26,10 @@ class PieceVis(QLabel):
         self.labelPos = QPoint()
 
         self.onBoarder = False
+        self._h_mode = False
         self.moves = []                    # is only accurate between picking up and placing a piece
-        self.startingPosition = [0, 0]     # and boardvis will no longer be in charge of whether a piece can move. 
-        self.endingPosition = [0, 0]       # pieces will ask chessgame if they can move
+        self.start = [0, 0]     # and boardvis will no longer be in charge of whether a piece can move. 
+        self.end = [0, 0]       # pieces will ask chessgame if they can move
         self.default_vis = QPixmap('./picture/' + visual)
         self.active_vis = QPixmap('./picture/' + visual_h)
         self.is_active = False
@@ -41,6 +42,12 @@ class PieceVis(QLabel):
         self.is_active = val
         self.set_img()
 
+    def set_h_mode(self, val):
+        self._h_mode = val
+
+    def get_h_mode(self):
+        return self._h_mode
+
     def set_img(self):
         if self.is_active:
             self.setPixmap(self.active_vis)
@@ -49,11 +56,8 @@ class PieceVis(QLabel):
 
     def mousePressEvent(self, ev: QMouseEvent) -> None:
         #If user clicks on a piece, it will be moved to the starting position
-        self.startingPosition =  screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
-        print("starting pos: ", self.startingPosition)
-        self.parent().remove_all_h()
-        self.moves = self.parent().controller.get_possible_moves_for_piece_at(x=self.startingPosition[0] -1, y=self.startingPosition[1] -1)
-        self.parent().add_group_h(self.moves)
+        self.start =  screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
+        self.moves = self.parent().controller.get_possible_moves_for_piece_at(x=self.start[0], y=self.start[1])
         self.raise_()
     # Set the region limits of the board that the piece can move to
     def mouseMoveEvent(self, ev: QMouseEvent) -> None:
@@ -108,26 +112,34 @@ class PieceVis(QLabel):
 
 
     def mouseReleaseEvent(self, ev: QMouseEvent) -> None:
-        # Make sure it is the right turn for the piece and that the commander has command points.
-            self.onBoarder = False
-            self.endingPosition = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
-            ending_adjust = (self.endingPosition[0] - 1, self.endingPosition[1] - 1)
-            print("ending pos: ", self.endingPosition)
-            if ending_adjust in self.moves:
-                new_spot = board_to_screen(self.endingPosition[0], self.endingPosition[1], self.parent().tileSize)
-                self.parent().controller.move_piece(from_x=self.startingPosition[0] -1, from_y=self.startingPosition[1] -1, to_x=ending_adjust[0], to_y=ending_adjust[1])
-            else:
-                new_spot = board_to_screen(self.startingPosition[0], self.startingPosition[1], self.parent().tileSize)
-            self.move(new_spot[0], new_spot[1])
-            #self.parent().movePieceRelease(self.startingPosition, self.endingPosition)
+        self.onBoarder = False
+        
+        self.end = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
+        if self.start == self.end:
+            # we did not move, just clicked the piece
+            self.set_h_mode(not self._h_mode)
+        else:
+            self.set_h_mode(False)
+        self.parent().remove_all_h()
+        if self._h_mode:
+            self.parent().add_group_h(self.moves)
 
+        if self.end in self.moves:
+            new_spot = board_to_screen(self.end[0], self.end[1], self.parent().tileSize)
+            self.parent().controller.move_piece(from_x=self.start[0] , from_y=self.start[1] , to_x=self.end[0], to_y=self.end[1])
+        else:
+            new_spot = board_to_screen(self.start[0], self.start[1], self.parent().tileSize)
+        self.move(new_spot[0], new_spot[1])
+        #self.parent().movePieceRelease(self.start, self.end)
+    def loc_changed(self, s_loc, f_loc):
+        return s_loc != f_loc
 
 class TileVis(QLabel):
-    def __init__(self, visual, parent=None):
+    def __init__(self, visual, h_light, parent=None):
         super(TileVis, self).__init__(parent)
         # Set up some properties
         self.is_active = False
-        self.active_vis = QPixmap('./picture/yt')
+        self.active_vis = QPixmap('./picture/' + h_light)
         self.default_vis = QPixmap('./picture/' + visual)
         self.set_img()
 
@@ -155,7 +167,8 @@ class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
         self.controller = chess_game
-        self.h_mode = False
+        self.h_mode = True
+        self.white_pov = True
         #This block sets up the window properties
         self.setGeometry(500, 200, 300, 300)
         self.setWindowTitle("Chess Board")
@@ -171,38 +184,25 @@ class BoardVis(QMainWindow):
         
         #Show remaining moves
         self.moveIndicator = QLabel(self)
-
-
-        self.tileSetup = [["yt", "A", "B", "C", "D", "E", "F", "G", "H"],
-                          ["1", "wt", "bt", "wt", "bt", "wt", "bt", "wt", "bt"],
-                          ["2", "bt", "wt", "bt", "wt", "bt", "wt", "bt", "wt"],
-                          ["3", "wt", "bt", "wt", "bt", "wt", "bt", "wt", "bt"],
-                          ["4", "bt", "wt", "bt", "wt", "bt", "wt", "bt", "wt"],
-                          ["5", "wt", "bt", "wt", "bt", "wt", "bt", "wt", "bt"],
-                          ["6", "bt", "wt", "bt", "wt", "bt", "wt", "bt", "wt"],
-                          ["7", "wt", "bt", "wt", "bt", "wt", "bt", "wt", "bt"],
-                          ["8", "bt", "wt", "bt", "wt", "bt", "wt", "bt", "wt"]]
         # Holds labels for the tiles on the board.
-        self.tilePos = [[" ", "A", "B", "C", "D", "E", "F", "G", "H"],
-                        ["1","0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["2","0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["3","0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["4","0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["5","0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["6","0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["7","0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["8","0", "0", "0", "0", "0", "0", "0", "0"]]
+        self.tilePos = [["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"]]
 
         # Holds labels for the pieces on the board.
-        self.piecePos = [[" ", "A", "B", "C", "D", "E", "F", "G", "H"],
-                        ["1", "0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["2", "0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["3", "0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["4", "0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["5", "0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["6", "0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["7", "0", "0", "0", "0", "0", "0", "0", "0"],
-                        ["8", "0", "0", "0", "0", "0", "0", "0", "0"]]
+        self.piecePos = [["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                        ["0", "0", "0", "0", "0", "0", "0", "0"]]
 
         self.chooseSideText = QLabel(self)
         self.startScreen = QLabel(self)
@@ -228,13 +228,12 @@ class BoardVis(QMainWindow):
         if not self.h_mode:
             return
         for pos in squares:
-            tile = self.tilePos[pos[1] + 1][pos[0] + 1]
+            tile = self.tilePos[pos[1]][pos[0]]
             tile.set_active(True)
             self.highlighted.append(tile)
 
     def remove_all_h(self):
         if not self.highlighted:
-            #print("highlighted empty")
             return
         for row in self.tilePos:
             for tile in row:
@@ -252,12 +251,11 @@ class BoardVis(QMainWindow):
         self.setBoard()
         self.resize(self.boardSize + self.tableOption.width(), self.boardSize )
 
-
     def setBoard(self):
         self.tileSize = 75
         self.boardSize = self.tileSize * 9.5
         #add the tile images
-        self.addBoardComponents(self.tileSetup, self.tilePos)
+        self.set_non_playables()
 
         #get data from controller and display it
         board = self.controller.get_board()
@@ -290,20 +288,16 @@ class BoardVis(QMainWindow):
 
 
     #Create stop button properties
-        font = QFont()
-        font.setFamily("Arial")
-        font.setPixelSize(self.stopButton.height() * 0.7)
-        self.stopButton.setFont(font)
+        self.__set_button(self.stopButton, 0.7)
         self.stopButton.move(int(self.boardSize - ((self.stopButton.width() - self.tableOption.width()) / 2)),
                               int(self.boardSize / 2 + 250) - (self.stopButton.height() * 0.5))
 
     #Create restart button properties
-        font = QFont()
-        font.setFamily("Arial")
-        font.setPixelSize(self.newGameButton.height() * 0.8)
-        self.newGameButton.setFont(font)
+        
+        self.__set_button(self.newGameButton, 0.8)
         self.newGameButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)),
                              int(self.boardSize / 2 + 300) - (self.newGameButton.height() * 0.5))
+
         # Create StartScreen properties
         self.startScreen.setAlignment(Qt.AlignCenter)
         self.startScreen.resize(self.boardSize, self.boardSize)
@@ -346,6 +340,17 @@ class BoardVis(QMainWindow):
         self.blackButton.setFont(font)
         self.blackButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
                               , int((self.boardSize / 2) - 50))
+
+    def __set_button(self, button: QPushButton, scale):
+        font = QFont()
+        font.setFamily("Arial")
+        font.setPixelSize(button.height() * scale)
+        self.stopButton.setFont(font)
+
+    def __set_facing_mode(self, val):
+        self.white_pov = val
+        self.set_non_playables()
+        self._update_pieces()
 
     def stopButtonClicked(self):
         self.switchTurn()
@@ -394,6 +399,47 @@ class BoardVis(QMainWindow):
         #the AI runsnings
         self.hideStartScreen()
 
+    def set_non_playables(self):
+        self.set_emptys("wt", "bt", "yt", "yt")
+        self.set_lets_and_nums()
+    
+    def set_lets_and_nums(self):
+        letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
+        nums = ["1", "2", "3", "4", "5", "6", "7", "8"]    
+        if not self.white_pov:
+            letters.reverse()
+            nums.reverse()
+        combo = [(letters[i], nums[i]) for i in range(8)]
+        for i in range(8):
+            name1, name2 = combo[i]
+            l1 = self.mk_basic_label(name1)
+            l2 = self.mk_basic_label(name2)
+            l1.move(int( (i + 1) * self.tileSize), 0)
+            l2.move(0, int( (i + 1) * self.tileSize))
+            l1.show()
+            l2.show()
+
+    def set_emptys(self, white, black, white_h, black_h):
+        is_white = True
+        for j in range(8):
+            for i in range(8):
+                name = white if is_white else black
+                highlighted = white_h if is_white else black_h
+                label = TileVis(name,  highlighted, parent=self)            
+                label.setPixmap(QPixmap('./picture/' + name))  
+                label.resize(75, 75)
+                label.setScaledContents(True)
+                label.move(int((i+1) * self.tileSize), int((j+1) * self.tileSize))
+                self.tilePos[j][i] = label
+                is_white = not is_white
+            is_white = not is_white
+
+    def mk_basic_label(self, name):
+        label = QLabel(parent=self)            
+        label.setPixmap(QPixmap('./picture/' + name))  
+        label.resize(75, 75)
+        label.setScaledContents(True)
+        return label
     #def update_pieces(self, ):
     def _update_pieces(self, pieces_array):
         k_pieces = {
@@ -418,40 +464,10 @@ class BoardVis(QMainWindow):
                 label.setScaledContents(True)
                 label.move(int((x+1) * self.tileSize), int((y+1) * self.tileSize))
                 label.show()
-                self.piecePos[y+1][x+1] = label
+                self.piecePos[y][x] = label
 
-    def addBoardComponents(self, sender, destination):
-        # These are used as iterators to move through the arrays.
-        x_iter = 0
-        y_iter = 0
-        
-        # Iterate through all tiles in the tile set array and create images for them.
-        # The images are stored in another array that can be manipulated.
-        for row in sender:
-            x_iter = 0
-            for tile in row:
-                if tile == "0":
-                    continue
-                if len(tile) == 1:
-                    #these are the board letters and number 
-                     label = QLabel(parent=self)            
-                     label.setPixmap(QPixmap('./picture/' + tile))                   
-                elif tile[1] == 't':
-                    label =TileVis(tile, parent=self)
-
-                else:
-                    label = PieceVis(tile, tile + 'bl', parent=self)
-                    # Set the image based on the array element.
-                label.resize(75, 75)
-                label.setScaledContents(True)
-                label.move(int(x_iter * self.tileSize), int(y_iter * self.tileSize))
-                label.show()
-
-                # Move the new label to the label array.
-                destination[y_iter][x_iter] = label
-
-                x_iter += 1
-            y_iter += 1
+    def update_flipped(self):
+        pass
 
     #This function is snap the piece back to it place when the person releases wrong place
     def movePieceRelease(self, fromPos, toPos):
@@ -460,4 +476,3 @@ class BoardVis(QMainWindow):
     #def screen_to_board(self, screen_val):
     #    return round( (screen_val - 37.5) / 75 )
     #def pixel_to_coordinates(self, pixel_val):
-        
