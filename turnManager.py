@@ -1,8 +1,8 @@
 class TurnManager:
     def __init__(self, players=2, actions=1):
         self.players = players
-        self.current_player = 0   # who's turn it is currently
-        self.max_actions = [actions for _ in range(self.player_count)]    # number of actions a given team starts with
+        self.current_player = 1   # who's turn it is currently. starts with 1 because of bool to int translation
+        self.max_actions = [actions for _ in range(self.players)]    # number of actions a given team starts with
         self.current_actions = self.max_actions[self.current_player]      # the active players actions left this turn
 
     def get_current_player(self):
@@ -20,7 +20,7 @@ class TurnManager:
         self.current_player += 1
         if self.current_player >= self.players:
             self.current_player = 0
-        self.current_actions = self.get_max_actions()
+        self.current_actions = self.get_max_actions(self.current_player)
 
     # this should be called when the current player
     # uses an action on his turn

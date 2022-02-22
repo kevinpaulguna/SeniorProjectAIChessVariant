@@ -141,11 +141,10 @@ class PieceVis(QLabel):
         self.parent().remove_all_h()
         if self._h_mode:
             self.parent().add_group_h(self.moves)
-
-        if self.end in self.moves:
+        if self.parent().controller.move_piece(from_x=self.start[0] , from_y=self.start[1] , to_x=self.end[0], to_y=self.end[1]):
             new_spot = board_to_screen(self.end[0], self.end[1], self.parent().tileSize)
-            self.parent().controller.move_piece(from_x=self.start[0] , from_y=self.start[1] , to_x=self.end[0], to_y=self.end[1])
-        else:
+            print(new_spot)
+        else:    
             new_spot = board_to_screen(self.start[0], self.start[1], self.parent().tileSize)
         self.move(new_spot[0], new_spot[1])
         #self.parent().movePieceRelease(self.start, self.end)
@@ -173,12 +172,6 @@ class TileVis(QLabel):
 
     def get_active(self):
         return self.is_active
-
-    def mousePressEvent(self, ev: QMouseEvent) -> None:
-        if self.is_active:
-            self.parent().list_remove(self)
-        else:
-            self.parent().add_to_h(self)
 
 
 class BoardVis(QMainWindow):
@@ -307,6 +300,7 @@ class BoardVis(QMainWindow):
 
     #Create stop button properties
         self.__set_button(self.stopButton, 0.7)
+        self.stopButton.clicked.connect(self.stopButtonClicked)
         self.stopButton.move(int(self.boardSize - ((self.stopButton.width() - self.tableOption.width()) / 2)),
                               int(self.boardSize / 2 + 250) - (self.stopButton.height() * 0.5))
 
@@ -371,7 +365,7 @@ class BoardVis(QMainWindow):
         self._update_pieces()
 
     def stopButtonClicked(self):
-        self.switchTurn()
+        self.controller.tracker.end_turn()
 
 
     def swictchTurn(self):
@@ -408,12 +402,13 @@ class BoardVis(QMainWindow):
         self.blackButton.hide()
 
     def whiteButtonClicked(self):
-        self.player = 0
+        self.controller.tracker.current_player = 1
+        #self.player = 0
         self.hideStartScreen()
 
 
     def blackButtonClicked(self):
-        self.player = 1
+        self.controller.tracker.current_player = 0
         #the AI runsnings
         self.hideStartScreen()
 
@@ -423,7 +418,8 @@ class BoardVis(QMainWindow):
     
     def set_lets_and_nums(self):
         letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
-        nums = ["1", "2", "3", "4", "5", "6", "7", "8"]    
+        nums = ["8", "7", "6", "5", "4", "3", "2", "1"]
+            
         if not self.white_pov:
             letters.reverse()
             nums.reverse()

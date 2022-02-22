@@ -1,4 +1,5 @@
 import random
+from turnManager import TurnManager
 
 class Piece:
     def __init__(self, x: int, y: int, name: str, white: bool, type: str):
@@ -32,6 +33,7 @@ class Spot:
 
 class Game:
     def __init__(self):
+        self.tracker = TurnManager()
         #TODO: this is only for demo
         self.move_failed = False
 
@@ -69,10 +71,12 @@ class Game:
     #returns array of tuples containing co-ords of possible move spots
     def get_possible_moves_for_piece_at(self, *, x:int, y:int):
         possibles = []
-
         piece = self.__board[y][x].piece
         piece_type = piece.get_type()
-
+        if self.tracker.current_player != int(piece.is_white()):
+            # the piece selected is no in the active turn so it has no moves
+            return possibles
+            #eventually need to check which group its in
         #gets possible moves
         if piece_type=='Pawn':
             potential_y_coord = y-1 if piece.is_white() else y+1
@@ -110,16 +114,19 @@ class Game:
     def move_piece(self, *, from_x: int, from_y: int, to_x: int, to_y: int):
         from_spot=self.__board[from_y][from_x]
         to_spot=self.__board[to_y][to_x]
-
+        
         #check for piece at spot
         if from_spot.piece == None:
             print("Error! no piece to move")
-            return
+            return False
+        if self.tracker.current_player != int(from_spot.piece.is_white()):
+            print("Wrong team")
+            return False
         #move
         print(from_spot.piece.get_name()+' to ('+str(to_x)+', '+str(to_y)+')', end=": ")
         if not self.__is_valid_move(from_x, from_y, to_x, to_y):
             print("invalid move")
-            return
+            return False
         else:
             from_spot=self.__board[from_y][from_x]
             to_spot=self.__board[to_y][to_x]
@@ -128,7 +135,7 @@ class Game:
                 #ally spot
                 if to_spot.piece.is_white() == from_spot.piece.is_white():
                     print("cant target ally piece")
-                    return
+                    return False
                 #enemy spot
                 else:
                     print("attempting capture of piece at target", end=". ")
@@ -145,7 +152,7 @@ class Game:
                         #TODO: this is only for demo
                         self.move_failed=True
 
-                        return
+                        return False
             #empty spot
             else:
                 print("no piece to attack", end=". ")
@@ -155,9 +162,10 @@ class Game:
             to_spot.piece.x_loc = to_x
             to_spot.piece.y_loc = to_y
             to_spot.piece.hasMoved = 1
+            self.tracker.use_action()
         print("~~~~~")
         self.print_board()
-        return
+        return True
     
     def __is_valid_move(self, from_x: int, from_y: int, to_x: int, to_y: int):
         self.__move_list = []
