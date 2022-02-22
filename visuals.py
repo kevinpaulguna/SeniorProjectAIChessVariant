@@ -8,7 +8,7 @@ import tkinter
 from PIL import Image, ImageTk
 import random
 
-from ChessGame import game as chess_game
+from ChessGame import Game as chess_game
 
 def board_to_screen(x, y, size):
     new_x = x * size
@@ -172,8 +172,8 @@ class TileVis(QLabel):
 class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
-        self.controller = chess_game
-        self.h_mode = False
+        self.controller = chess_game()
+        self.h_mode = True
         #This block sets up the window properties
         self.setGeometry(500, 200, 300, 300)
         self.setWindowTitle("Chess Board")

@@ -86,17 +86,23 @@ class Game:
             for i in range(limit):
                 for j in range(limit):
                     if (i,j)!=(0,0):
+                        #checks for duplicates
                         for candidate in [(x+i,y+j),(x+i,y-j),(x-i,y+j),(x-i,y-j)]:
                             if candidate not in possibles:
                                 possibles.append(candidate)
 
-        #removes any out of bounds or ally spots
+        #removes any blocked paths, out of bounds, or ally spots
         for coord in possibles.copy():
             potential_x, potential_y = coord
+
+            # 1. checks for out of bounds
+            # 2. checks for ally
+            # 3. validates move, i.e. checks for blocked path. 
+            # (must use is_valid_move instead of is_clear_path to prevent issues with linked list)
             if (potential_x>7 or potential_y>7 or potential_x<0 or potential_y<0 or
                 (self.__board[potential_y][potential_x].piece and 
                 self.__board[potential_y][potential_x].piece.is_white()==piece.is_white()) or
-                not self.__is_clear_path(x,y, potential_x, potential_y)):
+                not self.__is_valid_move(x, y, potential_x, potential_y)):
                 possibles.remove(coord)
 
         return possibles
@@ -105,14 +111,12 @@ class Game:
         from_spot=self.__board[from_y][from_x]
         to_spot=self.__board[to_y][to_x]
 
-        self.__move_list = []
-
         #check for piece at spot
         if from_spot.piece == None:
             print("Error! no piece to move")
             return
         #move
-        print(from_spot.piece.get_name(), end=": ")
+        print(from_spot.piece.get_name()+' to ('+str(to_x)+', '+str(to_y)+')', end=": ")
         if not self.__is_valid_move(from_x, from_y, to_x, to_y):
             print("invalid move")
             return
@@ -156,6 +160,8 @@ class Game:
         return
     
     def __is_valid_move(self, from_x: int, from_y: int, to_x: int, to_y: int):
+        self.__move_list = []
+        
         #check for bounds
         if to_x>7 or to_y>7 or to_x<0 or to_y<0: 
             print("target out of bounds", end=". ")
@@ -180,7 +186,7 @@ class Game:
                 print("too far away", end=". ")
                 return False
             elif not self.__is_clear_path(from_x,from_y,to_x,to_y):
-                print('No clear path', end=". ")
+                print('No clear path to ('+str(to_x)+', '+str(to_y)+')', end=". ")
                 return False
         return True
 
@@ -197,7 +203,7 @@ class Game:
                 return (self.__board[from_y+1][from_x+1] == None)
             if (to_x-from_x==-2 and (to_y-from_y)==-2):
                 return (self.__board[from_y-1][from_x-1] == None)
-        if piece_type=='Knight' or piece_type=='King' or piece_type=='Queen' or piece_type=='Rook':
+        if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
             if len(self.__move_list)==0:
                 self.__move_list.append(target)
 
@@ -334,5 +340,3 @@ class Game:
                     print("___", end =" ")
             print('\n')
         print("---------------------------------\n")
-
-game = Game()
