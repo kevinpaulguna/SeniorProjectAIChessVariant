@@ -176,7 +176,11 @@ class Game:
                 return (((to_y-from_y)==1 and (to_x-from_x)==0) or
                         ((to_y-from_y)==1 and abs(to_x-from_x)==1))
         if piece_type=='Bishop':
-            return ((abs(to_x-from_x)<=2 and (to_y-from_y)==0) or
+            if not self.__is_clear_path(from_x,from_y,to_x,to_y):
+                print('No clear path to ('+str(to_x)+', '+str(to_y)+')', end=". ")
+                return False
+            else:
+                return ((abs(to_x-from_x)<=2 and (to_y-from_y)==0) or
                     (abs(to_y-from_y)<=2 and (to_x-from_x)==0) or
                     (abs(to_x-from_x)==1 and abs(to_y-from_y)==1) or
                     (abs(to_x-from_x)==2 and abs(to_y-from_y)==2))
@@ -195,14 +199,25 @@ class Game:
         target = self.__board[to_y][to_x]
         piece_type = current_piece.get_type()
         if piece_type=='Bishop':
+            #horizontal, no vertical
             if (to_x-from_x==2 and (to_y-from_y)==0):
                 return (self.__board[from_y][from_x+1] == None)
             if (to_x-from_x==-2 and (to_y-from_y)==0):
                 return (self.__board[from_y][from_x-1] == None)
+            #vertical, no horizontal
+            if (to_x-from_x==0 and (to_y-from_y)==2):
+                return (self.__board[from_y+1][from_x] == None)
+            if (to_x-from_x==0 and (to_y-from_y)==-2):
+                return (self.__board[from_y-1][from_x] == None)
+            #diagonal
             if (to_x-from_x==2 and (to_y-from_y)==2):
                 return (self.__board[from_y+1][from_x+1] == None)
             if (to_x-from_x==-2 and (to_y-from_y)==-2):
                 return (self.__board[from_y-1][from_x-1] == None)
+            if (to_x-from_x==2 and (to_y-from_y)==-2):
+                return (self.__board[from_y-1][from_x+1] == None)
+            if (to_x-from_x==-2 and (to_y-from_y)==2):
+                return (self.__board[from_y+1][from_x-1] == None)
         if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
             if len(self.__move_list)==0:
                 self.__move_list.append(target)
@@ -266,7 +281,8 @@ class Game:
                         else:
                             return True
             return False
-        else: return True   
+        else: 
+            return False   
 
     def __is_attack_successful(self, current_piece: Piece, target_piece: Piece):
         dice = random.randint(1, 6)
