@@ -2,10 +2,10 @@ import imp
 import sys
 from PyQt5.QtWidgets import QApplication
 from visuals import BoardVis, PieceVis
-from ChessGame import game as chess_game
+from ChessGame import Game as chess_game
 
 def main():
-    #game = chess_game
+    #game = chess_game()
     app = QApplication(sys.argv)
     window = BoardVis()
     window.show()

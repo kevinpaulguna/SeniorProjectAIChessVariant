@@ -4,8 +4,11 @@ from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton 
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont
 import matplotlib.pyplot as plt
+import tkinter
+from PIL import Image, ImageTk
+import random
 
-from ChessGame import game as chess_game
+from ChessGame import Game as chess_game
 
 def board_to_screen(x, y, size):
     new_x = (x+1) * size
@@ -16,6 +19,21 @@ def screen_to_board(x, y, size):
     b_x = int(x / size) -1
     b_y = int(y / size) -1
     return (b_x, b_y)
+
+def dice_roller():
+    root = Tkinter.Tk()
+    root.geometry("400x400")
+    root.title("Roll the Dice")
+    root.configure(bg="#B9C6C9")
+    l0 = tkinter.Label(root, text="")
+    lo.pack()
+    l1 = tkinter.Label(root, text="Make your roll on the dice", fg="red", bg="#B9C6C9", font="Helvetica 16 Bold Italic")
+    l1.pack()
+    dice = ["picture/die1.png", "picture/die2.png", "picture/die3.png", "picture/die4.png", "picture/die5.png", "picture/die6.png"]
+    image2 = ImageTk.PhotoImage(file="picture/dice.png")
+    label1 = tkinter.Label(root, image=image2)
+    label1.image = image2
+    label1.pack(expand=True)
 
 
 class PieceVis(QLabel):
@@ -166,7 +184,7 @@ class TileVis(QLabel):
 class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
-        self.controller = chess_game
+        self.controller = chess_game()
         self.h_mode = True
         self.white_pov = True
         #This block sets up the window properties
