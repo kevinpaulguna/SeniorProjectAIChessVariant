@@ -34,12 +34,15 @@ class Spot:
 class Game:
     def __init__(self):
         self.tracker = TurnManager()
-        #TODO: this is only for demo
-        self.move_failed = False
 
-
-        #Creation of the board
+        #board
         self.__board = [[Spot(x,y,None) for x in range(0,8)] for y in range(0,8)]
+
+        #captured pieces dict, each list is named for the team which captured the pieces in it
+        self.__captured_by = {
+            "white": [],
+            "black": []
+        }
         
         #game helpers
         self.__move_list = []
@@ -67,7 +70,7 @@ class Game:
         #assign pieces to board
         for p in pieces:
             self.__board[p.y_loc][p.x_loc].set_piece(p)
-    
+
     #returns array of tuples containing co-ords of possible move spots
     def get_possible_moves_for_piece_at(self, *, x:int, y:int):
         possibles = []
@@ -82,9 +85,12 @@ class Game:
             potential_y_coord = y-1 if piece.is_white() else y+1
             possibles=[(x, potential_y_coord), (x-1,potential_y_coord), (x+1, potential_y_coord)]
         elif piece_type=='Bishop':
-            possibles=[(x,y+1), (x,y-1), (x,y+2), (x,y-2),
-                    (x+1,y+1), (x+1,y-1), (x-1,y+1), (x-1,y-1),
-                    (x+2,y+2), (x+2,y-2), (x-2,y+2), (x-2,y-2)]
+            possibles=[
+                    (x,y+1), (x,y+2), (x,y-1), (x,y-2), #vertical
+                    (x+1,y), (x+2,y), (x-1,y), (x-2,y), #horizontal
+                    (x+2,y+2), (x+2,y-2), (x-2,y+2), (x-2,y-2), #diagonal 2 away
+                    (x+1,y+1), (x+1,y-1), (x-1,y+1), (x-1,y-1), #diagonal 1 away
+                    ]
         elif piece_type in ('Rook', 'Knight', 'King', 'Queen'):
             limit = self.__valid_move_dict[piece_type]+1
             for i in range(limit):
@@ -128,8 +134,6 @@ class Game:
             print("invalid move")
             return False
         else:
-            from_spot=self.__board[from_y][from_x]
-            to_spot=self.__board[to_y][to_x]
             #non empty spot
             if to_spot.piece:
                 #ally spot
@@ -141,16 +145,11 @@ class Game:
                     print("attempting capture of piece at target", end=". ")
                     if self.__is_attack_successful(from_spot.piece, to_spot.piece):
                         print("attack successful!", end=" ")
-                        
-                        #TODO: this is only for demo
-                        self.move_failed=False
-
                         to_spot.piece.set_killed()
+                        piece_color = "white" if from_spot.piece.is_white else "black"
+                        self.__captured_pieces[piece_color].append(to_spot.piece)
                     else:
                         print("attack failed. move unsuccesful.")
-                        
-                        #TODO: this is only for demo
-                        self.move_failed=True
                         # we still technicly used an action so we must progress turnManager
                         self.tracker.use_action()
                         return False
@@ -162,7 +161,6 @@ class Game:
             from_spot.piece = None
             to_spot.piece.x_loc = to_x
             to_spot.piece.y_loc = to_y
-            to_spot.piece.hasMoved = 1
             self.tracker.use_action()
         print("~~~~~")
         self.print_board()
@@ -185,7 +183,7 @@ class Game:
                 return (((to_y-from_y)==1 and (to_x-from_x)==0) or
                         ((to_y-from_y)==1 and abs(to_x-from_x)==1))
         if piece_type=='Bishop':
-            if not self.__is_clear_path(from_x,from_y,to_x,to_y):
+            if (abs(to_x-from_x)==2 or abs(to_y-from_y)==2) and not self.__is_clear_path(from_x,from_y,to_x,to_y):
                 print('No clear path to ('+str(to_x)+', '+str(to_y)+')', end=". ")
                 return False
             else:
@@ -208,25 +206,15 @@ class Game:
         target = self.__board[to_y][to_x]
         piece_type = current_piece.get_type()
         if piece_type=='Bishop':
-            #horizontal, no vertical
-            if (to_x-from_x==2 and (to_y-from_y)==0):
-                return (self.__board[from_y][from_x+1] == None)
-            if (to_x-from_x==-2 and (to_y-from_y)==0):
-                return (self.__board[from_y][from_x-1] == None)
-            #vertical, no horizontal
-            if (to_x-from_x==0 and (to_y-from_y)==2):
-                return (self.__board[from_y+1][from_x] == None)
-            if (to_x-from_x==0 and (to_y-from_y)==-2):
-                return (self.__board[from_y-1][from_x] == None)
-            #diagonal
-            if (to_x-from_x==2 and (to_y-from_y)==2):
-                return (self.__board[from_y+1][from_x+1] == None)
-            if (to_x-from_x==-2 and (to_y-from_y)==-2):
-                return (self.__board[from_y-1][from_x-1] == None)
-            if (to_x-from_x==2 and (to_y-from_y)==-2):
-                return (self.__board[from_y-1][from_x+1] == None)
-            if (to_x-from_x==-2 and (to_y-from_y)==2):
-                return (self.__board[from_y+1][from_x-1] == None)
+            x_diff, y_diff = to_x-from_x, to_y-from_y #distance of move
+            check_x, check_y = 0, 0 #distance of spot to be checked
+            #horizontal movement
+            if abs(x_diff)==2:
+                check_x = int(x_diff/2)
+            #vertical movement
+            if abs(y_diff)==2:
+                check_y = int(y_diff/2)
+            return (self.__board[from_y+check_y][from_x+check_x].piece == None)
         if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
             if len(self.__move_list)==0:
                 self.__move_list.append(target)
@@ -354,6 +342,9 @@ class Game:
 
     def get_board(self):
         return [[(item2.piece.get_name() if item2.piece else "___") for item2 in item]for item in self.__board]
+
+    def get_pieces_captured_by(self):
+        return self.__captured_by
 
     def print_board(self):
         print()

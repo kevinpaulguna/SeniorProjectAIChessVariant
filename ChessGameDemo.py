@@ -80,8 +80,7 @@ def demo():
     wait_until_enter()
 
     # bKt1
-    game.move_piece(from_x=1,from_y=0, to_x=2, to_y=4)
-    if game.move_failed:
+    if not game.move_piece(from_x=1,from_y=0, to_x=2, to_y=4):
         game.move_piece(from_x=1,from_y=0, to_x=1, to_y=4)
 
     wait_until_enter()

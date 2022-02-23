@@ -124,8 +124,8 @@ class PieceVis(QLabel):
             self.onBoarder = True
 
         if not self.onBoarder:
-            self.lablePos = ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30))
-        self.move(self.lablePos - QPoint(self.parent().tileSize / 2, (self.parent().tileSize / 2)))
+            self.labelPos = ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30))
+        self.move(self.labelPos - QPoint(self.parent().tileSize / 2, (self.parent().tileSize / 2)))
         self.onBoarder = False
 
 
