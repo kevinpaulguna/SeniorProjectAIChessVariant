@@ -38,8 +38,8 @@ class Game:
         #board
         self.__board = [[Spot(x,y,None) for x in range(0,8)] for y in range(0,8)]
 
-        #captured pieces dict, each list is named for the color of pieces it contains
-        self.__captured_pieces = {
+        #captured pieces dict, each list is named for the team which captured the pieces in it
+        self.__captured_by = {
             "white": [],
             "black": []
         }
@@ -146,7 +146,7 @@ class Game:
                     if self.__is_attack_successful(from_spot.piece, to_spot.piece):
                         print("attack successful!", end=" ")
                         to_spot.piece.set_killed()
-                        piece_color = "white" if to_spot.piece.is_white else "black"
+                        piece_color = "white" if from_spot.piece.is_white else "black"
                         self.__captured_pieces[piece_color].append(to_spot.piece)
                     else:
                         print("attack failed. move unsuccesful.")
@@ -341,8 +341,8 @@ class Game:
     def get_board(self):
         return [[(item2.piece.get_name() if item2.piece else "___") for item2 in item]for item in self.__board]
 
-    def get_captured_pieces(self):
-        return self.__captured_pieces
+    def get_pieces_captured_by(self):
+        return self.__captured_by
 
     def print_board(self):
         print()
