@@ -142,7 +142,8 @@ class PieceVis(QLabel):
         if self._h_mode:
             self.parent().add_group_h(self.moves)
         if self.parent().controller.move_piece(from_x=self.start[0] , from_y=self.start[1] , to_x=self.end[0], to_y=self.end[1]):
-            new_spot = board_to_screen(self.end[0], self.end[1], self.parent().tileSize)
+            self.parent()._update_pieces(self.parent().controller.get_board())
+            new_spot = board_to_screen(self.end[0], self.end[1], self.parent().tileSize)  # create pixel position of new piece
             print(new_spot)
         else:    
             new_spot = board_to_screen(self.start[0], self.start[1], self.parent().tileSize)
@@ -465,6 +466,9 @@ class BoardVis(QMainWindow):
 
         for y in range(8):
             for x in range(8):
+                cur_p = self.piecePos[y][x]
+                if cur_p and cur_p != "0":
+                        cur_p.clear()
                 piece = pieces_array[y][x]
                 if piece == "___":
                     continue

@@ -151,7 +151,8 @@ class Game:
                         
                         #TODO: this is only for demo
                         self.move_failed=True
-
+                        # we still technicly used an action so we must progress turnManager
+                        self.tracker.use_action()
                         return False
             #empty spot
             else:
