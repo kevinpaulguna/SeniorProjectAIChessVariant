@@ -82,9 +82,12 @@ class Game:
             potential_y_coord = y-1 if piece.is_white() else y+1
             possibles=[(x, potential_y_coord), (x-1,potential_y_coord), (x+1, potential_y_coord)]
         elif piece_type=='Bishop':
-            possibles=[(x,y+1), (x,y-1), (x,y+2), (x,y-2),
-                    (x+1,y+1), (x+1,y-1), (x-1,y+1), (x-1,y-1),
-                    (x+2,y+2), (x+2,y-2), (x-2,y+2), (x-2,y-2)]
+            possibles=[
+                    (x,y+1), (x,y+2), (x,y-1), (x,y-2), #vertical
+                    (x+1,y), (x+2,y), (x-1,y), (x-2,y), #horizontal
+                    (x+2,y+2), (x+2,y-2), (x-2,y+2), (x-2,y-2), #diagonal 2 away
+                    (x+1,y+1), (x+1,y-1), (x-1,y+1), (x-1,y-1), #diagonal 1 away
+                    ]
         elif piece_type in ('Rook', 'Knight', 'King', 'Queen'):
             limit = self.__valid_move_dict[piece_type]+1
             for i in range(limit):
@@ -184,7 +187,7 @@ class Game:
                 return (((to_y-from_y)==1 and (to_x-from_x)==0) or
                         ((to_y-from_y)==1 and abs(to_x-from_x)==1))
         if piece_type=='Bishop':
-            if not self.__is_clear_path(from_x,from_y,to_x,to_y):
+            if (abs(to_x-from_x)==2 or abs(to_y-from_y)==2) and not self.__is_clear_path(from_x,from_y,to_x,to_y):
                 print('No clear path to ('+str(to_x)+', '+str(to_y)+')', end=". ")
                 return False
             else:
@@ -207,25 +210,15 @@ class Game:
         target = self.__board[to_y][to_x]
         piece_type = current_piece.get_type()
         if piece_type=='Bishop':
-            #horizontal, no vertical
-            if (to_x-from_x==2 and (to_y-from_y)==0):
-                return (self.__board[from_y][from_x+1] == None)
-            if (to_x-from_x==-2 and (to_y-from_y)==0):
-                return (self.__board[from_y][from_x-1] == None)
-            #vertical, no horizontal
-            if (to_x-from_x==0 and (to_y-from_y)==2):
-                return (self.__board[from_y+1][from_x] == None)
-            if (to_x-from_x==0 and (to_y-from_y)==-2):
-                return (self.__board[from_y-1][from_x] == None)
-            #diagonal
-            if (to_x-from_x==2 and (to_y-from_y)==2):
-                return (self.__board[from_y+1][from_x+1] == None)
-            if (to_x-from_x==-2 and (to_y-from_y)==-2):
-                return (self.__board[from_y-1][from_x-1] == None)
-            if (to_x-from_x==2 and (to_y-from_y)==-2):
-                return (self.__board[from_y-1][from_x+1] == None)
-            if (to_x-from_x==-2 and (to_y-from_y)==2):
-                return (self.__board[from_y+1][from_x-1] == None)
+            x_diff, y_diff = to_x-from_x, to_y-from_y #distance of move
+            check_x, check_y = 0, 0 #distance of spot to be checked
+            #horizontal movement
+            if abs(x_diff)==2:
+                check_x = int(x_diff/2)
+            #vertical movement
+            if abs(y_diff)==2:
+                check_y = int(y_diff/2)
+            return (self.__board[from_y+check_y][from_x+check_x].piece == None)
         if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
             if len(self.__move_list)==0:
                 self.__move_list.append(target)
