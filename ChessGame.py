@@ -34,9 +34,6 @@ class Spot:
 class Game:
     def __init__(self):
         self.tracker = TurnManager()
-        #TODO: this is only for demo
-        self.move_failed = False
-
 
         #Creation of the board
         self.__board = [[Spot(x,y,None) for x in range(0,8)] for y in range(0,8)]
@@ -144,17 +141,9 @@ class Game:
                     print("attempting capture of piece at target", end=". ")
                     if self.__is_attack_successful(from_spot.piece, to_spot.piece):
                         print("attack successful!", end=" ")
-                        
-                        #TODO: this is only for demo
-                        self.move_failed=False
-
                         to_spot.piece.set_killed()
                     else:
                         print("attack failed. move unsuccesful.")
-                        
-                        #TODO: this is only for demo
-                        self.move_failed=True
-
                         return False
             #empty spot
             else:
