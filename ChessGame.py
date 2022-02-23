@@ -35,8 +35,14 @@ class Game:
     def __init__(self):
         self.tracker = TurnManager()
 
-        #Creation of the board
+        #board
         self.__board = [[Spot(x,y,None) for x in range(0,8)] for y in range(0,8)]
+
+        #captured pieces dict, each list is named for the color of pieces it contains
+        self.__captured_pieces = {
+            "white": [],
+            "black": []
+        }
         
         #game helpers
         self.__move_list = []
@@ -64,7 +70,7 @@ class Game:
         #assign pieces to board
         for p in pieces:
             self.__board[p.y_loc][p.x_loc].set_piece(p)
-    
+
     #returns array of tuples containing co-ords of possible move spots
     def get_possible_moves_for_piece_at(self, *, x:int, y:int):
         possibles = []
@@ -128,8 +134,6 @@ class Game:
             print("invalid move")
             return False
         else:
-            from_spot=self.__board[from_y][from_x]
-            to_spot=self.__board[to_y][to_x]
             #non empty spot
             if to_spot.piece:
                 #ally spot
@@ -142,6 +146,8 @@ class Game:
                     if self.__is_attack_successful(from_spot.piece, to_spot.piece):
                         print("attack successful!", end=" ")
                         to_spot.piece.set_killed()
+                        piece_color = "white" if to_spot.piece.is_white else "black"
+                        self.__captured_pieces[piece_color].append(to_spot.piece)
                     else:
                         print("attack failed. move unsuccesful.")
                         return False
@@ -153,7 +159,6 @@ class Game:
             from_spot.piece = None
             to_spot.piece.x_loc = to_x
             to_spot.piece.y_loc = to_y
-            to_spot.piece.hasMoved = 1
             self.tracker.use_action()
         print("~~~~~")
         self.print_board()
@@ -335,6 +340,9 @@ class Game:
 
     def get_board(self):
         return [[(item2.piece.get_name() if item2.piece else "___") for item2 in item]for item in self.__board]
+
+    def get_captured_pieces(self):
+        return self.__captured_pieces
 
     def print_board(self):
         print()
