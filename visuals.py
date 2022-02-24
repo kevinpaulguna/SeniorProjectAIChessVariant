@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import tkinter
 from PIL import Image, ImageTk
 import random
+import sys
 
 from ChessGame import Game as chess_game
 
