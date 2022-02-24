@@ -54,6 +54,7 @@ class Game:
             "Queen": 3,
             "Knight": 4
         }
+        self.__last_dice_roll = -1
         
         #create pieces
         pieces = ([Piece(s, 6, 'wP'+str(s+1), white=True, type="Pawn") for s in range(0,8)] +
@@ -118,6 +119,8 @@ class Game:
         return possibles
 
     def move_piece(self, *, from_x: int, from_y: int, to_x: int, to_y: int):
+        self.__last_dice_roll=-1
+
         from_spot=self.__board[from_y][from_x]
         to_spot=self.__board[to_y][to_x]
         
@@ -147,7 +150,7 @@ class Game:
                         print("attack successful!", end=" ")
                         to_spot.piece.set_killed()
                         piece_color = "white" if from_spot.piece.is_white else "black"
-                        self.__captured_pieces[piece_color].append(to_spot.piece)
+                        self.__captured_by[piece_color].append(to_spot.piece)
                     else:
                         print("attack failed. move unsuccesful.")
                         # we still technicly used an action so we must progress turnManager
@@ -282,8 +285,8 @@ class Game:
             return False   
 
     def __is_attack_successful(self, current_piece: Piece, target_piece: Piece):
-        dice = random.randint(1, 6)
-        print("The roll on the dice is", dice, end=". ")
+        self.__last_dice_roll = random.randint(1, 6)
+        print("The roll on the dice is", self.__last_dice_roll, end=". ")
 
         #format: capture_table_mins[attacking piece][defending piece] = min reqd for successful attack
         capture_table_mins = {
@@ -338,13 +341,16 @@ class Game:
         }
         attack_piece_type=current_piece.get_type()
         defend_piece_type=target_piece.get_type()
-        return dice>=capture_table_mins[attack_piece_type][defend_piece_type]
+        return self.__last_dice_roll>=capture_table_mins[attack_piece_type][defend_piece_type]
 
     def get_board(self):
         return [[(item2.piece.get_name() if item2.piece else "___") for item2 in item]for item in self.__board]
 
     def get_pieces_captured_by(self):
         return self.__captured_by
+
+    def get_result_of_dice_roll(self):
+        return self.__last_dice_roll
 
     def print_board(self):
         print()
