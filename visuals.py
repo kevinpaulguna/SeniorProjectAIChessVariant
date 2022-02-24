@@ -359,6 +359,7 @@ class BoardVis(QMainWindow):
         font.setFamily("Arial")
         font.setPixelSize(button.height() * scale)
         self.stopButton.setFont(font)
+        self.newGameButton.setFont(font)
 
     def __set_facing_mode(self, val):
         self.white_pov = val
