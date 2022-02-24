@@ -1,7 +1,7 @@
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton 
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QTextEdit, QGraphicsScene, QGraphicsPixmapItem, QGraphicsView
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont
 import matplotlib.pyplot as plt
 import tkinter
@@ -20,21 +20,70 @@ def screen_to_board(x, y, size):
     b_y = int(y / size) -1
     return (b_x, b_y)
 
-def dice_roller():
-    root = Tkinter.Tk()
-    root.geometry("400x400")
-    root.title("Roll the Dice")
-    root.configure(bg="#B9C6C9")
-    l0 = tkinter.Label(root, text="")
-    lo.pack()
-    l1 = tkinter.Label(root, text="Make your roll on the dice", fg="red", bg="#B9C6C9", font="Helvetica 16 Bold Italic")
-    l1.pack()
-    dice = ["picture/die1.png", "picture/die2.png", "picture/die3.png", "picture/die4.png", "picture/die5.png", "picture/die6.png"]
-    image2 = ImageTk.PhotoImage(file="picture/dice.png")
-    label1 = tkinter.Label(root, image=image2)
-    label1.image = image2
-    label1.pack(expand=True)
+class DiceRoller(QMainWindow):
+    def __init__(self):
+        QMainWindow.__init__(self)
+        self.setFixedSize(400, 400)
+        self.setWindowTitle("Simple Dice Roller")
+        
+        self.button = QPushButton('Roll the dice', self)
+        self.button.clicked.connect(self.clickmethod)
+        
+        self.msg.resize(100, 32)
+        self.msg.move(100, 100)
 
+        self.button.resize(100, 32)
+        self.button.move(50, 50)
+        
+        self.graphicsView = QGraphicsView(self)
+
+        self.scene = QGraphicsScene()
+        self.pixmap = QGraphicsPixmapItem()
+        self.scene.addItem(self.pixmap)
+        self.graphicsView.setScene(self.scene)
+        self.graphicsView.resize(100, 100)
+        self.graphicsView.move(200, 200)
+        
+        def clicking(self):
+            ran = str(random.randint(1, 6))
+        self.msg.setText(ran)
+        if ran == '1':
+            print(ran)
+            img = QPixmap('picture/die1.png')
+            self.pixmap.setPixmap(img)
+        elif ran == '2':
+            print(ran)
+            img = QPixmap('picture/die2.png')
+            self.pixmap.setPixmap(img)
+          
+        elif ran == '3':
+            print(ran)
+            img = QPixmap('picture/die3.png')
+            self.pixmap.setPixmap(img)
+            
+         
+        elif ran == '4':
+            print(ran)
+            img = QPixmap('picture/die4.png')
+            self.pixmap.setPixmap(img)
+            
+          
+        elif ran == '5':
+            print(ran)
+            img = QPixmap('picture/die5.png')
+            self.pixmap.setPixmap(img)
+       
+        elif ran == '6':
+            print(ran)
+            img = QPixmap('picture/die1.png')
+            self.pixmap.setPixmap(img)
+  
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    Diceroll = MainWindow()
+    Diceroll.show()
+    sys.exit(app.exec_())
+    
 
 class PieceVis(QLabel):
     def __init__(self, visual, visual_h, parent=None):
