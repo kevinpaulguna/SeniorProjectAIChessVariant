@@ -307,7 +307,7 @@ class BoardVis(QMainWindow):
 
     #Create restart button properties
         
-        self.__set_button(self.newGameButton, 0.8)
+        self.__set_button(self.newGameButton, 0.7)
         self.newGameButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)),
                              int(self.boardSize / 2 + 300) - (self.newGameButton.height() * 0.5))
 
