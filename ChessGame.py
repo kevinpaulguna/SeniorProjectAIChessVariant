@@ -55,6 +55,7 @@ class Game:
             "Knight": 4
         }
         self.__last_dice_roll = -1
+        self.__move_message = ""
         
         #create pieces
         pieces = ([Piece(s, 6, 'wP'+str(s+1), white=True, type="Pawn") for s in range(0,8)] +
@@ -119,47 +120,57 @@ class Game:
         return possibles
 
     def move_piece(self, *, from_x: int, from_y: int, to_x: int, to_y: int):
+        #clear out prev var data
         self.__last_dice_roll=-1
+        self.__move_message = ""
 
         from_spot=self.__board[from_y][from_x]
         to_spot=self.__board[to_y][to_x]
         
         #check for piece at spot
         if from_spot.piece == None:
-            print("Error! no piece to move")
+            self.__move_message = "This is an empty spot. No piece to move!"
+            print(self.__move_message)
             return False
         if self.tracker.current_player != int(from_spot.piece.is_white()):
-            print("Wrong team")
+            self.__move_message = "This piece is not on your team!"
+            print(self.__move_message)
             return False
+        if from_x==to_x and from_y==to_y:
+            return
         #move
-        print(from_spot.piece.get_name()+' to ('+str(to_x)+', '+str(to_y)+')', end=": ")
+        self.__move_message = f"{from_spot.piece.get_name()} to ({str(to_x)}, {str(to_y)}): "
         if not self.__is_valid_move(from_x, from_y, to_x, to_y):
-            print("invalid move")
+            self.__move_message += "Invalid move! "
+            print(self.__move_message)
             return False
         else:
             #non empty spot
             if to_spot.piece:
                 #ally spot
                 if to_spot.piece.is_white() == from_spot.piece.is_white():
-                    print("cant target ally piece")
+                    self.__move_message += "You can't attack your own team! "
+                    print(self.__move_message)
                     return False
                 #enemy spot
                 else:
-                    print("attempting capture of piece at target", end=". ")
+                    self.__move_message += "Attempting capture... "
                     if self.__is_attack_successful(from_spot.piece, to_spot.piece):
-                        print("attack successful!", end=" ")
+                        self.__move_message += "Success! Captured piece! "
                         to_spot.piece.set_killed()
                         piece_color = "white" if from_spot.piece.is_white else "black"
                         self.__captured_by[piece_color].append(to_spot.piece)
                     else:
-                        print("attack failed. move unsuccesful.")
+                        self.__move_message += "Attack failed! Move unsuccessful! "
                         # we still technicly used an action so we must progress turnManager
                         self.tracker.use_action()
+                        print(self.__move_message)
                         return False
             #empty spot
             else:
-                print("no piece to attack", end=". ")
-            print("moving")
+                self.__move_message += "Targeted spot is empty... "
+            self.__move_message += "Moving to spot. "
+            print(self.__move_message)
             to_spot.piece = from_spot.piece
             from_spot.piece = None
             to_spot.piece.x_loc = to_x
@@ -173,34 +184,37 @@ class Game:
         self.__move_list = []
         
         #check for bounds
-        if to_x>7 or to_y>7 or to_x<0 or to_y<0: 
-            print("target out of bounds", end=". ")
+        if to_x>7 or to_y>7 or to_x<0 or to_y<0:
+            self.__move_message += "You are outside the board! "
             return False
         p = self.__board[from_y][from_x].piece
         piece_type = p.get_type()
         if piece_type=='Pawn':
-            if p.is_white():
-                return (((to_y-from_y)==-1 and (to_x-from_x)==0) or
-                        ((to_y-from_y)==-1 and abs(to_x-from_x)==1))
-            else:
-                return (((to_y-from_y)==1 and (to_x-from_x)==0) or
-                        ((to_y-from_y)==1 and abs(to_x-from_x)==1))
+            result = ((((to_y-from_y)==-1 and (to_x-from_x)==0) or ((to_y-from_y)==-1 and abs(to_x-from_x)==1)) 
+                        if p.is_white() else 
+                        (((to_y-from_y)==1 and (to_x-from_x)==0) or ((to_y-from_y)==1 and abs(to_x-from_x)==1)))
+            if not result:
+                    self.__move_message += "Chosen move is too far away. "
+            return result
         if piece_type=='Bishop':
             if (abs(to_x-from_x)==2 or abs(to_y-from_y)==2) and not self.__is_clear_path(from_x,from_y,to_x,to_y):
-                print('No clear path to ('+str(to_x)+', '+str(to_y)+')', end=". ")
+                self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
                 return False
             else:
-                return ((abs(to_x-from_x)<=2 and (to_y-from_y)==0) or
-                    (abs(to_y-from_y)<=2 and (to_x-from_x)==0) or
-                    (abs(to_x-from_x)==1 and abs(to_y-from_y)==1) or
-                    (abs(to_x-from_x)==2 and abs(to_y-from_y)==2))
+                result = ((abs(to_x-from_x)<=2 and (to_y-from_y)==0) or
+                          (abs(to_y-from_y)<=2 and (to_x-from_x)==0) or
+                          (abs(to_x-from_x)==1 and abs(to_y-from_y)==1) or
+                          (abs(to_x-from_x)==2 and abs(to_y-from_y)==2))
+                if not result:
+                    self.__move_message += "Chosen move is too far away."
+                return result
         if piece_type=='Knight' or piece_type=='King' or piece_type=='Queen' or piece_type=='Rook':
             if (abs(to_x - from_x) > self.__valid_move_dict[piece_type] and 
                 abs(to_y - from_y) > self.__valid_move_dict[piece_type]):
-                print("too far away", end=". ")
+                self.__move_message += "Chosen move is too far away. "
                 return False
             elif not self.__is_clear_path(from_x,from_y,to_x,to_y):
-                print('No clear path to ('+str(to_x)+', '+str(to_y)+')', end=". ")
+                self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
                 return False
         return True
 
@@ -286,7 +300,8 @@ class Game:
 
     def __is_attack_successful(self, current_piece: Piece, target_piece: Piece):
         self.__last_dice_roll = random.randint(1, 6)
-        print("The roll on the dice is", self.__last_dice_roll, end=". ")
+
+        self.__move_message += f"The roll on the dice is {self.__last_dice_roll}... "
 
         #format: capture_table_mins[attacking piece][defending piece] = min reqd for successful attack
         capture_table_mins = {
@@ -351,6 +366,9 @@ class Game:
 
     def get_result_of_dice_roll(self):
         return self.__last_dice_roll
+    
+    def get_move_message(self):
+        return self.__move_message
 
     def print_board(self):
         print()
