@@ -1,5 +1,5 @@
 class TurnManager:
-    def __init__(self, players=2, actions=1):
+    def __init__(self, players=2, actions=3):
         self.players = players
         self.current_player = 1   # who's turn it is currently. starts with 1 because of bool to int translation
         self.max_actions = [actions for _ in range(self.players)]    # number of actions a given team starts with
