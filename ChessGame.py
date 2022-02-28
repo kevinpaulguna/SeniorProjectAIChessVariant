@@ -147,7 +147,7 @@ class Game:
                         print("attack successful!", end=" ")
                         to_spot.piece.set_killed()
                         piece_color = "white" if from_spot.piece.is_white else "black"
-                        self.__captured_pieces[piece_color].append(to_spot.piece)
+                        self.__captured_by[piece_color].append(to_spot.piece)
                     else:
                         print("attack failed. move unsuccesful.")
                         # we still technicly used an action so we must progress turnManager
