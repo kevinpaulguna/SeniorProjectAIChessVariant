@@ -334,7 +334,7 @@ class Game:
             return
 
         #NEWCODE Start
-       useOne = False
+        useOne = False
         if abs(from_spot.x_loc - to_spot.x_loc) <= 1 and abs(from_spot.y_loc - to_spot.y_loc) <= 1 and (from_spot.piece.get_type() == 'Bishop' or from_spot.piece.get_type()== 'King') and not from_spot.piece.corp.commanderMoved():
             print('test')
             useOne = True
