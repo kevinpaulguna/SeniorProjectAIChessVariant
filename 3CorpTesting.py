@@ -334,19 +334,10 @@ class Game:
             return
 
         #NEWCODE Start
-        useOne = False
-        if from_spot.piece.has_moved() == True and from_spot.piece.get_type() != 'Bishop' and from_spot.piece.get_type() != 'King':
-            print('This corp has already used its authority')
-            return
-        elif abs(from_spot.x_loc - to_spot.x_loc) <= 1 and abs(from_spot.y_loc - to_spot.y_loc) <= 1 and (from_spot.piece.get_type() == 'Bishop' or from_spot.piece.get_type())== 'King':
-            #print(from_spot.x_loc, from_spot.y_loc)
-            if from_spot.piece.corp.commanderMoved():
-                if from_spot.piece.has_moved():
-                    print('has used all moves')
-                    return
-                print('using command authority')
+       useOne = False
+        if abs(from_spot.x_loc - to_spot.x_loc) <= 1 and abs(from_spot.y_loc - to_spot.y_loc) <= 1 and (from_spot.piece.get_type() == 'Bishop' or from_spot.piece.get_type()== 'King') and not from_spot.piece.corp.commanderMoved():
+            print('test')
             useOne = True
-        
         #NEWCODE End
 
         #move
@@ -419,6 +410,21 @@ class Game:
     
     def __is_valid_move(self, from_x: int, from_y: int, to_x: int, to_y: int):
         #check for bounds
+        
+        #NEWCODE
+        piece=self.__board[from_y][from_x].piece
+        if piece.has_moved() == True and piece.get_type() != 'Bishop' and piece.get_type() != 'King':
+            print('This corp has already used its authority')
+            return False
+        elif abs(from_x - to_x) <= 1 and abs(from_y - to_y) <= 1 and (piece.get_type() == 'Bishop' or piece.get_type())== 'King':
+            #print(from_spot.x_loc, from_spot.y_loc)
+            if piece.corp.commanderMoved():
+                if piece.has_moved():
+                    print('has used all moves')
+                    return False
+                #print('using command authority')
+        #NEWCODE
+        
         if to_x>7 or to_y>7 or to_x<0 or to_y<0: 
             print("target out of bounds", end=". ")
             return False
@@ -605,3 +611,5 @@ game.move_piece(from_x=4,from_y=7,to_x=4,to_y=6)
 game.move_piece(from_x=4,from_y=6,to_x=4,to_y=5)
 game.resetTurn()
 game.move_piece(from_x=4,from_y=6,to_x=4,to_y=5)
+game.move_piece(from_x=4,from_y=5,to_x=4,to_y=4)
+game.move_piece(from_x=4,from_y=4,to_x=4,to_y=3)
