@@ -150,6 +150,8 @@ class Game:
     def get_possible_moves_for_piece_at(self, *, x:int, y:int):
         possibles = []
         piece = self.__board[y][x].piece
+        if not piece:
+            return possibles
         piece_type = piece.get_type()
         if self.tracker.current_player != int(piece.is_white()):
             # the piece selected is no in the active turn so it has no moves
@@ -284,11 +286,12 @@ class Game:
     def __is_valid_move(self, from_x: int, from_y: int, to_x: int, to_y: int):
         self.__move_list = []
         
+        piece=self.__board[from_y][from_x].piece
         #Checks to see if this piece's corp has already used its command authority
-        if piece.has_moved() == True and self.__board[to_y][to_x].piece is not None:
+        if piece and piece.has_moved() and self.__board[to_y][to_x].piece is not None:
             print('This corp has already used its authority')
             return False
-        piece=self.__board[from_y][from_x].piece
+        
         if abs(from_x - to_x) <= 1 and abs(from_y - to_y) <= 1 and (piece.get_type() == 'Bishop' or piece.get_type()== 'King'):
             #print(from_spot.x_loc, from_spot.y_loc)
             if piece.corp.commanderMoved():
