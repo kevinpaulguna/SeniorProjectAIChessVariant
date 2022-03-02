@@ -229,18 +229,25 @@ class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
         self.controller = chess_game()
-        self.h_mode = True
+        self.h_mode = False
         self.white_pov = True
         #This block sets up the window properties
         self.setGeometry(500, 200, 300, 300)
         self.setWindowTitle("Chess Board")
         self.highlighted = []
+        
+        # buttons:
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
 
         # This button allow you can reset the game when you want to start new game
         self.newGameButton = QPushButton("Restart", self)
-        
+        # Choose side button on start screen
+        self.whiteButton = QPushButton("White side", self)
+        self.blackButton = QPushButton("Black side", self)
+
+        # choose highlight mode on/off
+        self.highlightButton = QPushButton("Highlight Moves", self)
 
         self.tableOption = QLabel(self)
         
@@ -269,9 +276,7 @@ class BoardVis(QMainWindow):
         self.chooseSideText = QLabel(self)
         self.startScreen = QLabel(self)
 
-        # Choose side button on start screen
-        self.whiteButton = QPushButton("White side", self)
-        self.blackButton = QPushButton("Black side", self)
+        
 
         self.showBoard()
         self.showSideChoice()
@@ -348,6 +353,13 @@ class BoardVis(QMainWindow):
         self.moveIndicator.move(int(self.boardSize), int(self.boardSize /2)
                                 - (self.moveIndicator.height()) * 0.5)
 
+    #highlight button setup:
+        self.__set_button(self.highlightButton, 0.7)
+        self.highlightButton.setCheckable(True)
+        self.highlightButton.clicked.connect(self.highlightBClicked)
+        self.highlightButton.resize(155,40)
+        self.highlightButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 25,
+                             25)
 
     #Create stop button properties
         self.__set_button(self.stopButton, 0.7)
@@ -408,8 +420,7 @@ class BoardVis(QMainWindow):
         font = QFont()
         font.setFamily("Arial")
         font.setPixelSize(button.height() * scale)
-        self.stopButton.setFont(font)
-        self.newGameButton.setFont(font)
+        button.setFont(font)
 
     def __set_facing_mode(self, val):
         self.white_pov = val
@@ -419,6 +430,8 @@ class BoardVis(QMainWindow):
     def stopButtonClicked(self):
         self.controller.tracker.end_turn()
 
+    def highlightBClicked(self):
+        self.set_h_mode(self.highlightButton.isChecked())
 
     def swictchTurn(self):
         if self.turn == "white":
@@ -465,6 +478,8 @@ class BoardVis(QMainWindow):
         self.hideStartScreen()
 
     def set_non_playables(self):
+        label = self.mk_basic_label("yt")
+        label.move(0, 0)
         self.set_emptys("wt", "bt", "yt", "yt")
         self.set_lets_and_nums()
     
@@ -539,9 +554,4 @@ class BoardVis(QMainWindow):
         pass
 
     #This function is snap the piece back to it place when the person releases wrong place
-    def movePieceRelease(self, fromPos, toPos):
-        return
-
-    #def screen_to_board(self, screen_val):
-    #    return round( (screen_val - 37.5) / 75 )
-    #def pixel_to_coordinates(self, pixel_val):
+    #obsoleted
