@@ -154,9 +154,8 @@ class Game:
             return possibles
         piece_type = piece.get_type()
         if self.tracker.current_player != int(piece.is_white()):
-            # the piece selected is no in the active turn so it has no moves
+            # the piece selected is not in the active turn so it has no moves
             return possibles
-            #eventually need to check which group its in
         #gets possible moves
         if piece_type=='Pawn':
             potential_y_coord = y-1 if piece.is_white() else y+1

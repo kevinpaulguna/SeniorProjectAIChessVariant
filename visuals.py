@@ -203,21 +203,22 @@ class PieceVis(QLabel):
         return s_loc != f_loc
 
 class TileVis(QLabel):
-    def __init__(self, visual, h_light, parent=None):
+    def __init__(self, visual, move, attack, parent=None):
         super(TileVis, self).__init__(parent)
         # Set up some properties
         self.is_active = False
-        self.active_vis = QPixmap('./picture/' + h_light)
+        self.move_vis = QPixmap('./picture/' + move)
+        self.atk_vis = QPixmap('./picture/' + attack)
         self.default_vis = QPixmap('./picture/' + visual)
-        self.set_img()
+        self.set_img(False)
 
-    def set_active(self, val):
+    def set_active(self, val, atk=False): 
         self.is_active = val
-        self.set_img()
+        self.set_img(atk)
 
-    def set_img(self):
+    def set_img(self, atk):
         if self.is_active:
-            self.setPixmap(self.active_vis)
+            self.setPixmap(self.atk_vis) if atk else self.setPixmap(self.move_vis) 
         else:
             self.setPixmap(self.default_vis)
 
@@ -296,7 +297,7 @@ class BoardVis(QMainWindow):
             return
         for pos in squares:
             tile = self.tilePos[pos[1]][pos[0]]
-            tile.set_active(True)
+            tile.set_active(True, pos[2])
             self.highlighted.append(tile)
 
     def remove_all_h(self):
@@ -305,12 +306,12 @@ class BoardVis(QMainWindow):
         for row in self.tilePos:
             for tile in row:
                 if type(tile) is TileVis:
-                    tile.set_active(False)
+                    tile.set_active(False, False)
         for tile in self.highlighted:
             self.list_remove(tile)
 
     def list_remove(self, tile:TileVis):
-        tile.set_active(False)
+        tile.set_active(False, False)
         self.highlighted.remove(tile)
 
     def showBoard(self):
@@ -480,7 +481,7 @@ class BoardVis(QMainWindow):
     def set_non_playables(self):
         label = self.mk_basic_label("yt")
         label.move(0, 0)
-        self.set_emptys("wt", "bt", "yt", "yt")
+        self.set_emptys("wt", "bt", "gt", "ot")
         self.set_lets_and_nums()
     
     def set_lets_and_nums(self):
@@ -500,13 +501,12 @@ class BoardVis(QMainWindow):
             l1.show()
             l2.show()
 
-    def set_emptys(self, white, black, white_h, black_h):
+    def set_emptys(self, white, black, move_h, atk_h):
         is_white = True
         for j in range(8):
             for i in range(8):
                 name = white if is_white else black
-                highlighted = white_h if is_white else black_h
-                label = TileVis(name,  highlighted, parent=self)            
+                label = TileVis(name,  move_h, atk_h, parent=self)            
                 label.setPixmap(QPixmap('./picture/' + name))  
                 label.resize(75, 75)
                 label.setScaledContents(True)
