@@ -34,20 +34,23 @@ class Piece:
         self.corp.command()
 
 class Spot:
-    def __init__(self, x: int, y: int, piece: Piece):
+    def __init__(self, x: int, y: int, piece: Piece = None):
         self.x_loc = x
         self.y_loc = y
         self.piece = piece
 
     def set_piece(self, piece: Piece):
         self.piece = piece
+    
+    def has_piece(self):
+        return (self.piece != None)
 
 class Game:
     def __init__(self):
         self.tracker = TurnManager()
 
         #board
-        self.__board = [[Spot(x,y,None) for x in range(0,8)] for y in range(0,8)]
+        self.__board = [[Spot(x,y) for x in range(0,8)] for y in range(0,8)]
 
         #captured pieces dict, each list is named for the team which captured the pieces in it
         self.__captured_by = {
@@ -153,45 +156,44 @@ class Game:
         if not piece:
             return possibles
         piece_type = piece.get_type()
+
         if self.tracker.current_player != int(piece.is_white()):
             # the piece selected is no in the active turn so it has no moves
             return possibles
             #eventually need to check which group its in
-        #gets possible moves
+
+        #gets possible moves, making sure to not include out of bounds moves
         if piece_type=='Pawn':
-            potential_y_coord = y-1 if piece.is_white() else y+1
-            possibles=[(x, potential_y_coord), (x-1,potential_y_coord), (x+1, potential_y_coord)]
-        elif piece_type=='Bishop':
-            possibles=[
-                    (x,y+1), (x,y+2), (x,y-1), (x,y-2), #vertical
-                    (x+1,y), (x+2,y), (x-1,y), (x-2,y), #horizontal
-                    (x+2,y+2), (x+2,y-2), (x-2,y+2), (x-2,y-2), #diagonal 2 away
-                    (x+1,y+1), (x+1,y-1), (x-1,y+1), (x-1,y-1), #diagonal 1 away
-                    ]
-        elif piece_type in ('Rook', 'Knight', 'King', 'Queen'):
+            new_y_coord = y-1 if piece.is_white() else y+1
+            for new_x_coord in [x, x-1, x+1]:
+                if not (new_x_coord>7 or new_y_coord>7 or new_x_coord<0 or new_y_coord<0):
+                    possibles.append((new_x_coord, new_y_coord, self.__board[new_y_coord][new_x_coord].has_piece()))
+        elif piece_type in ('Bishop', 'Rook', 'Knight', 'King', 'Queen'):
             limit = self.__valid_move_dict[piece_type]+1
             for i in range(limit):
                 for j in range(limit):
                     if (i,j)!=(0,0):
                         #checks for duplicates
                         for candidate in [(x+i,y+j),(x+i,y-j),(x-i,y+j),(x-i,y-j)]:
-                            if candidate not in possibles:
-                                possibles.append(candidate)
+                            c_x, c_y = candidate
+                            if candidate not in possibles and not (c_x>7 or c_y>7 or c_x<0 or c_y<0):
+                                if piece_type=="Bishop" and not(i==j or i==0 or j==0): #checks if invalid move for Bishop
+                                    continue
+                                possibles.append((c_x, c_y, self.__board[c_y][c_x].has_piece()))
+        else: return possibles
 
-        #removes any blocked paths, out of bounds, or ally spots
-        for coord in possibles.copy():
-            potential_x, potential_y = coord
+        #removes any blocked paths or ally spots
+        for potential_spot in possibles.copy():
+            potential_x, potential_y, has_piece = potential_spot
 
-            # 1. checks for out of bounds
-            # 2. checks for ally
-            # 3. validates move, i.e. checks for blocked path. 
+            # 1. checks for ally
+            # 2. validates move, i.e. checks for blocked path. 
             # (must use is_valid_move instead of is_clear_path to prevent issues with linked list)
-            if (potential_x>7 or potential_y>7 or potential_x<0 or potential_y<0 or
-                (self.__board[potential_y][potential_x].piece and 
-                self.__board[potential_y][potential_x].piece.is_white()==piece.is_white()) or
+            if ((has_piece and self.__board[potential_y][potential_x].piece.is_white()==piece.is_white()) or
                 not self.__is_valid_move(x, y, potential_x, potential_y)):
-                possibles.remove(coord)
+                possibles.remove(potential_spot)
 
+        #returns tuple containing (x coord:int, y coord:int, attack possible: boolean)
         return possibles
 
     def move_piece(self, *, from_x: int, from_y: int, to_x: int, to_y: int):
@@ -203,7 +205,7 @@ class Game:
         to_spot=self.__board[to_y][to_x]
         
         #check for piece at spot
-        if from_spot.piece == None:
+        if not from_spot.has_piece():
             self.__move_message = "This is an empty spot. No piece to move!"
             print(self.__move_message)
             return False
@@ -351,7 +353,7 @@ class Game:
             #vertical movement
             if abs(y_diff)==2:
                 check_y = int(y_diff/2)
-            return (self.__board[from_y+check_y][from_x+check_x].piece == None)
+            return (not self.__board[from_y+check_y][from_x+check_x].has_piece())
         if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
             if len(self.__move_list)==0:
                 self.__move_list.append(target)
@@ -405,7 +407,7 @@ class Game:
                         continue
                     if self.__board[target.y_loc + item2][target.x_loc + item].piece == current_piece:
                         return True
-                    if self.__board[target.y_loc + item2][target.x_loc + item].piece == None:
+                    if not self.__board[target.y_loc + item2][target.x_loc + item].has_piece():
                         if self.__board[target.y_loc + item2][target.x_loc + item] in self.__move_list:
                             continue
                         self.__move_list.append(self.__board[target.y_loc + item2][target.x_loc + item])
