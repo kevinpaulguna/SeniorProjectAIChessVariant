@@ -1,16 +1,16 @@
 import random
 from turnManager import TurnManager
-from ThreeCorp import corp
+from ThreeCorp import Corp
 
 class Piece:
-    def __init__(self, x: int, y: int, name: str, white: bool, type: str):
+    def __init__(self, x: int, y: int, name: str, white: bool, type: str, corp: Corp = None):
         self.killed = False
         self.x_loc  = x
         self.y_loc= y
         self.__name = name
         self.__white = white
         self.__type = type
-        self.corp = None
+        self.corp = corp
 
     def set_killed(self):
         self.killed = True
@@ -24,7 +24,7 @@ class Piece:
     def get_type(self):
         return self.__type
     
-    def set_corp(self, corp):
+    def set_corp(self, corp: Corp):
         self.corp = corp
 
     def has_moved(self):
@@ -85,7 +85,7 @@ class Game:
 
         #creating the three corps for each color and adding the pieces to them
         print('\n')
-        self.corpW1 = corp('corpW1', pieces[16])
+        self.corpW1 = Corp('corpW1', pieces[16])
         pieces[16].corp = self.corpW1
         self.corpW1.addToCorp(pieces[0])
         self.corpW1.addToCorp(pieces[1])
@@ -93,7 +93,7 @@ class Game:
         self.corpW1.addToCorp(pieces[24])
         #corpW1.printCorp()
 
-        self.corpW2 = corp('corpW2', pieces[30])
+        self.corpW2 = Corp('corpW2', pieces[30])
         pieces[30].corp = self.corpW2
         self.corpW2.addToCorp(pieces[3])
         self.corpW2.addToCorp(pieces[4])
@@ -102,7 +102,7 @@ class Game:
         self.corpW2.addToCorp(pieces[28])
         #corpW2.printCorp()
 
-        self.corpW3 = corp('corpW3', pieces[17])
+        self.corpW3 = Corp('corpW3', pieces[17])
         pieces[17].corp = self.corpW3
         self.corpW3.addToCorp(pieces[5])
         self.corpW3.addToCorp(pieces[6])
@@ -110,7 +110,7 @@ class Game:
         self.corpW3.addToCorp(pieces[25])
         #corpW3.printCorp()
 
-        self.corpB1 = corp('corpB1', pieces[18])
+        self.corpB1 = Corp('corpB1', pieces[18])
         pieces[18].corp = self.corpB1
         self.corpB1.addToCorp(pieces[8])
         self.corpB1.addToCorp(pieces[9])
@@ -119,7 +119,7 @@ class Game:
         #corpB1.printCorp()
 
 
-        self.corpB2 = corp('corpB2', pieces[31])
+        self.corpB2 = Corp('corpB2', pieces[31])
         pieces[31].corp = self.corpB2
         self.corpB2.addToCorp(pieces[11])
         self.corpB2.addToCorp(pieces[12])
@@ -129,7 +129,7 @@ class Game:
         #corpB2.printCorp()
 
 
-        self.corpB3 = corp('corpB3', pieces[19])
+        self.corpB3 = Corp('corpB3', pieces[19])
         pieces[19].corp = self.corpB3
         self.corpB3.addToCorp(pieces[13])
         self.corpB3.addToCorp(pieces[14])
@@ -150,7 +150,7 @@ class Game:
         self.corpB3.resetCommand()
 
     #returns array of tuples containing co-ords of possible move spots
-    def get_possible_moves_for_piece_at(self, *, x:int, y:int):
+    def get_possible_moves_for_piece_at(self, *, x:int, y:int, attack_only:bool=False):
         possibles = []
         piece = self.__board[y][x].piece
         if not piece:
@@ -174,9 +174,10 @@ class Game:
                 for j in range(limit):
                     if (i,j)!=(0,0):
                         #checks for duplicates
-                        for candidate in [(x+i,y+j),(x+i,y-j),(x-i,y+j),(x-i,y-j)]:
-                            c_x, c_y = candidate
-                            if candidate not in possibles and not (c_x>7 or c_y>7 or c_x<0 or c_y<0):
+                        for c_x, c_y in [(x+i,y+j),(x+i,y-j),(x-i,y+j),(x-i,y-j)]:
+                            if ((c_x, c_y, True) not in possibles and 
+                                (c_x, c_y, False) not in possibles and 
+                                not (c_x>7 or c_y>7 or c_x<0 or c_y<0)):
                                 if piece_type=="Bishop" and not(i==j or i==0 or j==0): #checks if invalid move for Bishop
                                     continue
                                 possibles.append((c_x, c_y, self.__board[c_y][c_x].has_piece()))
@@ -190,6 +191,7 @@ class Game:
             # 2. validates move, i.e. checks for blocked path. 
             # (must use is_valid_move instead of is_clear_path to prevent issues with linked list)
             if ((has_piece and self.__board[potential_y][potential_x].piece.is_white()==piece.is_white()) or
+                (attack_only and not has_piece) or 
                 not self.__is_valid_move(x, y, potential_x, potential_y)):
                 possibles.remove(potential_spot)
 
@@ -217,7 +219,10 @@ class Game:
             return
         
         useOne = False
-        if abs(from_spot.x_loc - to_spot.x_loc) <= 1 and abs(from_spot.y_loc - to_spot.y_loc) <= 1 and (from_spot.piece.get_type() == 'Bishop' or from_spot.piece.get_type()== 'King') and not from_spot.piece.corp.commanderMoved():
+        if (abs(from_spot.x_loc - to_spot.x_loc) <= 1 and 
+            abs(from_spot.y_loc - to_spot.y_loc) <= 1 and 
+            (from_spot.piece.get_type() == 'Bishop' or from_spot.piece.get_type()== 'King') and 
+            not from_spot.piece.corp.commanderMoved()):
             useOne = True
         
         #move
@@ -273,14 +278,16 @@ class Game:
                 from_spot.piece.set_moved()
             self.__move_message += "Moving to spot. "
             print(self.__move_message)
-            to_spot.piece = from_spot.piece
-            from_spot.piece = None
-            to_spot.piece.x_loc = to_x
-            to_spot.piece.y_loc = to_y
+
             temp = self.tracker.current_player
             self.tracker.use_action()
             if temp is not self.tracker.current_player:
                 self.resetTurn()
+                
+            to_spot.piece = from_spot.piece
+            from_spot.piece = None
+            to_spot.piece.x_loc = to_x
+            to_spot.piece.y_loc = to_y
         print("~~~~~")
         self.print_board()
         return True

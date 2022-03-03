@@ -1,5 +1,5 @@
 #NEWCODE Start
-class corp:
+class Corp:
     def __init__(self, name, commander):
         self.commandAuthUsed = False    #checks whether this corp has used its command
         self.commander = commander      #commander piece, will either be a bishop or a king
