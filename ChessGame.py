@@ -160,13 +160,7 @@ class Game:
         if self.tracker.current_player != int(piece.is_white()):
             # the piece selected is not in the active turn so it has no moves
             return possibles
-<<<<<<< HEAD
         #gets possible moves
-=======
-            #eventually need to check which group its in
-
-        #gets possible moves, making sure to not include out of bounds moves
->>>>>>> f90130f9ab7451ec566b380bb4a6534edd5d09ed
         if piece_type=='Pawn':
             new_y_coord = y-1 if piece.is_white() else y+1
             for new_x_coord in [x, x-1, x+1]:

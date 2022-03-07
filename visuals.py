@@ -233,7 +233,8 @@ class BoardVis(QMainWindow):
         self.h_mode = False
         self.white_pov = True
         #This block sets up the window properties
-        self.setGeometry(500, 200, 300, 300)
+        #self.setGeometry(500, 200, 300, 300)
+        self.setFixedSize(925, 700)
         self.setWindowTitle("Chess Board")
         self.highlighted = []
         
@@ -330,7 +331,7 @@ class BoardVis(QMainWindow):
         self._update_pieces(board)
     
     #Create table option properties
-        self.tableOption.setText("First Turn: White")
+        self.tableOption.setText("Current Turn: White")
         self.tableOption.setAlignment(Qt.AlignCenter)
         self.tableOption.resize(200, 25)
         font = QFont()
