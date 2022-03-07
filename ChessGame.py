@@ -60,7 +60,7 @@ class Game:
         
         #game helpers
         self.__move_list = []
-        self.__valid_move_dict = {
+        self.__VALID_MOVE_DICT = {
             "Pawn": 1,
             "Bishop": 2,
             "Rook": 2,
@@ -68,6 +68,7 @@ class Game:
             "Queen": 3,
             "Knight": 4
         }
+
         self.__last_dice_roll = -1
         self.__move_message = ""
         
@@ -151,6 +152,7 @@ class Game:
 
     #returns array of tuples containing co-ords of possible move spots
     def get_possible_moves_for_piece_at(self, *, x:int, y:int, attack_only:bool=False):
+        self.__reset_move_vars()
         possibles = []
         piece = self.__board[y][x].piece
         if not piece:
@@ -160,14 +162,15 @@ class Game:
         if self.tracker.current_player != int(piece.is_white()):
             # the piece selected is not in the active turn so it has no moves
             return possibles
-        #gets possible moves
+
+        #gets possible moves, making sure to not include out of bounds moves
         if piece_type=='Pawn':
             new_y_coord = y-1 if piece.is_white() else y+1
             for new_x_coord in [x, x-1, x+1]:
                 if not (new_x_coord>7 or new_y_coord>7 or new_x_coord<0 or new_y_coord<0):
                     possibles.append((new_x_coord, new_y_coord, self.__board[new_y_coord][new_x_coord].has_piece()))
         elif piece_type in ('Bishop', 'Rook', 'Knight', 'King', 'Queen'):
-            limit = self.__valid_move_dict[piece_type]+1
+            limit = self.__VALID_MOVE_DICT[piece_type]+1
             for i in range(limit):
                 for j in range(limit):
                     if (i,j)!=(0,0):
@@ -197,9 +200,7 @@ class Game:
         return possibles
 
     def move_piece(self, *, from_x: int, from_y: int, to_x: int, to_y: int):
-        #clear out prev var data
-        self.__last_dice_roll=-1
-        self.__move_message = ""
+        self.__reset_move_vars()
 
         from_spot=self.__board[from_y][from_x]
         to_spot=self.__board[to_y][to_x]
@@ -336,8 +337,8 @@ class Game:
                     self.__move_message += "Chosen move is too far away."
                 return result
         if piece_type=='Knight' or piece_type=='King' or piece_type=='Queen' or piece_type=='Rook':
-            if (abs(to_x - from_x) > self.__valid_move_dict[piece_type] and 
-                abs(to_y - from_y) > self.__valid_move_dict[piece_type]):
+            if (abs(to_x - from_x) > self.__VALID_MOVE_DICT[piece_type] and 
+                abs(to_y - from_y) > self.__VALID_MOVE_DICT[piece_type]):
                 self.__move_message += "Chosen move is too far away. "
                 return False
             elif not self.__is_clear_path(from_x,from_y,to_x,to_y):
@@ -403,7 +404,7 @@ class Game:
                 y_steps = [-1, 0]
 
             #move len +1 i.e. 5 Kt, 4 Kg & Q, 3 R
-            if len(self.__move_list) == self.__valid_move_dict[piece_type]+1: 
+            if len(self.__move_list) == self.__VALID_MOVE_DICT[piece_type]+1: 
                 return False
 
             for item in x_steps:
@@ -496,6 +497,11 @@ class Game:
     
     def get_move_message(self):
         return self.__move_message
+
+    def __reset_move_vars(self):
+        #clear out prev var data
+        self.__last_dice_roll=-1
+        self.__move_message = ""
 
     def print_board(self):
         print()
