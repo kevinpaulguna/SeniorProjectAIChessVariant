@@ -432,9 +432,9 @@ class BoardVis(QMainWindow):
         self.resultCaptureText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255)')
         self.resultCaptureText.move(int((self.boardSize / 2) - (self.rollText.width() / 2)),
                            int((self.boardSize / 2) - 300))
-
-        dice = chess_game().get_result_of_dice_roll()
-        pixmap1 = QPixmap('./picture/die' + str(abs(dice)))
+        
+        dice = self.controller.get_result_of_dice_roll()
+        pixmap1 = QPixmap('./picture/die' + str(dice))
         pixmap1 = pixmap1.scaled(128, 128)
         self.rollDiceAnimation.setPixmap(pixmap1)
         self.rollDiceAnimation.move(300, 200)
