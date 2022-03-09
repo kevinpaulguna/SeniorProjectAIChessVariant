@@ -594,7 +594,10 @@ class Game:
         return self.__move_message
 
     def get_board(self):
-        return [[(spot.piece.get_name() if spot.has_piece() else "___") for spot in row] for row in self.__board]
+        # returns 2d list of tuples (piece name, corp of piece)
+        return [
+            [((spot.piece.get_name(), spot.piece.corp.get_name()) if spot.has_piece() else "___") for spot in row] 
+            for row in self.__board]
 
     def print_board(self):
         print()

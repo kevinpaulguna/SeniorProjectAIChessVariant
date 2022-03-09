@@ -27,19 +27,19 @@ class TurnManager:
 
     # if either player runs out of actions on their turns
     # or ends their turn early this moves to next player and resets counters
-    def __end_turn(self):
+    def end_turn(self):
         self.current_player += 1
         if self.current_player >= self.players:
             self.current_player = 0
         self.current_actions = self.get_max_actions(self.current_player)
+        self.__reset_turn()
 
     # this should be called when the current player
     # uses an action on his turn
     def use_action(self):
         self.current_actions -= 1
         if self.current_actions <= 0:
-            self.__end_turn()
-            self.__reset_turn()
+            self.end_turn()
 
     # removes an action from a player
     # would usually happen on other players
