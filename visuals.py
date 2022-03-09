@@ -1,8 +1,8 @@
 from typing import Tuple
 from xmlrpc.client import Boolean
-from PyQt5.QtCore import Qt, QPoint, , QSize, QTimer
+from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QTextEdit, QGraphicsScene, QGraphicsPixmapItem, QGraphicsView
-from PyQt5.QtGui import QPixmap, QMouseEvent, QFont, ,QMovie
+from PyQt5.QtGui import QPixmap, QMouseEvent, QFont, QMovie
 
 
 from ChessGame import Game as chess_game

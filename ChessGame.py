@@ -197,14 +197,9 @@ class Game:
             # 1. checks for ally
             # 2. validates move, i.e. checks for blocked path. 
             # (must use is_valid_move instead of is_clear_path to prevent issues with linked list)
-            if piece_type == 'Rook':
-                if ((has_piece and self.__board[potential_y][potential_x].piece.is_white() == piece.is_white())):
-                    possibles.remove(potential_spot)
-
-            if piece_type == ('Bishop', 'pawn', 'Knight', 'King', 'Queen'):
-                if ((has_piece and self.__board[potential_y][potential_x].piece.is_white() == piece.is_white()) or
-                    (attack_only and not has_piece) or not self.__is_valid_move(x, y, potential_x, potential_y)):
-                    possibles.remove(potential_spot)
+            if ((has_piece and self.__board[potential_y][potential_x].piece.is_white() == piece.is_white()) or
+                (attack_only and not has_piece) or not self.__is_valid_move(x, y, potential_x, potential_y)):
+                possibles.remove(potential_spot)
 
         # returns tuple containing (x coord:int, y coord:int, attack possible: boolean)
         return possibles
@@ -348,20 +343,19 @@ class Game:
         if to_x > 7 or to_y > 7 or to_x < 0 or to_y < 0:
             self.__move_message += "You are outside the board! "
             return False
-        p = self.__board[from_y][from_x].piece
-        piece_type = p.get_type()
+        piece_type = piece.get_type()
         if piece_type == 'Pawn':
             result = ((((to_y - from_y) == -1 and (to_x - from_x) == 0) or (
                     (to_y - from_y) == -1 and abs(to_x - from_x) == 1))
-                      if p.is_white() else
+                      if piece.is_white() else
                       (((to_y - from_y) == 1 and (to_x - from_x) == 0) or (
                               (to_y - from_y) == 1 and abs(to_x - from_x) == 1)))
             if not result:
                 self.__move_message += "Chosen move is too far away. "
             return result
         if piece_type == 'Bishop':
-            if (abs(to_x - from_x) == 2 or abs(to_y - from_y) == 2) and not self.__is_clear_path(from_x, from_y, to_x,
-                                                                                                 to_y):
+            if ((abs(to_x - from_x) == 2 or abs(to_y - from_y) == 2) and 
+                not self.__is_clear_path(from_x, from_y, to_x, to_y)):
                 self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
                 return False
             else:
@@ -373,27 +367,18 @@ class Game:
                     self.__move_message += "Chosen move is too far away."
                 return result
 
-        if piece_type == 'Knight' or piece_type == 'King' or piece_type == 'Queen':
+        if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
             if (abs(to_x - from_x) > self.__VALID_MOVE_DICT[piece_type] and
                     abs(to_y - from_y) > self.__VALID_MOVE_DICT[piece_type]):
                 self.__move_message += "Chosen move is too far away. "
                 return False
             elif not self.__is_clear_path(from_x, from_y, to_x, to_y):
-                self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
-                return False
-
-        if piece_type == 'Rook':
-            if (abs(to_x - from_x) > self.__VALID_MOVE_DICT[piece_type] and
-                    abs(to_y - from_y) > self.__VALID_MOVE_DICT[piece_type]):
-                self.__move_message += "Chosen move is too far away. "
-                return False
-
-            elif not self.__is_clear_path(from_x, from_y, to_x, to_y):
-                if self.__board[to_y][to_x].piece is not None and self.__board[to_y][to_x].piece.is_white() != piece.is_white():
+                # allows for archer attack even when there is not a clear path to move to target
+                if piece_type=='Rook' and (self.__board[to_y][to_x].has_piece() and self.__board[to_y][to_x].piece != piece.is_white()):
                     return True
-
                 self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
                 return False
+
         return True
 
     def __is_clear_path(self, from_x: int, from_y: int, to_x: int, to_y: int):
