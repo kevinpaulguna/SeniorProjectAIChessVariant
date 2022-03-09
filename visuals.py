@@ -38,8 +38,9 @@ def piece_to_img_name(piece):
 class corpVis(QLabel):
     def __init__(self, vis, parent=None):
         super(corpVis, self).__init__()
-        self.default_vis = QPixmap('./picture/' + vis).scaled(75, 75)
+        self.default_vis = QPixmap('./picture/' + vis).scaled(75, 75, Qt.KeepAspectRatio, Qt.FastTransformation)
         self.set_img()
+
     def set_img(self):
         self.setPixmap(self.default_vis)
     #This function is snap the piece back to it place when the person releases wrong place
@@ -205,7 +206,7 @@ class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
         self.controller = chess_game()
-        self.h_mode = False
+        self.h_mode = True
         self.white_pov = True
         #This block sets up the window properties
         #self.setGeometry(500, 200, 300, 300)
@@ -641,14 +642,14 @@ class CorpMenu(QWidget):
         self.setGeometry(0,0, 1, 1)
         self.setWindowTitle("Corp Delegation")
         self.controller = game
-        
+        self.update_corps()
 
     def update_corps(self):
         is_white = self.controller.tracker.get_current_player()
 
-        corps_ref = self.controller.get_corp_info(is_white)
+        corps_ref = self.controller.get_corp_info(white=is_white)
         layout = QHBoxLayout()
-        for i in (range(3) +1 ):
+        for i in (range(1,4)):
             self.create_col(layout, corps_ref[i]['commander'], corps_ref[i]['commanding'])
         self.setLayout(layout)
 
@@ -675,7 +676,7 @@ class CorpMenu(QWidget):
 
         col = QVBoxLayout()
         col.addWidget(top_frame)
-        self.create_group(10, col)
+        self.create_group(group, col)
         col.setSpacing(0)
         col.addStretch(1)
         col.setContentsMargins(10,0,10,0)
@@ -692,9 +693,7 @@ class CorpMenu(QWidget):
             if len(labels) <= 0:
                 return
             elif len(labels) >= items_per_row:
-                cur_row_items = items_per_row
-                label_count -= items_per_row
-                              
+                cur_row_items = items_per_row                              
             else:
                 cur_row_items = len(labels)
             for i in range(cur_row_items):
