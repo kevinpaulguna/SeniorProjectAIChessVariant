@@ -1,8 +1,8 @@
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QTextEdit, QGraphicsScene, QGraphicsPixmapItem, QGraphicsView
-from PyQt5.QtGui import QPixmap, QMouseEvent, QFont, QMovie
+from PyQt5.QtWidgets import QMainWindow, QLabel, QPushButton
+from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
 
 
 from ChessGame import Game as chess_game
@@ -122,15 +122,8 @@ class PieceVis(QLabel):
         self.parent().remove_all_h()
         if self._h_mode:
             self.parent().add_group_h(self.moves)
-        """
-        if self.parent().controller.move_piece(from_x=self.start[0] , from_y=self.start[1] , to_x=self.end[0], to_y=self.end[1]):
-            self.parent()._update_pieces(self.parent().controller.get_board())
-            new_spot = board_to_screen(self.end[0], self.end[1], self.parent().tileSize)  # create pixel position of new piece
-            print(new_spot)
-        else:    
-            new_spot = board_to_screen(self.start[0], self.start[1], self.parent().tileSize)
-        self.move(new_spot[0], new_spot[1])
-        """
+
+
         isAttack = (self.end[0], self.end[1], True) in self.moves
         moveSuccessful = self.parent().controller.move_piece(from_x=self.start[0], from_y=self.start[1],
                                                              to_x=self.end[0], to_y=self.end[1])        # or whatever the show dice roll function is
@@ -234,8 +227,11 @@ class BoardVis(QMainWindow):
         self.okayButton = QPushButton("Okay", self)
         self.attackSuccess = None
 
-        self.showBoard()       
         
+
+        self.showBoard()
+
+
     def set_h_mode(self, val: Boolean):
         self.h_mode = val
 
@@ -371,8 +367,28 @@ class BoardVis(QMainWindow):
         self.blackButton.setFont(font)
         self.blackButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
                               , int((self.boardSize / 2) - 50))
-        
-    
+
+
+
+        # Create start screen properties
+        self.pauseBackground.setAlignment(Qt.AlignCenter)
+        self.pauseBackground.resize(self.boardSize, self.boardSize)
+        self.pauseBackground.setStyleSheet('background-color: rgba(180,180,180,1)')
+        self.pauseBackground.move(0, 0)
+        self.pauseBackground.hide()
+
+        # Set up for okay button properties
+        self.okayButton.clicked.connect(self.okayButtonClicked)
+        self.okayButton.resize(150, 40)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.okayButton.height() * 0.4)
+        self.okayButton.setFont(font)
+        self.okayButton.move(int((self.boardSize / 2) - (self.okayButton.width() / 2))
+                             , int((self.boardSize / 2) + 300))
+        self.okayButton.hide()
+
+
     def __rolldiceWork(self):
         # Set up roll dice text properties
         self.rollText.setAlignment(Qt.AlignCenter)
@@ -497,7 +513,7 @@ class BoardVis(QMainWindow):
         self.controller.tracker.current_player = 0
         #the AI runsnings
         self.hideStartScreen()
-        
+
     def rollDiceScreen(self, attackSuccess:bool):
 
         self.attackSuccess = attackSuccess
