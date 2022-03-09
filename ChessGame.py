@@ -219,7 +219,7 @@ class Game:
             self.__move_message = "This is an empty spot. No piece to move!"
             print(self.__move_message)
             return False
-
+        
         # checks for same piece 
         if from_x == to_x and from_y == to_y:
             return
@@ -268,8 +268,9 @@ class Game:
                     if self.__is_attack_successful(from_spot.piece, to_spot.piece):
                         self.__move_message += "Success! Captured piece! "
                         if to_spot.piece.get_type() == 'King':
+                            print(self.__move_message)
                             print('you win')
-                            return
+                            return True
                         elif to_spot.piece.get_type() == 'Bishop':
                             if to_spot.piece.is_white():
                                 to_spot.piece.corp.captured(self.corpW2)
@@ -283,8 +284,6 @@ class Game:
                             to_spot.piece.set_killed()
                             piece_color = "white" if from_spot.piece.is_white else "black"
                             self.__captured_by[piece_color].append(to_spot.piece)
-
-
 
                         else:
                             to_spot.piece.corp.removeFromCorp(to_spot.piece)
@@ -313,21 +312,18 @@ class Game:
             else:
                 self.__last_move_knight = None
 
-            if useOne == True:
-                print('using commander single space move')
-                from_spot.piece.corp.movedOne()
-            else:
-                print('using command authority')
-                from_spot.piece.set_moved()
+                if useOne == True:
+                    print('using commander single space move')
+                    from_spot.piece.corp.movedOne()
+                else:
+                    print('using command authority')
+                    from_spot.piece.set_moved()
 
-            self.__move_message += "Moving to spot. "
-            print(self.__move_message)
-
-            temp = self.tracker.current_player
-            self.tracker.use_action()
-            if temp is not self.tracker.current_player:
-                self.resetTurn()
-
+                temp = self.tracker.current_player
+                self.tracker.use_action()
+                if temp is not self.tracker.current_player:
+                    self.resetTurn()
+            
             if rook_attack:
                 to_spot.piece = None
             else:
@@ -385,7 +381,7 @@ class Game:
             result = (
                         (((to_y - from_y) == -1 and (to_x - from_x) == 0) or 
                         ((to_y - from_y) == -1 and abs(to_x - from_x) == 1))
-                      if piece.is_white() else
+                        if piece.is_white() else
                         (((to_y - from_y) == 1 and (to_x - from_x) == 0) or 
                         ((to_y - from_y) == 1 and abs(to_x - from_x) == 1))
                     )
