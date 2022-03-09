@@ -1,9 +1,11 @@
 #NEWCODE Start
+from ChessGame import Piece
+
 class Corp:
-    def __init__(self, name, commander):
+    def __init__(self, name: str, commander:Piece):
         self.commandAuthUsed = False    #checks whether this corp has used its command
         self.commander = commander      #commander piece, will either be a bishop or a king
-        self.commanding = []            #pieces that are in the corp, nnot including the commander
+        self.commanding = [Piece]       #pieces that are in the corp, nnot including the commander
         self.defeated = False 
         self.__name = name
         self.smallMove = False
@@ -51,7 +53,7 @@ class Corp:
     #adds a specific piece to this corp
     #this is only used by other functions of when initializing the corps
     #do not call directly within the code
-    def addToCorp(self, piece):
+    def addToCorp(self, piece:Piece):
         if piece.is_white() != self.isWhite():
             print('cant move piece of opposite color')
             return
@@ -65,7 +67,7 @@ class Corp:
         return
 
     #removes a piece from this corp
-    def removeFromCorp(self, piece):
+    def removeFromCorp(self, piece:Piece):
         if not self.hasPiece(piece):
             print('piece not in corp')
             return
@@ -85,7 +87,7 @@ class Corp:
 
     #This corp requests a piece from another corp
     #If the piece can be moved, it is added to this corp and removed from its previous corp
-    def request_piece(self, piece):
+    def request_piece(self, piece:Piece):
         if self.hasCommanded():
             print("command authority is already used")
             return

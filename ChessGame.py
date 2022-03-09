@@ -555,6 +555,38 @@ class Game:
     def get_pieces_captured_by(self):
         return self.__captured_by
 
+    def get_corp_info(self, *, white:bool):
+        if white:
+            return {
+                '1': {
+                    'commander': self.corpW1.commander.get_name(),
+                    'commanding': [piece.get_name() for piece in self.corpW1.commanding]
+                },
+                '2':{
+                    'commander': self.corpW2.commander.get_name(),
+                    'commanding': [piece.get_name() for piece in self.corpW2.commanding]
+                },
+                '3':{
+                    'commander': self.corpW3.commander.get_name(),
+                    'commanding': [piece.get_name() for piece in self.corpW3.commanding]
+                },
+            }
+        else:
+            {
+                '1': {
+                    'commander': self.corpB1.commander.get_name(),
+                    'commanding': [piece.get_name() for piece in self.corpB1.commanding]
+                },
+                '2':{
+                    'commander': self.corpB2.commander.get_name(),
+                    'commanding': [piece.get_name() for piece in self.corpB2.commanding]
+                },
+                '3':{
+                    'commander': self.corpB3.commander.get_name(),
+                    'commanding': [piece.get_name() for piece in self.corpB3.commanding]
+                },
+            }
+
     def get_result_of_dice_roll(self):
         return self.__last_dice_roll
 
