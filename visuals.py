@@ -220,9 +220,7 @@ class BoardVis(QMainWindow):
 
         # This button allow you can reset the game when you want to start new game
         self.newGameButton = QPushButton("Restart", self)
-        # Choose side button on start screen
-        self.whiteButton = QPushButton("White side", self)
-        self.blackButton = QPushButton("Black side", self)
+        
 
         # choose highlight mode on/off
         self.corpButton = QPushButton("Manage Corps", self)
@@ -253,6 +251,22 @@ class BoardVis(QMainWindow):
 
         self.chooseSideText = QLabel(self)
         self.startScreen = QLabel(self)
+        self.optionScreen = QLabel(self)
+        self.teamText = QLabel(self)
+        self.opponentText = QLabel(self)
+        self.highlightText = QLabel(self)
+        self.gameTypeText = QLabel(self)
+        
+        #set up the buttons
+        self.startGame= QPushButton("Start game",self)
+        self.whiteButton = QRadioButton("White side", self)
+        self.blackButton = QRadioButton("Black side", self)
+        self.humanButton = QRadioButton("Human", self)
+        self.computerButton = QRadioButton("Computer", self)
+        self.offhighlight = QRadioButton("Off", self)
+        self.onhighlight = QRadioButton("On", self)
+        self.medievalButton = QRadioButton("Medieval", self)
+        self.corpCommanderButton = QRadioButton("Corp Commander", self)
 
         # Set up the roll dice screen
         self.pauseBackground = QLabel(self)
@@ -422,7 +436,152 @@ class BoardVis(QMainWindow):
         self.okayButton.move(int((self.boardSize / 2) - (self.okayButton.width() / 2))
                              , int((self.boardSize / 2) + 300))
         self.okayButton.hide()
+        
+        #set up the option screen properties
+        self.optionScreen.setAlignment(Qt.AlignCenter)
+        self.optionScreen.resize(self.boardSize / 1.5, self.boardSize / 2)
+        self.optionScreen.setStyleSheet('background-color: rgba(0,150,150,150)')
+        self.optionScreen.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2)) - 180
+                               , int((self.boardSize / 2) - 150))
+        self.optionScreen.hide()
 
+        # Set up for start game button properties
+        self.startGame.clicked.connect(self.startGameClicked)
+        self.startGame.resize(150, 40)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.startGame.height() * 0.4)
+        self.startGame.setFont(font)
+        self.startGame.move(int((self.boardSize / 2) - (self.startGame.width() / 2))
+                            , int((self.boardSize / 2) + 300))
+        self.startGame.hide()
+        
+        #set up team text properties
+        self.teamText.setAlignment(Qt.AlignCenter)
+        self.teamText.setText("Team:")
+        self.teamText.resize(200, 100)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.teamText.height() * 0.2)
+        self.teamText.setFont(font)
+        self.teamText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255)')
+        self.teamText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
+                                  int((self.boardSize / 2) - 175))
+        self.teamText.hide()
+
+        #set up opponent text properties
+        self.opponentText.setAlignment(Qt.AlignCenter)
+        self.opponentText.setText("Opponent: ")
+        self.opponentText.resize(200, 100)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.teamText.height() * 0.2)
+        self.opponentText.setFont(font)
+        self.opponentText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255)')
+        self.opponentText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
+                               int((self.boardSize / 2) - 95))
+        self.opponentText.hide()
+
+        #set up highlight text properties
+        self.highlightText.setAlignment(Qt.AlignCenter)
+        self.highlightText.setText("Highlight: ")
+        self.highlightText.resize(200, 100)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.teamText.height() * 0.2)
+        self.highlightText.setFont(font)
+        self.highlightText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255)')
+        self.highlightText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
+                                int((self.boardSize / 2) - 5))
+        self.highlightText.hide()
+
+        #set up game type text properties
+        self.gameTypeText.setAlignment(Qt.AlignCenter)
+        self.gameTypeText.setText("Game Type: ")
+        self.gameTypeText.resize(200, 100)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.teamText.height() * 0.2)
+        self.gameTypeText.setFont(font)
+        self.gameTypeText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255)')
+        self.gameTypeText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
+                               int((self.boardSize / 2) + 85))
+        self.gameTypeText.hide()
+
+        #set up white/black button properties
+        self.team_group = QButtonGroup()
+        
+        self.team_group.addButton(self.whiteButton)
+        self.__set_button(self.whiteButton, 0.4)
+        self.whiteButton.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2))
+                              , int((self.boardSize / 2) - 130))
+        
+        # Set up for black button properties
+        self.team_group.addButton(self.blackButton)
+        self.__set_button(self.blackButton, 0.4)
+        self.blackButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
+                              , int((self.boardSize / 2) - 100))
+
+        #set up human/computer button properties
+        self.opponent_group = QButtonGroup(self)
+        self.opponent_group.addButton(self.humanButton, 1)
+        self.__set_button(self.humanButton, 0.4)
+        self.humanButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
+                              , int((self.boardSize / 2) - 40))
+
+        self.opponent_group.addButton(self.computerButton, 2)
+        self.__set_button(self.computerButton, 0.4)
+        self.computerButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
+                                 , int((self.boardSize / 2) - 10))
+
+        #set up highlight on/off button properties
+        self.highlight_group = QButtonGroup(self)
+        self.highlight_group.addButton(self.onhighlight, 1)
+        self.__set_button(self.onhighlight, 0.4)
+        self.onhighlight.move(int((self.boardSize / 2) - (self.onhighlight.width() / 2))
+                              , int((self.boardSize / 2) + 50))
+
+        self.highlight_group.addButton(self.offhighlight, 2)
+        self.__set_button(self.offhighlight, 0.4)
+        self.offhighlight.move(int((self.boardSize / 2) - (self.offhighlight.width() / 2))
+                               , int((self.boardSize / 2) + 80))
+
+        #set up medieval/corp button properties
+        self.gameType_group = QButtonGroup(self)
+        self.gameType_group.addButton(self.medievalButton, 1)
+        self.__set_button(self.medievalButton, 0.4)
+        self.medievalButton.move(int((self.boardSize / 2) - (self.medievalButton.width() / 2))
+                                 , int((self.boardSize / 2) + 140))
+
+        self.gameType_group.addButton(self.corpCommanderButton, 2)
+        self.__set_button(self.corpCommanderButton, 0.4)
+        self.corpCommanderButton.move(int((self.boardSize / 2) - (self.corpCommanderButton.width() / 2))
+                                      , int((self.boardSize / 2) + 170))
+        
+
+    def startGameClicked(self):
+        if self.blackButton.isChecked():
+            self.blackButtonClicked()
+        if self.whiteButton.isChecked():
+            self.whiteButtonClicked()
+        """        
+        if self.humanButton.isChecked():
+            self.humanButtonClicked()
+        if self.computerButton.isChecked():
+            self.computerButtonClicked()
+        
+
+        if self.onhighlight.isChecked():
+            self.highlightBClicked()
+        if self.offhighlight.isChecked():
+            pass
+        
+        if self.medievalButton.isChecked():
+            self.medievalButtonClicked()
+        if self.corpCommanderButton.isChecked():
+            self.corpCommanderButtonClicked()
+        """
+        self.hideStartScreen()
 
     def __rolldiceWork(self):
         # Set up roll dice text properties
@@ -527,16 +686,55 @@ class BoardVis(QMainWindow):
         self.startScreen.raise_()
         self.chooseSideText.show()
         self.chooseSideText.raise_()
+        
+        self.optionScreen.show()
+        self.optionScreen.raise_()
+        self.teamText.show()
+        self.teamText.raise_()
+        self.opponentText.show()
+        self.opponentText.raise_()
+        self.highlightText.show()
+        self.highlightText.raise_()
+        self.gameTypeText.show()
+        self.gameTypeText.raise_()
+
         self.whiteButton.show()
         self.whiteButton.raise_()
         self.blackButton.show()
         self.blackButton.raise_()
+        self.computerButton.show()
+        self.computerButton.raise_()
+        self.humanButton.show()
+        self.humanButton.raise_()
+        self.offhighlight.show()
+        self.offhighlight.raise_()
+        self.onhighlight.show()
+        self.onhighlight.raise_()
+        self.medievalButton.show()
+        self.corpCommanderButton.show()
+        self.medievalButton.raise_()
+        self.corpCommanderButton.raise_()
+
+        self.startGame.show()
+        self.startGame.raise_()
 
     def hideStartScreen(self):
         self.startScreen.hide()
         self.chooseSideText.hide()
         self.whiteButton.hide()
         self.blackButton.hide()
+        self.teamText.hide()
+        self.optionScreen.hide()
+        self.opponentText.hide()
+        self.computerButton.hide()
+        self.humanButton.hide()
+        self.offhighlight.hide()
+        self.onhighlight.hide()
+        self.medievalButton.hide()
+        self.corpCommanderButton.hide()
+        self.highlightText.hide()
+        self.gameTypeText.hide()
+        self.startGame.hide()
 
     def whiteButtonClicked(self):
         self.controller.tracker.current_player = 1
