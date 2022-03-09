@@ -71,6 +71,7 @@ class Game:
             "Queen": 3,
             "Knight": 4
         }
+        self.__last_move_knight = None
 
         self.__last_dice_roll = -1
         self.__move_message = ""
@@ -219,13 +220,25 @@ class Game:
             print(self.__move_message)
             return False
 
+        # checks for same piece 
+        if from_x == to_x and from_y == to_y:
+            return
+        
+        # checks if last moved piece was the same knight, handles if not
+        if self.__last_move_knight and self.__last_move_knight.get_name() != from_spot.piece.get_name():
+            self.__last_move_knight.set_moved()
+            self.__last_move_knight = None
+            temp = self.tracker.current_player
+            self.tracker.use_action()
+            if temp is not self.tracker.current_player:
+                self.resetTurn()
+
         # Checks what team the piece is on
         if self.tracker.current_player != int(from_spot.piece.is_white()):
             self.__move_message = "This piece is not on your team!"
             print(self.__move_message)
             return False
-        if from_x == to_x and from_y == to_y:
-            return
+
 
         useOne = False
         if (abs(from_spot.x_loc - to_spot.x_loc) <= 1 and
@@ -287,10 +300,19 @@ class Game:
                         if temp is not self.tracker.current_player:
                             self.resetTurn()
                         print(self.__move_message)
+                        self.__last_move_knight = None
                         return False
             # empty spot
             else:
                 self.__move_message += "Targeted spot is empty... "
+
+            # doesn't count move for knight if not attacking
+            if self.__last_dice_roll==-1 and from_spot.piece.get_type() == 'Knight':
+                self.__last_move_knight = from_spot.piece
+                print('using command authority')
+            else:
+                self.__last_move_knight = None
+
             if useOne == True:
                 print('using commander single space move')
                 from_spot.piece.corp.movedOne()
@@ -308,8 +330,10 @@ class Game:
 
             if rook_attack:
                 to_spot.piece = None
-
             else:
+                self.__move_message += "Moving to spot. "
+                print(self.__move_message)
+
                 to_spot.piece = from_spot.piece
                 from_spot.piece = None
                 to_spot.piece.x_loc = to_x
@@ -322,6 +346,7 @@ class Game:
         self.__move_list = []
 
         piece = self.__board[from_y][from_x].piece
+
         # Checks to see if this piece's corp has already used its command authority
         if piece and piece.has_moved() and self.__board[to_y][to_x].piece is not None:
             print('This corp has already used its authority')
@@ -344,12 +369,26 @@ class Game:
             self.__move_message += "You are outside the board! "
             return False
         piece_type = piece.get_type()
+
+        
+        if self.__last_move_knight:
+            # valid moves for knight attacking after move
+            if self.__last_move_knight.get_name() == piece.get_name():
+                return ((abs(to_x-from_x)==1 and abs(to_y-from_y)==1 or
+                        abs(to_x-from_x)==0 and abs(to_y-from_y)==1 or
+                        abs(to_x-from_x)==1 and abs(to_y-from_y)==0) and 
+                        self.__board[to_y][to_x].has_piece())
+            if self.__last_move_knight.corp == piece.corp:
+                return False
+
         if piece_type == 'Pawn':
-            result = ((((to_y - from_y) == -1 and (to_x - from_x) == 0) or (
-                    (to_y - from_y) == -1 and abs(to_x - from_x) == 1))
+            result = (
+                        (((to_y - from_y) == -1 and (to_x - from_x) == 0) or 
+                        ((to_y - from_y) == -1 and abs(to_x - from_x) == 1))
                       if piece.is_white() else
-                      (((to_y - from_y) == 1 and (to_x - from_x) == 0) or (
-                              (to_y - from_y) == 1 and abs(to_x - from_x) == 1)))
+                        (((to_y - from_y) == 1 and (to_x - from_x) == 0) or 
+                        ((to_y - from_y) == 1 and abs(to_x - from_x) == 1))
+                    )
             if not result:
                 self.__move_message += "Chosen move is too far away. "
             return result
@@ -464,6 +503,10 @@ class Game:
 
     def __is_attack_successful(self, current_piece: Piece, target_piece: Piece):
         self.__last_dice_roll = random.randint(1, 6)
+        # add +1 if knight is attackiing after a move
+        if (self.__last_move_knight and self.__last_move_knight.get_name() == current_piece.get_name() 
+            and self.__last_dice_roll<6):
+            self.__last_dice_roll += 1
 
         self.__move_message += f"The roll on the dice is {self.__last_dice_roll}... "
 
