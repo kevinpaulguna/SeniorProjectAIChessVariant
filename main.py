@@ -1,7 +1,7 @@
 import imp
 import sys
 from PyQt5.QtWidgets import QApplication
-from visuals import BoardVis, PieceVis
+from visuals import BoardVis
 from ChessGame import Game as chess_game
 
 def main():

@@ -1,7 +1,7 @@
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
-from PyQt5.QtWidgets import QMainWindow, QLabel, QPushButton
+from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
 
 
@@ -16,6 +16,40 @@ def screen_to_board(x, y, size):
     b_x = int(x / size) -1
     b_y = int(y / size) -1
     return (b_x, b_y)
+
+def piece_to_img_name(piece):
+    k_pieces = {
+            "wKt": "wk",
+            "bKt": "bk",
+            "wKg": "wki",
+            "bKg": "bki"
+        }
+    if piece == "___":
+        return None
+    if piece[:3] in k_pieces.keys():
+        piece_name = k_pieces[piece[:3]]
+    else:
+        piece_name = piece[:2]
+    return piece_name
+
+#pieceVis  is a representation of the pieces in the game
+#movableVis is the movable pieces
+
+class corpVis(QLabel):
+    def __init__(self, vis, parent=None):
+        super(corpVis, self).__init__()
+        self.default_vis = QPixmap('./picture/' + vis).scaled(75, 75)
+        self.set_img()
+    def set_img(self):
+        self.setPixmap(self.default_vis)
+    #This function is snap the piece back to it place when the person releases wrong place
+    #obsoleted
+
+class LeaderVis(QLabel):
+    def __init__(self, vis, parent=None):
+        super(LeaderVis, self).__init__()
+
+
 
 class PieceVis(QLabel):
     def __init__(self, visual, visual_h, parent=None):
@@ -178,7 +212,7 @@ class BoardVis(QMainWindow):
         self.setFixedSize(925, 700)
         self.setWindowTitle("Chess Board")
         self.highlighted = []
-        
+        self.corp_menu = CorpMenu(self.controller)
         # buttons:
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
@@ -190,7 +224,7 @@ class BoardVis(QMainWindow):
         self.blackButton = QPushButton("Black side", self)
 
         # choose highlight mode on/off
-        self.highlightButton = QPushButton("Highlight Moves", self)
+        self.corpButton = QPushButton("Manage Corps", self)
 
         self.tableOption = QLabel(self)
         
@@ -306,11 +340,11 @@ class BoardVis(QMainWindow):
                                 - (self.moveIndicator.height()) * 0.5)
 
     #highlight button setup:
-        self.__set_button(self.highlightButton, 0.7)
-        self.highlightButton.setCheckable(True)
-        self.highlightButton.clicked.connect(self.highlightBClicked)
-        self.highlightButton.resize(155,40)
-        self.highlightButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 25,
+        self.__set_button(self.corpButton, 0.7)
+        self.corpButton.setCheckable(True)
+        self.corpButton.clicked.connect(self.corpBClicked)
+        self.corpButton.resize(155,40)
+        self.corpButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 25,
                              25)
 
     #Create stop button properties
@@ -467,8 +501,8 @@ class BoardVis(QMainWindow):
     def stopButtonClicked(self):
         self.controller.tracker.end_turn()
 
-    def highlightBClicked(self):
-        self.set_h_mode(self.highlightButton.isChecked())
+    def corpBClicked(self):
+        self.corp_menu.show()
 
     def swictchTurn(self):
         if self.turn == "white":
@@ -580,25 +614,15 @@ class BoardVis(QMainWindow):
         return label
     #def update_pieces(self, ):
     def _update_pieces(self, pieces_array):
-        k_pieces = {
-            "wKt": "wk",
-            "bKt": "bk",
-            "wKg": "wki",
-            "bKg": "bki"
-        }
-
         for y in range(8):
             for x in range(8):
                 cur_p = self.piecePos[y][x]
                 if cur_p and cur_p != "0":
                         cur_p.clear()
-                piece = pieces_array[y][x]
-                if piece == "___":
-                    continue
-                if piece[:3] in k_pieces.keys():
-                     piece = k_pieces[piece[:3]]
-                else:
-                    piece = piece[:2]
+                piece = pieces_array[y][x][0]
+                piece = piece_to_img_name(piece)
+                if not piece:
+                    return
                 label = PieceVis(piece, piece + 'bl', parent=self)
                     # Set the image based on the array element.
                 label.resize(75, 75)
@@ -610,5 +634,77 @@ class BoardVis(QMainWindow):
     def update_flipped(self):
         pass
 
-    #This function is snap the piece back to it place when the person releases wrong place
-    #obsoleted
+
+class CorpMenu(QWidget):
+    def __init__(self, game):
+        super(CorpMenu, self).__init__()
+        self.setGeometry(0,0, 1, 1)
+        self.setWindowTitle("Corp Delegation")
+        self.controller = game
+        
+
+    def update_corps(self):
+        is_white = self.controller.tracker.get_current_player()
+
+        corps_ref = self.controller.get_corp_info(is_white)
+        layout = QHBoxLayout()
+        for i in (range(3) +1 ):
+            self.create_col(layout, corps_ref[i]['commander'], corps_ref[i]['commanding'])
+        self.setLayout(layout)
+
+    def create_col(self, outer_layout, leader, group):
+        leader_img = piece_to_img_name(leader)
+        commander = corpVis(leader_img)
+        swap_button = QPushButton("Transfer")
+
+        top_middle = QVBoxLayout()
+        top_middle.addWidget(commander)
+        top_middle.addWidget(swap_button)
+        top_middle.setSpacing(20)
+        top_middle.setContentsMargins(0, 10, 0, 10)
+
+        top_row = QHBoxLayout()
+        top_row.addStretch(1)
+        top_row.addLayout(top_middle)
+        top_row.addStretch(1)
+        top_row.setContentsMargins(0,0,0,50)
+        
+        top_frame = QFrame()
+        top_frame.setFrameShape(QFrame.StyledPanel)
+        top_frame.setLayout(top_row)
+
+        col = QVBoxLayout()
+        col.addWidget(top_frame)
+        self.create_group(10, col)
+        col.setSpacing(0)
+        col.addStretch(1)
+        col.setContentsMargins(10,0,10,0)
+        col_frame = QFrame()
+        col_frame.setFrameShape(QFrame.StyledPanel)
+        col_frame.setLayout(col)
+        outer_layout.addWidget(col_frame)
+
+    def create_group(self, labels, outer_layout):
+        items_per_row = 3
+        num_rows = len(labels) / items_per_row
+        for i in range(round(num_rows) + 1):
+            piece_row = QHBoxLayout()
+            if len(labels) <= 0:
+                return
+            elif len(labels) >= items_per_row:
+                cur_row_items = items_per_row
+                label_count -= items_per_row
+                              
+            else:
+                cur_row_items = len(labels)
+            for i in range(cur_row_items):
+                    label_name = piece_to_img_name(labels.pop())
+                    label = corpVis(label_name)
+                    piece_row.addWidget(label) 
+            piece_row.addSpacing(1)
+            outer_layout.addLayout(piece_row)
+
+
+
+
+
