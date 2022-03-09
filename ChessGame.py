@@ -140,17 +140,12 @@ class Game:
         self.corpB3.addToCorp(pieces[27])
         # corpB3.printCorp()
 
+        self.tracker.set_corps(w1=self.corpW1, w2=self.corpW2, w3=self.corpW3,
+                               b1=self.corpB2, b2=self.corpB2, b3=self.corpB3)
+
         # assign pieces to board
         for p in pieces:
             self.__board[p.y_loc][p.x_loc].set_piece(p)
-
-    def resetTurn(self):  # Used to reset corp command count for each corp
-        self.corpW1.resetCommand()
-        self.corpW2.resetCommand()
-        self.corpW3.resetCommand()
-        self.corpB1.resetCommand()
-        self.corpB2.resetCommand()
-        self.corpB3.resetCommand()
 
     # returns array of tuples containing co-ords of possible move spots
     def get_possible_moves_for_piece_at(self, *, x: int, y: int, attack_only: bool = False):
@@ -228,10 +223,7 @@ class Game:
         if self.__last_move_knight and self.__last_move_knight.get_name() != from_spot.piece.get_name():
             self.__last_move_knight.set_moved()
             self.__last_move_knight = None
-            temp = self.tracker.current_player
             self.tracker.use_action()
-            if temp is not self.tracker.current_player:
-                self.resetTurn()
 
         # Checks what team the piece is on
         if self.tracker.current_player != int(from_spot.piece.is_white()):
@@ -294,10 +286,7 @@ class Game:
                         self.__move_message += "Attack failed! Move unsuccessful! "
                         # we still technicly used an action so we must progress turnManager
                         from_spot.piece.set_moved()
-                        temp = self.tracker.current_player
                         self.tracker.use_action()
-                        if temp is not self.tracker.current_player:
-                            self.resetTurn()
                         print(self.__move_message)
                         self.__last_move_knight = None
                         return False
@@ -319,10 +308,7 @@ class Game:
                     print('using command authority')
                     from_spot.piece.set_moved()
 
-                temp = self.tracker.current_player
                 self.tracker.use_action()
-                if temp is not self.tracker.current_player:
-                    self.resetTurn()
             
             if rook_attack:
                 to_spot.piece = None
@@ -561,9 +547,11 @@ class Game:
         defend_piece_type = target_piece.get_type()
         return self.__last_dice_roll >= capture_table_mins[attack_piece_type][defend_piece_type]
 
-    def get_board(self):
-        return [[(item2.piece.get_name() if item2.piece else "___") for item2 in item] for item in self.__board]
-
+    def __reset_move_vars(self):
+        # clear out prev var data
+        self.__last_dice_roll = -1
+        self.__move_message = ""
+        
     def get_pieces_captured_by(self):
         return self.__captured_by
 
@@ -573,17 +561,15 @@ class Game:
     def get_move_message(self):
         return self.__move_message
 
-    def __reset_move_vars(self):
-        # clear out prev var data
-        self.__last_dice_roll = -1
-        self.__move_message = ""
+    def get_board(self):
+        return [[(spot.piece.get_name() if spot.has_piece() else "___") for spot in row] for row in self.__board]
 
     def print_board(self):
         print()
-        for item in self.__board:
-            for item2 in item:
-                if item2.piece:
-                    print(item2.piece.get_name(), end=" ")
+        for row in self.__board:
+            for spot in row:
+                if spot.has_piece():
+                    print(spot.piece.get_name(), end=" ")
                 else:
                     print("___", end=" ")
             print('\n')
