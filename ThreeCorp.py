@@ -90,7 +90,7 @@ class Corp:
     #This corp requests a piece from another corp
     #If the piece can be moved, it is added to this corp and removed from its previous corp
     def request_piece(self, piece):
-        if self.hasCommanded():
+        if piece.corp.hasCommanded():
             print("command authority is already used")
             return
         if piece.corp.isWhite() != self.isWhite():
@@ -104,7 +104,10 @@ class Corp:
             return
         if not self.checkLeng():
             return
-        self.command()
+        if self.checkKing == True:
+            self.Command()
+        else:
+            piece.corp.command()
         print('moving ', piece.get_name(), ' to ', self.__name )
         piece.corp.removeFromCorp(piece)
         self.addToCorp(piece)
