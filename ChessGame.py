@@ -141,7 +141,7 @@ class Game:
         # corpB3.printCorp()
 
         self.tracker.set_corps(w1=self.corpW1, w2=self.corpW2, w3=self.corpW3,
-                               b1=self.corpB2, b2=self.corpB2, b3=self.corpB3)
+                               b1=self.corpB1, b2=self.corpB2, b3=self.corpB3)
 
         # assign pieces to board
         for p in pieces:
