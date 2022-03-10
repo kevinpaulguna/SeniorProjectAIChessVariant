@@ -1,12 +1,13 @@
+from math import floor
 from turtle import color
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
-from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QRadioButton, QButtonGroup
+from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout,QComboBox, QRadioButton, QButtonGroup
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
 
 
-from ChessGame import Game as chess_game
+from ChessGame import Game as chess_game, Piece
 
 game_over = False
 
@@ -54,10 +55,11 @@ def deleteItemsOfLayout(layout):
 #movableVis is the movable pieces
 
 class corpVis(QLabel):
-    def __init__(self, vis, parent=None):
+    def __init__(self, vis, name, size, parent=None):
         super(corpVis, self).__init__()
-        self.default_vis = QPixmap('./picture/' + vis).scaled(75, 75, Qt.KeepAspectRatio, Qt.FastTransformation)
+        self.default_vis = QPixmap('./picture/' + vis).scaled(size, size, Qt.KeepAspectRatio, Qt.FastTransformation)
         self.set_img()
+        self.piece_name = name
 
     def set_img(self):
         self.setPixmap(self.default_vis)
@@ -239,6 +241,7 @@ class BoardVis(QMainWindow):
         self.setWindowTitle("Chess Board")
         self.highlighted = []
         self.corp_menu = CorpMenu(self.controller)
+        self.corp_menu.show()
         # buttons:
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
@@ -678,7 +681,9 @@ class BoardVis(QMainWindow):
         self.update_labels()
 
     def corpBClicked(self):
-        self.corp_menu = CorpMenu(self.controller)
+        for i in range(1,4):
+            self.corp_menu.update_leader(i)
+            self.corp_menu.update_group(i)
         self.corp_menu.show()
 
     def update_labels(self):
@@ -851,60 +856,143 @@ class BoardVis(QMainWindow):
     def update_flipped(self):
         pass
 
+class PieceGroup(QWidget):
+    def __init__(self, labels):
+        super(PieceGroup, self).__init__()
+        self.labels = labels
+        self.create_group()
+    # Changed layout mode to grid
+    def create_group(self):
+        layout = QGridLayout()
+        items_per_row = 3
+        num_rows = len(self.labels) / items_per_row
+        for i in range(floor(num_rows) + 1):
+            if len(self.labels) <= 0:
+                self.setLayout(layout)
+                return
+            elif len(self.labels) >= items_per_row:
+                cur_row_items = items_per_row                              
+            else:
+                cur_row_items = len(self.labels)
+            for j in range(cur_row_items):
+                piece_name = self.labels.pop()
+                label_name = piece_to_img_name(piece_name)
+                label = corpVis(label_name, piece_name, 50)
+                layout.addWidget(label, i, j)
+        self.setLayout(layout)
+
+class LeaderBox(QWidget):
+    def __init__(self, leader):
+        
+        super(LeaderBox, self).__init__()
+        self.leader = leader
+        self.commander = self.create_leader_icon()
+        self.top_middle = QVBoxLayout()
+        self.top_middle.addWidget(self.commander)
+        self.top_middle.setContentsMargins(0, 10, 0, 10)
+
+        top_row = QHBoxLayout()
+        top_row.addStretch(1)
+        top_row.addLayout(self.top_middle)
+        top_row.addStretch(1)
+        top_row.setContentsMargins(0,0,0,50)
+
+        top_frame = QFrame()
+        top_frame.setFrameShape(QFrame.StyledPanel)
+        top_frame.setLayout(top_row)
+        layout = QVBoxLayout()
+        layout.addWidget(top_frame)
+        self.setLayout(layout)
+
+    def create_leader_icon(self):
+        size = 75
+        leader_img = piece_to_img_name(self.leader)
+        return corpVis(leader_img, self.leader, size)
+    
+    
+
+class KingBox(LeaderBox):
+    def __init__(self, leader, corps):
+        super().__init__(leader)
+        self.corps_ref = corps
+        self.button = QPushButton("Hello Work")
+        self.top_middle.addWidget(self.button)
+
+    def setup_swap_lines(self):
+        self.get_corp_options
 
 class CorpMenu(QWidget):
     def __init__(self, game):
         super(CorpMenu, self).__init__()
         self.setGeometry(0,0, 1, 1)
         self.setWindowTitle("Corp Delegation")
-        self.controller = game
-        self.set_corps()    #used the first time to create all layouts and attach them appropriately
-        self.piece_rows = []
+        self.controller : chess_game = game
+        self.col_layouts = []
+        self.leaders = []
+        self.set_corps()    #used the first time to create all layouts and attach them appropriately        
         self.corps_ref = {}
 
     def set_corps(self): 
         self.update_data()
-        layout =QHBoxLayout()
+        layout = QHBoxLayout()
         for i in (range(1,4)):
-            self.create_col(layout, self.corps_ref[i]['commander'], self.corps_ref[i]['commanding'])
+            self.create_col(layout, self.corps_ref[i]['commander'], self.corps_ref[i]['commanding'], i)
         self.setLayout(layout)
 
     def update_data(self):    
         is_white = self.controller.tracker.get_current_player()
         self.corps_ref = self.controller.get_corp_info(white=is_white)
 
-    def create_col(self, outer_layout, leader, group):
-        leader_img = piece_to_img_name(leader)
-        commander = corpVis(leader_img)
-        swap_button = QPushButton("Transfer")
-
-        top_middle = QVBoxLayout()
-        top_middle.addWidget(commander)
-        top_middle.addWidget(swap_button)
-        top_middle.setSpacing(20)
-        top_middle.setContentsMargins(0, 10, 0, 10)
-
-        top_row = QHBoxLayout()
-        top_row.addStretch(1)
-        top_row.addLayout(top_middle)
-        top_row.addStretch(1)
-        top_row.setContentsMargins(0,0,0,50)
+    def create_col(self, outer_layout, leader, group, num):
+        leader_box = LeaderBox(leader)
         
-        top_frame = QFrame()
-        top_frame.setFrameShape(QFrame.StyledPanel)
-        top_frame.setLayout(top_row)
+        
+        
 
         col = QVBoxLayout()
-        col.addWidget(top_frame)
-        self.create_group(group, col)
+        self.col_layouts.append(col)
+        col.addWidget(leader_box)
+        col.addWidget(PieceGroup(group))
         col.setSpacing(0)
-        col.addStretch(1)
         col.setContentsMargins(10,0,10,0)
         col_frame = QFrame()
         col_frame.setFrameShape(QFrame.StyledPanel)
         col_frame.setLayout(col)
         outer_layout.addWidget(col_frame)
 
+    # I split these up since there are situations that we want one without the other
+    # namely, when corps switch pieces
+    def update_leader(self, i):
+        self.update_data()
+        leader = self.corps_ref[i]['commander']
+        if i == 2:
+            new_leader = KingBox(leader, self.corps_ref)
+        else:
+            new_leader = LeaderBox(leader)
+        current_leader = self.col_layouts[i-1].itemAt(0).widget()
+        self.col_layouts[i-1].replaceWidget(current_leader, new_leader)
+        current_leader.setParent(None)
+
+    def update_group(self, i):
+        self.update_data()
+        group = self.corps_ref[i]['commanding']
+        new_piece_group = PieceGroup(group)
+        current_group = self.col_layouts[i-1].itemAt(self.col_layouts[i-1].count() - 1).widget()
+        self.col_layouts[i-1].replaceWidget(current_group, new_piece_group)
+        current_group.setParent(None)
+
+class Deleg_Label(QWidget):
+    def __init__(self, left_options, mid_txt, right_options):
+        super(Deleg_Label, self).__init__()
+        layout = QHBoxLayout()
+        self.mid_label = QLabel()
+        self.mid_label.setText(mid_txt)
+        self.left_opts = QComboBox()
+        self.left_opts.addItems(left_options)
+
+
+
+    """
     def create_group(self, labels, outer_layout):
         items_per_row = 3
         num_rows = len(labels) / items_per_row
@@ -918,11 +1006,14 @@ class CorpMenu(QWidget):
                 cur_row_items = len(labels)
             for i in range(cur_row_items):
                     label_name = piece_to_img_name(labels.pop())
-                    label = corpVis(label_name)
-                    piece_row.addWidget(label) 
-            piece_row.addSpacing(1)
+                    label = corpVis(label_name, 50)
+                    piece_row.addWidget(label)
+                    if not len(labels):
+                        piece_row.addStretch()
+            piece_row.addSpacing(0)
             outer_layout.addLayout(piece_row)
-        
+    
+    """
 
 
 
