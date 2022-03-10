@@ -425,28 +425,7 @@ class BoardVis(QMainWindow):
                                  int((self.boardSize / 2) - 300))
         self.chooseSideText.hide()
 
-        # Set up for white button properties
-        self.whiteButton.clicked.connect(self.whiteButtonClicked)
-        self.whiteButton.resize(150, 40)
-        font = QFont()
-        font.setFamily('Arial')
-        font.setPixelSize(self.whiteButton.height() * 0.4)
-        self.whiteButton.setFont(font)
-        self.whiteButton.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2))
-                              , int((self.boardSize / 2) - 150))
-
-        # Set up for black button properties
-        self.blackButton.clicked.connect(self.blackButtonClicked)
-        self.blackButton.resize(150, 40)
-        font = QFont()
-        font.setFamily('Arial')
-        font.setPixelSize(self.blackButton.height() * 0.4)
-        self.blackButton.setFont(font)
-        self.blackButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
-                              , int((self.boardSize / 2) - 50))
-
-
-
+        
         # Create start screen properties
         self.pauseBackground.setAlignment(Qt.AlignCenter)
         self.pauseBackground.resize(self.boardSize, self.boardSize)
