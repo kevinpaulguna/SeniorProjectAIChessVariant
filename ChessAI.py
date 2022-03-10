@@ -6,94 +6,6 @@ from ChessGame import Game
 BestMove = []
 
 
-def demo():
-    def wait_until_enter():
-        a = input()
-        while True:
-            if a == "":
-                return
-
-    # wp1
-    game.move_piece(from_x=0, from_y=6, to_x=1, to_y=5)
-
-    wait_until_enter()
-
-    # bp8
-    game.move_piece(from_x=7, from_y=1, to_x=6, to_y=2)
-
-    wait_until_enter()
-
-    # wp1, wb1, wp3
-    game.move_piece(from_x=1, from_y=5, to_x=0, to_y=5)
-    game.move_piece(from_x=2, from_y=7, to_x=2, to_y=6)
-    game.move_piece(from_x=2, from_y=5, to_x=1, to_y=5)
-    game.move_piece(from_x=2, from_y=6, to_x=3, to_y=5)
-
-    wait_until_enter()
-
-    # bkt1, bp2
-    game.move_piece(from_x=1, from_y=0, to_x=1, to_y=1)
-    game.move_piece(from_x=1, from_y=1, to_x=1, to_y=2)
-
-    wait_until_enter()
-
-    # wb1
-    game.move_piece(from_x=2, from_y=7, to_x=2, to_y=6)
-
-    wait_until_enter()
-
-    # br1
-    game.move_piece(from_x=0, from_y=0, to_x=2, to_y=2)
-
-    wait_until_enter()
-
-    # wb1
-    game.move_piece(from_x=2, from_y=6, to_x=2, to_y=4)
-
-    wait_until_enter()
-
-    # bP2
-    game.move_piece(from_x=1, from_y=2, to_x=2, to_y=3)
-
-    wait_until_enter()
-
-    # wq
-    game.move_piece(from_x=3, from_y=7, to_x=2, to_y=7)
-
-    wait_until_enter()
-
-    # bR1
-    game.move_piece(from_x=2, from_y=2, to_x=3, to_y=3)
-
-    wait_until_enter()
-
-    # wq
-    game.move_piece(from_x=2, from_y=7, to_x=2, to_y=4)
-    game.move_piece(from_x=2, from_y=7, to_x=2, to_y=3)
-    game.move_piece(from_x=2, from_y=7, to_x=2, to_y=5)
-
-    wait_until_enter()
-
-    # bKt2
-    game.move_piece(from_x=6, from_y=0, to_x=7, to_y=4)
-
-    wait_until_enter()
-
-    # wq
-    game.move_piece(from_x=2, from_y=5, to_x=6, to_y=1)
-    game.move_piece(from_x=2, from_y=5, to_x=3, to_y=4)
-
-    wait_until_enter()
-
-    # bKt1
-    if not game.move_piece(from_x=1, from_y=0, to_x=2, to_y=4):
-        game.move_piece(from_x=1, from_y=0, to_x=1, to_y=4)
-
-    wait_until_enter()
-
-    # wq
-    game.move_piece(from_x=3, from_y=4, to_x=6, to_y=1)
-
 
 game = Game()
 
@@ -353,20 +265,6 @@ class AIFunctions:
         game.move_piece(from_x=BestMove[4], from_y=BestMove[5], to_x=BestMove[0], to_y=BestMove[1])
 
 
-class AIRun(AIFunctions):
-    # def  __init__(self, game, color):
-    #    self.game = game
-    #    self.color = color
-    #    self.board = game.get__board()
-
-    def move(self, color, moveData):
-        # create a loop that will find a piece with moves, if none are found then break and move to other corp/color
-        bestMove = -1
-        Moves = []
-        SameWeight = []
-
-        for element in moveData:
-            print(array)
 
     # def for reading the heatmap and choose the highest weighted score
     # convolutions or decision tree
