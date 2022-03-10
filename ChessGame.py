@@ -50,6 +50,8 @@ class Spot:
 
 class Game:
     def __init__(self):
+        self.__gameOver = False
+        
         self.tracker = TurnManager()
 
         # board
@@ -149,6 +151,9 @@ class Game:
 
     # returns array of tuples containing co-ords of possible move spots
     def get_possible_moves_for_piece_at(self, *, x: int, y: int, attack_only: bool = False):
+        if self.__gameOver:
+            print('game over')
+            return
         self.__reset_move_vars()
         possibles = []
         piece = self.__board[y][x].piece
@@ -201,6 +206,10 @@ class Game:
         return possibles
 
     def move_piece(self, *, from_x: int, from_y: int, to_x: int, to_y: int):
+        if self.__gameOver:
+            print('game over')
+            return False
+        
         self.__reset_move_vars()
 
         rook_attack = False
@@ -262,6 +271,7 @@ class Game:
                         if to_spot.piece.get_type() == 'King':
                             print(self.__move_message)
                             print('you win')
+                            self.__gameOver = True
                             return True
                         elif to_spot.piece.get_type() == 'Bishop':
                             if to_spot.piece.is_white():
@@ -599,6 +609,9 @@ class Game:
             [((spot.piece.get_name(), spot.piece.corp.get_name()) if spot.has_piece() else "___") for spot in row] 
             for row in self.__board]
 
+    def game_status(self):
+        return self.__gameOver
+    
     def print_board(self):
         print()
         for row in self.__board:
