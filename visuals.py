@@ -1,7 +1,7 @@
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
-from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QRadioButton, QButtonGroup
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
 
 
@@ -31,6 +31,17 @@ def piece_to_img_name(piece):
     else:
         piece_name = piece[:2]
     return piece_name
+
+def deleteItemsOfLayout(layout):
+     if layout is not None:
+         while layout.count():
+             item = layout.takeAt(0)
+             widget = item.widget()
+             if widget is not None:
+                 widget.setParent(None)
+                 widget.remove()
+             else:
+                 deleteItemsOfLayout(item.layout())
 
 #pieceVis  is a representation of the pieces in the game
 #movableVis is the movable pieces
@@ -569,13 +580,14 @@ class BoardVis(QMainWindow):
             self.humanButtonClicked()
         if self.computerButton.isChecked():
             self.computerButtonClicked()
-        
+        """
 
         if self.onhighlight.isChecked():
-            self.highlightBClicked()
+            self.h_mode = True
         if self.offhighlight.isChecked():
-            pass
+            self.h_mode = False
         
+        """
         if self.medievalButton.isChecked():
             self.medievalButtonClicked()
         if self.corpCommanderButton.isChecked():
@@ -840,16 +852,20 @@ class CorpMenu(QWidget):
         self.setGeometry(0,0, 1, 1)
         self.setWindowTitle("Corp Delegation")
         self.controller = game
-        self.update_corps()
+        self.set_corps()    #used the first time to create all layouts and attach them appropriately
+        self.piece_rows = []
+        self.corps_ref = {}
 
-    def update_corps(self):
-        is_white = self.controller.tracker.get_current_player()
-
-        corps_ref = self.controller.get_corp_info(white=is_white)
-        layout = QHBoxLayout()
+    def set_corps(self): 
+        self.update_data()
+        layout =QHBoxLayout()
         for i in (range(1,4)):
-            self.create_col(layout, corps_ref[i]['commander'], corps_ref[i]['commanding'])
+            self.create_col(layout, self.corps_ref[i]['commander'], self.corps_ref[i]['commanding'])
         self.setLayout(layout)
+
+    def update_data(self):    
+        is_white = self.controller.tracker.get_current_player()
+        self.corps_ref = self.controller.get_corp_info(white=is_white)
 
     def create_col(self, outer_layout, leader, group):
         leader_img = piece_to_img_name(leader)
@@ -900,6 +916,7 @@ class CorpMenu(QWidget):
                     piece_row.addWidget(label) 
             piece_row.addSpacing(1)
             outer_layout.addLayout(piece_row)
+        
 
 
 

@@ -572,7 +572,7 @@ class Game:
                 },
             }
         else:
-            {
+            return { 
                 1: {
                     'commander': self.corpB1.commander.get_name(),
                     'commanding': [piece.get_name() for piece in self.corpB1.commanding]
