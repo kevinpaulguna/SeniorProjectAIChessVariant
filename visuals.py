@@ -1,3 +1,4 @@
+from turtle import color
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
@@ -8,6 +9,10 @@ from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
 from ChessGame import Game as chess_game
 
 game_over = False
+
+def corp_to_color(corp_num):
+    colors = ['rd', 'bl', 'gr']
+    return colors[corp_num - 1]
 
 def board_to_screen(x, y, size):
     new_x = (x+1) * size
@@ -844,11 +849,15 @@ class BoardVis(QMainWindow):
                 cur_p = self.piecePos[y][x]
                 if cur_p and cur_p != "0":
                         cur_p.clear()
-                piece = pieces_array[y][x][0]
+                piece, corp_name = pieces_array[y][x]
+                if corp_name:
+                    corp_num = corp_name[-1]
+                    color_name = corp_to_color(int(corp_num))
+                    print(color_name)
                 piece = piece_to_img_name(piece)
                 if not piece:
-                    return
-                label = PieceVis(piece, piece + 'bl', parent=self)
+                    continue
+                label = PieceVis(piece + color_name, piece + 'bl', parent=self)
                     # Set the image based on the array element.
                 label.resize(75, 75)
                 label.setScaledContents(True)

@@ -1,4 +1,3 @@
-import imp
 import sys
 from PyQt5.QtWidgets import QApplication
 from visuals import BoardVis

@@ -626,7 +626,7 @@ class Game:
     def get_board(self):
         # returns 2d list of tuples (piece name, corp of piece)
         return [
-            [((spot.piece.get_name(), spot.piece.corp.get_name()) if spot.has_piece() else "___") for spot in row] 
+            [((spot.piece.get_name(), spot.piece.corp.get_name()) if spot.has_piece() else ("___", None)) for spot in row] 
             for row in self.__board]
 
     def game_status(self):
