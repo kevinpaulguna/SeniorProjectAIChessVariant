@@ -305,6 +305,9 @@ class BoardVis(QMainWindow):
 
         self.showBoard()
 
+    def closeEvent(self,event):
+        self.corp_menu.close()
+        event.accept()    
 
     def set_h_mode(self, val: Boolean):
         self.h_mode = val
@@ -853,7 +856,6 @@ class BoardVis(QMainWindow):
                 if corp_name:
                     corp_num = corp_name[-1]
                     color_name = corp_to_color(int(corp_num))
-                    print(color_name)
                 piece = piece_to_img_name(piece)
                 if not piece:
                     continue
