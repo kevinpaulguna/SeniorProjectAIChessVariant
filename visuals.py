@@ -176,7 +176,7 @@ class PieceVis(QLabel):
         self.parent().remove_all_h()
         if self._h_mode:
             self.parent().add_group_h(self.moves)
-
+        
 
         isAttack = (self.end[0], self.end[1], True) in self.moves
         moveSuccessful = self.parent().controller.move_piece(from_x=self.start[0], from_y=self.start[1],
@@ -193,6 +193,7 @@ class PieceVis(QLabel):
 
         if isAttack:
             self.parent().rollDiceScreen(moveSuccessful)
+        self.parent().update_labels()
         #self.parent().movePieceRelease(self.start, self.end)
     def loc_changed(self, s_loc, f_loc):
         return s_loc != f_loc
@@ -685,21 +686,21 @@ class BoardVis(QMainWindow):
 
     def stopButtonClicked(self):
         self.controller.tracker.end_turn()
+        self.update_labels()
 
     def corpBClicked(self):
+        self.corp_menu = CorpMenu(self.controller)
         self.corp_menu.show()
 
-    def swictchTurn(self):
-        if self.turn == "white":
-            self.turn = "black"
-            self.tableOption.setText("Turn: black")
+    def update_labels(self):
+        if self.controller.tracker.get_current_player():
+            self.tableOption.setText("Current Turn: White")
             self.moveIndicator.setText("Remaining Move:"
                                        "\nLeft Side  :  " +
                                        "\nRight Side: " +
                                        "\n Center     : ")
         else:
-            self.turn = "white"
-            self.tableOption.setText("Turn: White")
+            self.tableOption.setText("Current Turn: Black")
             self.moveIndicator.setText("Remaining Move:"
                                        "\nLeft Side  :  " +
                                        "\nRight Side: " +
@@ -768,7 +769,7 @@ class BoardVis(QMainWindow):
 
 
     def blackButtonClicked(self):
-        self.controller.tracker.current_player = 0
+        self.controller.tracker.current_player = 1
         #the AI runsnings
         self.hideStartScreen()
 
