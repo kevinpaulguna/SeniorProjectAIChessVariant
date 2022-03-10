@@ -272,7 +272,7 @@ class Game:
                             print(self.__move_message)
                             print('you win')
                             self.__gameOver = True
-                            return True
+                            #return True
                         elif to_spot.piece.get_type() == 'Bishop':
                             if to_spot.piece.is_white():
                                 to_spot.piece.corp.captured(self.corpW2)
