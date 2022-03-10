@@ -440,8 +440,9 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.okayButton.height() * 0.4)
         self.okayButton.setFont(font)
+        self.okayButton.setStyleSheet( 'background-color: rgba(225, 225, 50, 1)')
         self.okayButton.move(int((self.boardSize / 2) - (self.okayButton.width() / 2))
-                             , int((self.boardSize / 2) + 300))
+                             , int((self.boardSize / 2) + 250))
         self.okayButton.hide()
         
         #set up the option screen properties
@@ -459,8 +460,9 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.startGame.height() * 0.4)
         self.startGame.setFont(font)
+        self.startGame.setStyleSheet('background-color: rgba(225, 225, 50, 1)')
         self.startGame.move(int((self.boardSize / 2) - (self.startGame.width() / 2))
-                            , int((self.boardSize / 2) + 300))
+                            , int((self.boardSize / 2) + 250))
         self.startGame.hide()
         
         #set up team text properties
