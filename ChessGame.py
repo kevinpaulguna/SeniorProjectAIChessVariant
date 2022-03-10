@@ -269,8 +269,7 @@ class Game:
                     if self.__is_attack_successful(from_spot.piece, to_spot.piece):
                         self.__move_message += "Success! Captured piece! "
                         if to_spot.piece.get_type() == 'King':
-                            print(self.__move_message)
-                            print('you win')
+                            self.__move_message += "You Win! "
                             self.__gameOver = True
                             #return True
                         elif to_spot.piece.get_type() == 'Bishop':
@@ -315,7 +314,7 @@ class Game:
             if rook_attack:
                 to_spot.piece = None
             else:
-                self.__move_message += "Moving to spot. "
+                if not self.__gameOver: self.__move_message += "Moving to spot. "
                 print(self.__move_message)
 
                 to_spot.piece = from_spot.piece
@@ -553,7 +552,36 @@ class Game:
         # clear out prev var data
         self.__last_dice_roll = -1
         self.__move_message = ""
+
+    def delegate_or_recall(self, *, piece: str, from_corp: str, to_corp: str):
+        # locates piece and corps based on string names and calls the request_piece func from Corp
+        # returns false if failed to find corp or piece, returns true if found and delegation happens
+        corps = [self.corpW1, self.corpW2, self.corpW3, self.corpB1, self.corpB2, self.corpB3]
+
+        from_c = None
+        to_c = None
+        pc = None
+        for c in corps:
+            if c.get_name()==from_corp:
+                from_c = c
+            if c.get_name()==to_corp:
+                to_c = c
+            if from_c and to_c:
+                break
+
+        if not from_c or not to_c:
+            return False
+
+        for p in from_c.commanding:
+            if p.get_name()==piece:
+                pc = p
         
+        if not p:
+            return False
+
+        to_c.request_piece(pc)
+        return True
+
     def get_pieces_captured_by(self):
         return self.__captured_by
 
