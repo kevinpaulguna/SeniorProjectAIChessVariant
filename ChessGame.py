@@ -50,6 +50,8 @@ class Spot:
 
 class Game:
     def __init__(self):
+        self.__gameOver = False
+        
         self.tracker = TurnManager()
 
         # board
@@ -149,6 +151,9 @@ class Game:
 
     # returns array of tuples containing co-ords of possible move spots
     def get_possible_moves_for_piece_at(self, *, x: int, y: int, attack_only: bool = False):
+        if self.__gameOver:
+            print('game over')
+            return
         self.__reset_move_vars()
         possibles = []
         piece = self.__board[y][x].piece
@@ -201,6 +206,10 @@ class Game:
         return possibles
 
     def move_piece(self, *, from_x: int, from_y: int, to_x: int, to_y: int):
+        if self.__gameOver:
+            print('game over')
+            return False
+        
         self.__reset_move_vars()
 
         rook_attack = False
@@ -262,23 +271,16 @@ class Game:
                         if to_spot.piece.get_type() == 'King':
                             print(self.__move_message)
                             print('you win')
-                            return True
+                            self.__gameOver = True
+                            #return True
                         elif to_spot.piece.get_type() == 'Bishop':
                             if to_spot.piece.is_white():
                                 to_spot.piece.corp.captured(self.corpW2)
                             else:
                                 to_spot.piece.corp.captured(self.corpB2)
-                        ##############################################################
-                        elif from_spot.piece.get_type() == 'Rook':
-
-                            rook_attack = True
-                            to_spot.piece.corp.removeFromCorp(to_spot.piece)
-                            to_spot.piece.set_killed()
-                            piece_color = "white" if from_spot.piece.is_white else "black"
-                            self.__captured_by[piece_color].append(to_spot.piece)
-
                         else:
                             to_spot.piece.corp.removeFromCorp(to_spot.piece)
+                        rook_attack = (from_spot.piece.get_type() == 'Rook')
                         to_spot.piece.set_killed()
                         piece_color = "white" if from_spot.piece.is_white else "black"
                         self.__captured_by[piece_color].append(to_spot.piece)
@@ -599,6 +601,9 @@ class Game:
             [((spot.piece.get_name(), spot.piece.corp.get_name()) if spot.has_piece() else "___") for spot in row] 
             for row in self.__board]
 
+    def game_status(self):
+        return self.__gameOver
+    
     def print_board(self):
         print()
         for row in self.__board:

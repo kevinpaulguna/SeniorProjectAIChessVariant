@@ -7,6 +7,8 @@ from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
 
 from ChessGame import Game as chess_game
 
+game_over = False
+
 def board_to_screen(x, y, size):
     new_x = (x+1) * size
     new_y = (y+1) * size
@@ -100,12 +102,16 @@ class PieceVis(QLabel):
             self.setPixmap(self.default_vis)
 
     def mousePressEvent(self, ev: QMouseEvent) -> None:
+        if game_over == True:
+            return
         #If user clicks on a piece, it will be moved to the starting position
         self.start =  screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
         self.moves = self.parent().controller.get_possible_moves_for_piece_at(x=self.start[0], y=self.start[1])
         self.raise_()
     # Set the region limits of the board that the piece can move to
     def mouseMoveEvent(self, ev: QMouseEvent) -> None:
+        if game_over == True:
+            return
         if ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() < (0 + (self.parent().tileSize / 2)) \
                 and ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() < \
                 (0 + (self.parent().tileSize / 2)):
@@ -157,6 +163,8 @@ class PieceVis(QLabel):
 
 
     def mouseReleaseEvent(self, ev: QMouseEvent) -> None:
+        if game_over == True:
+            return
         self.onBoarder = False
         
         self.end = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
@@ -647,7 +655,12 @@ class BoardVis(QMainWindow):
 
         # update when after roll
         self.resultCaptureText.clear()
-        self.resultCaptureText.setText("Capture result: " + ("Success!" if self.attackSuccess else "Failed!"))
+        if self.controller.game_status() == True:
+            self.resultCaptureText.setText("Capture result: Success! \n Game Over!!")
+            global game_over
+            game_over = True
+        else:
+            self.resultCaptureText.setText("Capture result: " + ("Success!" if self.attackSuccess else "Failed!"))
 
         self.okayButton.show()
         self.okayButton.raise_()
