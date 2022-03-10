@@ -278,17 +278,9 @@ class Game:
                                 to_spot.piece.corp.captured(self.corpW2)
                             else:
                                 to_spot.piece.corp.captured(self.corpB2)
-                        ##############################################################
-                        elif from_spot.piece.get_type() == 'Rook':
-
-                            rook_attack = True
-                            to_spot.piece.corp.removeFromCorp(to_spot.piece)
-                            to_spot.piece.set_killed()
-                            piece_color = "white" if from_spot.piece.is_white else "black"
-                            self.__captured_by[piece_color].append(to_spot.piece)
-
                         else:
                             to_spot.piece.corp.removeFromCorp(to_spot.piece)
+                        rook_attack = (from_spot.piece.get_type() == 'Rook')
                         to_spot.piece.set_killed()
                         piece_color = "white" if from_spot.piece.is_white else "black"
                         self.__captured_by[piece_color].append(to_spot.piece)
