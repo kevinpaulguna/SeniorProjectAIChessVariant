@@ -3,7 +3,7 @@ class Corp:
     def __init__(self, name: str, commander):
         self.commandAuthUsed = False    #checks whether this corp has used its command
         self.commander = commander      #commander piece, will either be a bishop or a king
-        self.commanding = []       #pieces that are in the corp, nnot including the commander
+        self.commanding = []       #pieces that are in the corp, not including the commander
         self.defeated = False 
         self.__name = name
         self.smallMove = False
@@ -48,9 +48,7 @@ class Corp:
 
     #checks to see whether this corp has used its command authority
     def hasCommanded(self):
-        if self.commandAuthUsed == True:
-            return True
-        return False
+        return self.commandAuthUsed
 
     #adds a specific piece to this corp
     #this is only used by other functions of when initializing the corps

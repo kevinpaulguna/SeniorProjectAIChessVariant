@@ -1,58 +1,13 @@
 import random
-from turnManager import TurnManager
+from ChessGameHelpers import Piece, Spot
+from turnManager import CorpCommandTurnManager
 from ThreeCorp import Corp
-
-
-class Piece:
-    def __init__(self, x: int, y: int, name: str, white: bool, type: str, corp: Corp = None):
-        self.killed = False
-        self.x_loc = x
-        self.y_loc = y
-        self.__name = name
-        self.__white = white
-        self.__type = type
-        self.corp = corp
-
-    def set_killed(self):
-        self.killed = True
-
-    def is_white(self):
-        return self.__white
-
-    def get_name(self):
-        return self.__name
-
-    def get_type(self):
-        return self.__type
-
-    def set_corp(self, corp: Corp):
-        self.corp = corp
-
-    def has_moved(self):
-        return self.corp.hasCommanded()
-
-    def set_moved(self):
-        self.corp.command()
-
-
-class Spot:
-    def __init__(self, x: int, y: int, piece: Piece = None):
-        self.x_loc = x
-        self.y_loc = y
-        self.piece = piece
-
-    def set_piece(self, piece: Piece):
-        self.piece = piece
-
-    def has_piece(self):
-        return (self.piece != None)
-
 
 class Game:
     def __init__(self):
         self.__gameOver = False
         
-        self.tracker = TurnManager()
+        self.tracker = CorpCommandTurnManager()
 
         # board
         self.__board = [[Spot(x, y) for x in range(0, 8)] for y in range(0, 8)]
@@ -149,8 +104,8 @@ class Game:
         for p in pieces:
             self.__board[p.y_loc][p.x_loc].set_piece(p)
 
-    # returns array of tuples containing co-ords of possible move spots
     def get_possible_moves_for_piece_at(self, *, x: int, y: int, attack_only: bool = False):
+        # returns array of tuples containing co-ords of possible move spots
         if self.__gameOver:
             print('game over')
             return
@@ -213,6 +168,7 @@ class Game:
         self.__reset_move_vars()
 
         rook_attack = False
+        useOne = False
         from_spot = self.__board[from_y][from_x]
         to_spot = self.__board[to_y][to_x]
 
@@ -230,9 +186,8 @@ class Game:
         
         # checks if last moved piece was the same knight, handles if not
         if self.__last_move_knight and self.__last_move_knight.get_name() != from_spot.piece.get_name():
-            self.__last_move_knight.set_moved()
+            self.tracker.use_action(piece_used=self.__last_move_knight, small_move=useOne)
             self.__last_move_knight = None
-            self.tracker.use_action()
 
         # Checks what team the piece is on
         if self.tracker.current_player != int(from_spot.piece.is_white()):
@@ -241,7 +196,7 @@ class Game:
             return False
 
 
-        useOne = False
+
         if (abs(from_spot.x_loc - to_spot.x_loc) <= 1 and
                 abs(from_spot.y_loc - to_spot.y_loc) <= 1 and
                 (from_spot.piece.get_type() == 'Bishop' or from_spot.piece.get_type() == 'King') and
@@ -286,8 +241,7 @@ class Game:
                     else:
                         self.__move_message += "Attack failed! Move unsuccessful! "
                         # we still technicly used an action so we must progress turnManager
-                        from_spot.piece.set_moved()
-                        self.tracker.use_action()
+                        self.tracker.use_action(piece_used=from_spot.piece, small_move=useOne)
                         print(self.__move_message)
                         self.__last_move_knight = None
                         return False
@@ -302,14 +256,7 @@ class Game:
             else:
                 self.__last_move_knight = None
 
-                if useOne == True:
-                    print('using commander single space move')
-                    from_spot.piece.corp.movedOne()
-                else:
-                    print('using command authority')
-                    from_spot.piece.set_moved()
-
-                self.tracker.use_action()
+                self.tracker.use_action(piece_used=from_spot.piece, small_move=useOne)
             
             if rook_attack:
                 to_spot.piece = None
@@ -648,5 +595,3 @@ class Game:
                     print("___", end=" ")
             print('\n')
         print("---------------------------------\n")
-        
-       

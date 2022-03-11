@@ -625,7 +625,7 @@ class BoardVis(QMainWindow):
         # Set up roll dice text properties
         self.rollText.hide()
         self.rollText.setAlignment(Qt.AlignCenter)
-        self.rollText.setText("Roll Dice active")
+        self.rollText.setText("Rolling Dice...")
         self.rollText.resize(900, 100)
         font = QFont()
         font.setFamily('Arial')
