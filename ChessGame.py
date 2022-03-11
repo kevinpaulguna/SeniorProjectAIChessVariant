@@ -6,7 +6,7 @@ from ThreeCorp import Corp
 class Game:
     def __init__(self):
         self.__gameOver = False
-        
+
         self.tracker = CorpCommandTurnManager()
 
         # board
@@ -151,7 +151,7 @@ class Game:
             potential_x, potential_y, has_piece = potential_spot
 
             # 1. checks for ally
-            # 2. validates move, i.e. checks for blocked path. 
+            # 2. validates move, i.e. checks for blocked path.
             # (must use is_valid_move instead of is_clear_path to prevent issues with linked list)
             if ((has_piece and self.__board[potential_y][potential_x].piece.is_white() == piece.is_white()) or
                 (attack_only and not has_piece) or not self.__is_valid_move(x, y, potential_x, potential_y)):
@@ -164,7 +164,7 @@ class Game:
         if self.__gameOver:
             print('game over')
             return False
-        
+
         self.__reset_move_vars()
 
         rook_attack = False
@@ -179,11 +179,11 @@ class Game:
             self.__move_message = "This is an empty spot. No piece to move!"
             print(self.__move_message)
             return False
-        
-        # checks for same piece 
+
+        # checks for same piece
         if from_x == to_x and from_y == to_y:
             return
-        
+
         # checks if last moved piece was the same knight, handles if not
         if self.__last_move_knight and self.__last_move_knight.get_name() != from_spot.piece.get_name():
             self.tracker.use_action(piece_used=self.__last_move_knight, small_move=useOne)
@@ -257,7 +257,7 @@ class Game:
                 self.__last_move_knight = None
 
                 self.tracker.use_action(piece_used=from_spot.piece, small_move=useOne)
-            
+
             if rook_attack:
                 to_spot.piece = None
             else:
@@ -300,30 +300,30 @@ class Game:
             return False
         piece_type = piece.get_type()
 
-        
+
         if self.__last_move_knight:
             # valid moves for knight attacking after move
             if self.__last_move_knight.get_name() == piece.get_name():
                 return ((abs(to_x-from_x)==1 and abs(to_y-from_y)==1 or
                         abs(to_x-from_x)==0 and abs(to_y-from_y)==1 or
-                        abs(to_x-from_x)==1 and abs(to_y-from_y)==0) and 
+                        abs(to_x-from_x)==1 and abs(to_y-from_y)==0) and
                         self.__board[to_y][to_x].has_piece())
             if self.__last_move_knight.corp == piece.corp:
                 return False
 
         if piece_type == 'Pawn':
             result = (
-                        (((to_y - from_y) == -1 and (to_x - from_x) == 0) or 
+                        (((to_y - from_y) == -1 and (to_x - from_x) == 0) or
                         ((to_y - from_y) == -1 and abs(to_x - from_x) == 1))
                         if piece.is_white() else
-                        (((to_y - from_y) == 1 and (to_x - from_x) == 0) or 
+                        (((to_y - from_y) == 1 and (to_x - from_x) == 0) or
                         ((to_y - from_y) == 1 and abs(to_x - from_x) == 1))
                     )
             if not result:
                 self.__move_message += "Chosen move is too far away. "
             return result
         if piece_type == 'Bishop':
-            if ((abs(to_x - from_x) == 2 or abs(to_y - from_y) == 2) and 
+            if ((abs(to_x - from_x) == 2 or abs(to_y - from_y) == 2) and
                 not self.__is_clear_path(from_x, from_y, to_x, to_y)):
                 self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
                 return False
@@ -434,7 +434,7 @@ class Game:
     def __is_attack_successful(self, current_piece: Piece, target_piece: Piece):
         self.__last_dice_roll = random.randint(1, 6)
         # add +1 if knight is attackiing after a move
-        if (self.__last_move_knight and self.__last_move_knight.get_name() == current_piece.get_name() 
+        if (self.__last_move_knight and self.__last_move_knight.get_name() == current_piece.get_name()
             and self.__last_dice_roll<6):
             self.__last_dice_roll += 1
 
@@ -501,33 +501,37 @@ class Game:
         self.__move_message = ""
 
     def delegate_or_recall(self, *, piece: str, from_corp: str, to_corp: str):
-        # locates piece and corps based on string names and calls the request_piece func from Corp
-        # returns false if failed to find corp or piece, returns true if found and delegation happens
-        corps = [self.corpW1, self.corpW2, self.corpW3, self.corpB1, self.corpB2, self.corpB3]
+        if not self.tracker.delegation_move_has_been_used():
+            # locates piece and corps based on string names and calls the request_piece func from Corp
+            # returns false if failed to find corp or piece, returns true if found and delegation happens
+            corps = [self.corpW1, self.corpW2, self.corpW3, self.corpB1, self.corpB2, self.corpB3]
 
-        from_c = None
-        to_c = None
-        pc = None
-        for c in corps:
-            if c.get_name()==from_corp:
-                from_c = c
-            if c.get_name()==to_corp:
-                to_c = c
-            if from_c and to_c:
-                break
+            from_c = None
+            to_c = None
+            pc = None
+            for c in corps:
+                if c.get_name()==from_corp:
+                    from_c = c
+                if c.get_name()==to_corp:
+                    to_c = c
+                if from_c and to_c:
+                    break
 
-        if not from_c or not to_c:
+            if not from_c or not to_c:
+                return False
+
+            for p in from_c.commanding:
+                if p.get_name()==piece:
+                    pc = p
+
+            if not p:
+                return False
+
+            to_c.request_piece(pc)
+            self.tracker.use_delegation_move()
+            return True
+        else:
             return False
-
-        for p in from_c.commanding:
-            if p.get_name()==piece:
-                pc = p
-        
-        if not p:
-            return False
-
-        to_c.request_piece(pc)
-        return True
 
     def get_pieces_captured_by(self):
         return self.__captured_by
@@ -552,7 +556,7 @@ class Game:
                 },
             }
         else:
-            return { 
+            return {
                 1: {
                     'name': self.corpB1.get_name(),
                     'commander': self.corpB1.commander.get_name(),
@@ -579,12 +583,12 @@ class Game:
     def get_board(self):
         # returns 2d list of tuples (piece name, corp of piece)
         return [
-            [((spot.piece.get_name(), spot.piece.corp.get_name()) if spot.has_piece() else ("___", None)) for spot in row] 
+            [((spot.piece.get_name(), spot.piece.corp.get_name()) if spot.has_piece() else ("___", None)) for spot in row]
             for row in self.__board]
 
     def game_status(self):
         return self.__gameOver
-    
+
     def print_board(self):
         print()
         for row in self.__board:
