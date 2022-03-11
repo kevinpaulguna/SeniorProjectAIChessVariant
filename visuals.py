@@ -1,3 +1,4 @@
+from ast import Del
 from math import floor
 from turtle import color
 from typing import Tuple
@@ -241,7 +242,6 @@ class BoardVis(QMainWindow):
         self.setWindowTitle("Chess Board")
         self.highlighted = []
         self.corp_menu = CorpMenu(self.controller)
-        self.corp_menu.show()
         # buttons:
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
@@ -881,25 +881,86 @@ class PieceGroup(QWidget):
                 layout.addWidget(label, i, j)
         self.setLayout(layout)
 
+class Deleg_Label(QWidget):
+    def __init__(self, corp_data):
+        super(Deleg_Label, self).__init__()
+        layout = QHBoxLayout()
+        self.corp_data = corp_data
+        self.left_opt = QComboBox()
+        self.left_opt.addItems(["Delegate","Recall"])
+        self.left_opt.currentTextChanged.connect(self.on_left_changed)
+        self.corp_opt = QComboBox()
+        self.set_corp_options()
+        self.corp_opt.currentTextChanged.connect(self.on_corp_changed)
+        self.piece_opt = QComboBox()
+        self.set_piece_options()
+        self.label = QLabel()
+        self.set_label_txt()
+
+        layout.addWidget(self.left_opt)
+        layout.addWidget(self.piece_opt)
+        layout.addWidget(self.label)
+        layout.addWidget(self.corp_opt)
+        self.setLayout(layout)
+    
+    def get_data(self):
+        if self.left_opt.currentIndex():
+            from_corp = self.corp_opt.currentText()
+            to_corp = self.get_king_corp()
+        else:
+            from_corp = self.get_king_corp()
+            to_corp = self.corp_opt.currentText()
+        piece = self.piece_opt.currentText()   
+        return [piece, from_corp, to_corp]
+        
+
+    def on_left_changed(self):
+        self.set_label_txt()
+        self.set_piece_options()
+
+    def on_corp_changed(self):
+        self.set_piece_options()
+
+    def set_label_txt(self):
+        text = 'to' if self.left_opt.currentIndex() == 0 else 'from'
+        self.label.setText(text)
+    
+    def set_corp_options(self):
+        swappable = [corp_name for i, corp_name in enumerate(self.corp_data.keys()) if i in [0,2]]
+        self.corp_opt.addItems(swappable)
+    
+    def get_king_corp(self):
+        king_corp = list(self.corp_data.keys())
+        return king_corp[1]
+
+    def set_piece_options(self):
+        self.piece_opt.clear()
+        if self.left_opt.currentIndex(): 
+            self.piece_opt.addItems(self.corp_data[self.corp_opt.currentText()])    # true is Recall
+        else:
+            self.piece_opt.addItems(self.corp_data[self.get_king_corp()])
+            
+
 class LeaderBox(QWidget):
     def __init__(self, leader):
         
         super(LeaderBox, self).__init__()
         self.leader = leader
         self.commander = self.create_leader_icon()
-        self.top_middle = QVBoxLayout()
-        self.top_middle.addWidget(self.commander)
-        self.top_middle.setContentsMargins(0, 10, 0, 10)
 
-        top_row = QHBoxLayout()
-        top_row.addStretch(1)
-        top_row.addLayout(self.top_middle)
-        top_row.addStretch(1)
-        top_row.setContentsMargins(0,0,0,50)
+        commander_row = QHBoxLayout()
+        commander_row.addStretch(1)
+        commander_row.addWidget(self.commander)
+        commander_row.addStretch(1)
+
+        self.top = QVBoxLayout()
+        self.top.addLayout(commander_row)
+        self.top.setContentsMargins(0, 10, 0, 10)
+
 
         top_frame = QFrame()
         top_frame.setFrameShape(QFrame.StyledPanel)
-        top_frame.setLayout(top_row)
+        top_frame.setLayout(self.top)
         layout = QVBoxLayout()
         layout.addWidget(top_frame)
         self.setLayout(layout)
@@ -914,12 +975,20 @@ class LeaderBox(QWidget):
 class KingBox(LeaderBox):
     def __init__(self, leader, corps):
         super().__init__(leader)
-        self.corps_ref = corps
-        self.button = QPushButton("Hello Work")
-        self.top_middle.addWidget(self.button)
+        self.corps_ref = self.get_corp_options(corps)
 
-    def setup_swap_lines(self):
-        self.get_corp_options
+        self.swap_line = Deleg_Label(self.corps_ref)
+        self.top.addWidget(self.swap_line)
+        self.confirm_button = QPushButton("Confirm")
+        self.top.addWidget(self.confirm_button)
+    
+
+    # could probably use the original data but this works out more nicely
+    def get_corp_options(self, data):
+        options = {}
+        for i in range(1,4):
+            options[data[i]['name']] = data[i]['commanding']
+        return options
 
 class CorpMenu(QWidget):
     def __init__(self, game):
@@ -931,6 +1000,7 @@ class CorpMenu(QWidget):
         self.leaders = []
         self.set_corps()    #used the first time to create all layouts and attach them appropriately        
         self.corps_ref = {}
+        self.king_box = None
 
     def set_corps(self): 
         self.update_data()
@@ -939,16 +1009,17 @@ class CorpMenu(QWidget):
             self.create_col(layout, self.corps_ref[i]['commander'], self.corps_ref[i]['commanding'], i)
         self.setLayout(layout)
 
+    def confirm_clicked(self):
+        swap_data = self.king_box.swap_line.get_data()
+        self.controller.delegate_or_recall(piece=swap_data[0], from_corp=swap_data[1], to_corp=swap_data[2])
+        self.update_all_groups()
+
     def update_data(self):    
         is_white = self.controller.tracker.get_current_player()
         self.corps_ref = self.controller.get_corp_info(white=is_white)
 
     def create_col(self, outer_layout, leader, group, num):
         leader_box = LeaderBox(leader)
-        
-        
-        
-
         col = QVBoxLayout()
         self.col_layouts.append(col)
         col.addWidget(leader_box)
@@ -967,11 +1038,17 @@ class CorpMenu(QWidget):
         leader = self.corps_ref[i]['commander']
         if i == 2:
             new_leader = KingBox(leader, self.corps_ref)
+            new_leader.confirm_button.clicked.connect(self.confirm_clicked)
+            self.king_box = new_leader
         else:
             new_leader = LeaderBox(leader)
         current_leader = self.col_layouts[i-1].itemAt(0).widget()
         self.col_layouts[i-1].replaceWidget(current_leader, new_leader)
         current_leader.setParent(None)
+
+    def update_all_groups(self):
+        for i in range(1,4):
+            self.update_group(i)
 
     def update_group(self, i):
         self.update_data()
@@ -981,14 +1058,7 @@ class CorpMenu(QWidget):
         self.col_layouts[i-1].replaceWidget(current_group, new_piece_group)
         current_group.setParent(None)
 
-class Deleg_Label(QWidget):
-    def __init__(self, left_options, mid_txt, right_options):
-        super(Deleg_Label, self).__init__()
-        layout = QHBoxLayout()
-        self.mid_label = QLabel()
-        self.mid_label.setText(mid_txt)
-        self.left_opts = QComboBox()
-        self.left_opts.addItems(left_options)
+
 
 
 
