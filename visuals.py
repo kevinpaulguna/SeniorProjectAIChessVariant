@@ -443,7 +443,18 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.okayButton.height() * 0.4)
         self.okayButton.setFont(font)
-        self.okayButton.setStyleSheet( 'background-color: rgba(225, 225, 50, 1)')
+        self.okayButton.setStyleSheet( '''
+            QPushButton {
+                background-color: rgb(0, 204, 204);
+                color: black;
+                border: 0.1em solid #000000;
+            }
+            QPushButton:hover {
+                background-color: black;
+                color: rgb(0, 204, 204);
+                border-color: rgb(0, 204, 204);
+            }
+            ''')
         self.okayButton.move(int((self.boardSize / 2) - (self.okayButton.width() / 2))
                              , int((self.boardSize / 2) + 250))
         self.okayButton.hide()
@@ -612,6 +623,7 @@ class BoardVis(QMainWindow):
 
     def __rolldiceWork(self):
         # Set up roll dice text properties
+        self.rollText.hide()
         self.rollText.setAlignment(Qt.AlignCenter)
         self.rollText.setText("Roll Dice active")
         self.rollText.resize(900, 100)
@@ -619,10 +631,10 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.rollText.height() * 0.4)
         self.rollText.setFont(font)
-        self.rollText.setStyleSheet('font-weight: bold; color: rgba(0, 204, 204, 255)')
+        self.rollText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255); dip')
         self.rollText.move(int((self.boardSize / 2) - (self.rollText.width() / 2)),
                            int((self.boardSize / 2) - 300))
-        self.rollText.hide()
+        # self.rollText.hide()
 
         # roll dice animation
         self.rollDiceAnimation.setAlignment(Qt.AlignCenter)
@@ -650,7 +662,7 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.resultCaptureText.height() * 0.4)
         self.resultCaptureText.setFont(font)
-        self.resultCaptureText.setStyleSheet('font-weight: bold; color: rgba(0, 204, 204, 255)')
+        self.resultCaptureText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255)')
         self.resultCaptureText.move(int((self.boardSize / 2) - (self.rollText.width() / 2)),
                            int((self.boardSize / 2) - 300))
 
@@ -663,11 +675,11 @@ class BoardVis(QMainWindow):
         # update when after roll
         self.resultCaptureText.clear()
         if self.controller.game_status() == True:
-            self.resultCaptureText.setText("Capture result: Success! \n Game Over!!")
+            self.resultCaptureText.setText("Capture Successful! \n Game Over!!")
             global game_over
             game_over = True
         else:
-            self.resultCaptureText.setText("Capture result: " + ("Success!" if self.attackSuccess else "Failed!"))
+            self.resultCaptureText.setText("Capture " + ("Successful!" if self.attackSuccess else "Failed!"))
 
         self.okayButton.show()
         self.okayButton.raise_()
