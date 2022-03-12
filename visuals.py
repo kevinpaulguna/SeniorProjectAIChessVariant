@@ -787,6 +787,8 @@ class BoardVis(QMainWindow):
         self.startGame.hide()
 
     def returnToStartScreen(self):
+        global game_over
+        game_over = False
         self.hidepauseBackground()
         self.startScreen.show()
         self.chooseSideText.show()
