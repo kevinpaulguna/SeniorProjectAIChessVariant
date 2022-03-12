@@ -395,7 +395,7 @@ class BoardVis(QMainWindow):
                              int(self.boardSize / 2 + 300) - (self.newGameButton.height() * 0.5))
 
         self.newGameButton.adjustSize()
-        self.newGameButton.clicked.connect(self.showStartScreen)
+        self.newGameButton.clicked.connect(self.returnToStartScreen)
 
         # Create StartScreen properties
         self.startScreen.setAlignment(Qt.AlignCenter)
@@ -632,7 +632,6 @@ class BoardVis(QMainWindow):
 
     def __rolldiceWork(self):
         # Set up roll dice text properties
-        self.rollText.hide()
         self.rollText.setAlignment(Qt.AlignCenter)
         self.rollText.setText("Rolling Dice...")
         self.rollText.resize(900, 100)
@@ -643,7 +642,7 @@ class BoardVis(QMainWindow):
         self.rollText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255); dip')
         self.rollText.move(int((self.boardSize / 2) - (self.rollText.width() / 2)),
                            int((self.boardSize / 2) - 300))
-        # self.rollText.hide()
+        self.rollText.hide()
 
         # roll dice animation
         self.rollDiceAnimation.setAlignment(Qt.AlignCenter)
@@ -787,7 +786,8 @@ class BoardVis(QMainWindow):
         self.gameTypeText.hide()
         self.startGame.hide()
 
-    def showStartScreen(self):
+    def returnToStartScreen(self):
+        self.hidepauseBackground()
         self.startScreen.show()
         self.chooseSideText.show()
         self.whiteButton.show()
