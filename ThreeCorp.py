@@ -88,9 +88,6 @@ class Corp:
     #This corp requests a piece from another corp
     #If the piece can be moved, it is added to this corp and removed from its previous corp
     def request_piece(self, piece):
-        if piece.corp.hasCommanded():
-            print("command authority is already used")
-            return
         if piece.corp.isWhite() != self.isWhite():
             print('cant move piece of opposite color')
             return
@@ -102,10 +99,6 @@ class Corp:
             return
         if not self.checkLeng():
             return
-        #if self.checkKing == True:   removed because delagation action is not command action
-            #self.command()
-        #else:
-            #piece.corp.command()
         print('moving ', piece.get_name(), ' to ', self.__name )
         piece.corp.removeFromCorp(piece)
         self.addToCorp(piece)
