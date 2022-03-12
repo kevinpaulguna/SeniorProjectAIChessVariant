@@ -193,7 +193,10 @@ class Game:
 
         # checks if last moved piece was the same knight, handles if not
         if self.__last_move_knight and self.__last_move_knight[0].get_name() != from_spot.piece.get_name():
-            self.tracker.use_action(piece_used=self.__last_move_knight[0], small_move=useOne)
+            if self.__is_corp_command_game:
+                self.tracker.use_action(piece_used=self.__last_move_knight[0], small_move=useOne)
+            else:
+                self.tracker.use_action()
             self.__last_move_knight = None
 
         # Checks what team the piece is on
@@ -280,6 +283,14 @@ class Game:
                 from_spot.piece = None
                 to_spot.piece.x_loc = to_x
                 to_spot.piece.y_loc = to_y
+
+                if self.__last_move_knight and len(self.get_possible_moves_for_piece_at(x=to_x, y=to_y))==0:
+                    if self.__is_corp_command_game:
+                        self.tracker.use_action(piece_used=self.__last_move_knight[0], small_move=useOne)
+                    else:
+                        self.tracker.use_action()
+                    self.__last_move_knight = None
+
         print("~~~~~")
         self.print_board()
         return True
