@@ -303,7 +303,7 @@ class Game:
         if self.__last_move_knight and self.__last_move_knight[1] != self.tracker.get_turn_count():
             self.__last_move_knight = None
 
-        if not self.__is_corp_command_game and (piece.get_name() in self.tracker._get_pieces_used()):
+        if piece.get_name() in self.tracker._get_pieces_used():
             return False
 
         # Checks to see if this piece's corp has already used its command authority

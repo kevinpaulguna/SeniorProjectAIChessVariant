@@ -58,6 +58,8 @@ class CorpCommandTurnManager():
         self.current_player = 1   # who's turn it is currently. starts with 1 because of bool to int translation
         self.__delegation_move_used = False
         self.__turnCounter = 0
+        self.__pieces_used = []
+
         # initialize corp storage
         self.__corps = {
             'white': [Corp],
@@ -67,6 +69,9 @@ class CorpCommandTurnManager():
     def get_current_player(self):
         return self.current_player
 
+    def _get_pieces_used(self):
+        return [p.get_name() for p in self.__pieces_used]
+
     # if either player runs out of actions on their turns
     # or ends their turn early this moves to next player and resets counters
     def end_turn(self):
@@ -75,6 +80,7 @@ class CorpCommandTurnManager():
             self.current_player = 0
         self.__reset_turn()
         self.__turnCounter += 1
+        self.__pieces_used = []
 
     def get_turn_count(self):
         return self.__turnCounter
@@ -82,6 +88,7 @@ class CorpCommandTurnManager():
     # this should be called when the current player
     # uses an action on his turn
     def use_action(self, *, piece_used: Piece, small_move:bool):
+        self.__pieces_used.append(piece_used)
         if small_move == True:
             print('using commander single space move')
             piece_used.corp.movedOne()
