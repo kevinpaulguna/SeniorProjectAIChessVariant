@@ -228,7 +228,7 @@ class BoardVis(QMainWindow):
         self.white_pov = True
         #This block sets up the window properties
         #self.setGeometry(500, 200, 300, 300)
-        self.setFixedSize(925, 700)
+        self.setFixedSize(925, 675)
         self.setWindowTitle("Chess Board")
         self.highlighted = []
         self.corp_menu = CorpMenu(self)
@@ -357,20 +357,20 @@ class BoardVis(QMainWindow):
         font.setFamily("Impact")
         font.setPixelSize(self.tableOption.height() * 0.8)
         self.tableOption.setFont(font)
-        self.tableOption.move(int(self.boardSize), int(self.boardSize /2 -75)
-                              - (self.tableOption.height()) * 0.5)
+        self.tableOption.move(int(self.boardSize) - 10,
+                              int(self.boardSize /2 -75) - (self.tableOption.height()) * 0.5)
         self.tableOption.hide()
 
     #Create show information of move indicator
         self.moveIndicator.setText("Remaining Move:")
         self.moveIndicator.setAlignment(Qt.AlignCenter)
-        self.moveIndicator.resize(200, 100)
+        self.moveIndicator.resize(200, 25)
         font = QFont()
         font.setFamily("impact")
-        font.setPixelSize(self.moveIndicator.height() * 0.2)
+        font.setPixelSize(self.moveIndicator.height() * 0.8)
         self.moveIndicator.setFont(font)
-        self.moveIndicator.move(int(self.boardSize), int(self.boardSize /2)
-                                - (self.moveIndicator.height()) * 0.5)
+        self.moveIndicator.move(int(self.boardSize) - 10,
+                                int(self.boardSize /2)- (self.moveIndicator.height()) * 0.5)
         self.moveIndicator.hide()
 
     #manage corp button setup:
