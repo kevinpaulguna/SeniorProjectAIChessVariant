@@ -13,8 +13,8 @@ from ChessGame import Game as chess_game, Piece
 game_over = False
 
 def corp_to_color(corp_num):
-    colors = ['rd', 'bl', 'gr']
-    return colors[corp_num - 1]
+    colors = ['', 'rd', 'bl', 'gr']
+    return colors[corp_num]
 
 def board_to_screen(x, y, size):
     new_x = (x+1) * size
@@ -40,17 +40,6 @@ def piece_to_img_name(piece):
     else:
         piece_name = piece[:2]
     return piece_name
-
-def deleteItemsOfLayout(layout):
-     if layout is not None:
-         while layout.count():
-             item = layout.takeAt(0)
-             widget = item.widget()
-             if widget is not None:
-                 widget.setParent(None)
-                 widget.remove()
-             else:
-                 deleteItemsOfLayout(item.layout())
 
 #pieceVis  is a representation of the pieces in the game
 #movableVis is the movable pieces
@@ -241,7 +230,7 @@ class BoardVis(QMainWindow):
         self.setFixedSize(925, 700)
         self.setWindowTitle("Chess Board")
         self.highlighted = []
-        self.corp_menu = CorpMenu(self.controller)
+        self.corp_menu = CorpMenu(self)
         # buttons:
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
@@ -357,8 +346,7 @@ class BoardVis(QMainWindow):
         self.set_non_playables()
 
         #get data from controller and display it
-        board = self.controller.get_board()
-        self._update_pieces(board)
+        self._update_pieces()
 
     #Create table option properties
         self.tableOption.setText("Current Turn: White")
@@ -372,10 +360,7 @@ class BoardVis(QMainWindow):
                               - (self.tableOption.height()) * 0.5)
 
     #Create show information of move indicator
-        self.moveIndicator.setText("Remaining Move:"
-                                   "\nLeft Side  :  "+
-                                   "\nRight Side: "+
-                                   "\n Center     : ")
+        self.moveIndicator.setText("Remaining Move:")                              
         self.moveIndicator.setAlignment(Qt.AlignCenter)
         self.moveIndicator.resize(200, 100)
         font = QFont()
@@ -552,12 +537,14 @@ class BoardVis(QMainWindow):
         self.__set_button(self.whiteButton, 0.4)
         self.whiteButton.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2))
                               , int((self.boardSize / 2) - 130))
+        
 
         # Set up for black button properties
         self.team_group.addButton(self.blackButton)
         self.__set_button(self.blackButton, 0.4)
         self.blackButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
                               , int((self.boardSize / 2) - 100))
+        self.whiteButton.setChecked(True)
 
         #set up human/computer button properties
         self.opponent_group = QButtonGroup(self)
@@ -570,6 +557,7 @@ class BoardVis(QMainWindow):
         self.__set_button(self.computerButton, 0.4)
         self.computerButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
                                  , int((self.boardSize / 2) - 10))
+        self.humanButton.setChecked(True)
 
         #set up highlight on/off button properties
         self.highlight_group = QButtonGroup(self)
@@ -582,6 +570,7 @@ class BoardVis(QMainWindow):
         self.__set_button(self.offhighlight, 0.4)
         self.offhighlight.move(int((self.boardSize / 2) - (self.offhighlight.width() / 2))
                                , int((self.boardSize / 2) + 80))
+        self.onhighlight.setChecked(True)
 
         #set up medieval/corp button properties
         self.gameType_group = QButtonGroup(self)
@@ -594,7 +583,7 @@ class BoardVis(QMainWindow):
         self.__set_button(self.corpCommanderButton, 0.4)
         self.corpCommanderButton.move(int((self.boardSize / 2) - (self.corpCommanderButton.width() / 2))
                                       , int((self.boardSize / 2) + 170))
-
+        self.corpCommanderButton.setChecked(True)
 
     def startGameClicked(self):
         if self.blackButton.isChecked():
@@ -715,16 +704,12 @@ class BoardVis(QMainWindow):
     def update_labels(self):
         if self.controller.tracker.get_current_player():
             self.tableOption.setText("Current Turn: White")
-            self.moveIndicator.setText("Remaining Move:"
-                                       "\nLeft Side  :  " +
-                                       "\nRight Side: " +
-                                       "\n Center     : ")
+            self.moveIndicator.setText("Remaining Move:" + str( self.controller.tracker.get_number_of_available_moves() ))
+                                       
         else:
             self.tableOption.setText("Current Turn: Black")
-            self.moveIndicator.setText("Remaining Move:"
-                                       "\nLeft Side  :  " +
-                                       "\nRight Side: " +
-                                       "\n Center     : ")
+            self.moveIndicator.setText("Remaining Move:" + str(self.controller.tracker.get_number_of_available_moves() ))
+                                       
 
 
     def showSideChoice(self):
@@ -857,8 +842,9 @@ class BoardVis(QMainWindow):
         label.resize(75, 75)
         label.setScaledContents(True)
         return label
-    #def update_pieces(self, ):
-    def _update_pieces(self, pieces_array):
+
+    def _update_pieces(self):
+        pieces_array = self.controller.get_board()
         for y in range(8):
             for x in range(8):
                 cur_p = self.piecePos[y][x]
@@ -888,6 +874,7 @@ class PieceGroup(QWidget):
         self.labels = labels
         self.create_group()
     # Changed layout mode to grid
+
     def create_group(self):
         layout = QGridLayout()
         items_per_row = 3
@@ -929,7 +916,7 @@ class Deleg_Label(QWidget):
         layout.addWidget(self.corp_opt)
         self.setLayout(layout)
 
-    def get_data(self):
+    def get_swap_data(self):
         if self.left_opt.currentIndex():
             from_corp = self.corp_opt.currentText()
             to_corp = self.get_king_corp()
@@ -939,6 +926,8 @@ class Deleg_Label(QWidget):
         piece = self.piece_opt.currentText()
         return [piece, from_corp, to_corp]
 
+    def set_corp_data(self, new_data):
+        self.corp_data = new_data
 
     def on_left_changed(self):
         self.set_label_txt()
@@ -1001,27 +990,35 @@ class LeaderBox(QWidget):
 class KingBox(LeaderBox):
     def __init__(self, leader, corps):
         super().__init__(leader)
-        self.corps_ref = self.get_corp_options(corps)
+        self.corps_ref = corps
 
-        self.swap_line = Deleg_Label(self.corps_ref)
+        self.swap_line = Deleg_Label(self.get_corp_options())
         self.top.addWidget(self.swap_line)
         self.confirm_button = QPushButton("Confirm")
         self.top.addWidget(self.confirm_button)
 
 
     # could probably use the original data but this works out more nicely
-    def get_corp_options(self, data):
+    def get_corp_options(self):
         options = {}
         for i in range(1,4):
-            options[data[i]['name']] = data[i]['commanding']
+            options[self.corps_ref[i]['name']] = self.corps_ref[i]['commanding']
         return options
+    
+    def update_deleg_line(self):
+        data = self.get_corp_options()
+        self.swap_line.set_corp_data(data)
+
+    def disable_button(self, val):
+        self.confirm_button.setDisabled(val)
 
 class CorpMenu(QWidget):
-    def __init__(self, game):
+    def __init__(self, main_window):
         super(CorpMenu, self).__init__()
         self.setGeometry(0,0, 1, 1)
         self.setWindowTitle("Corp Delegation")
-        self.controller : chess_game = game
+        self.main_window = main_window
+        self.controller : chess_game = main_window.controller
         self.col_layouts = []
         self.leaders = []
         self.set_corps()    #used the first time to create all layouts and attach them appropriately
@@ -1036,9 +1033,14 @@ class CorpMenu(QWidget):
         self.setLayout(layout)
 
     def confirm_clicked(self):
-        swap_data = self.king_box.swap_line.get_data()
+        swap_data = self.king_box.swap_line.get_swap_data()
         self.controller.delegate_or_recall(piece=swap_data[0], from_corp=swap_data[1], to_corp=swap_data[2])
+        self.update_data()
+        self.king_box.corps_ref = self.corps_ref
+        self.king_box.update_deleg_line()
+        self.king_box.disable_button(self.controller.tracker.delegation_move_has_been_used())   
         self.update_all_groups()
+        self.main_window._update_pieces()
 
     def update_data(self):
         is_white = self.controller.tracker.get_current_player()
@@ -1064,6 +1066,7 @@ class CorpMenu(QWidget):
         leader = self.corps_ref[i]['commander']
         if i == 2:
             new_leader = KingBox(leader, self.corps_ref)
+            new_leader.disable_button(self.controller.tracker.delegation_move_has_been_used())
             new_leader.confirm_button.clicked.connect(self.confirm_clicked)
             self.king_box = new_leader
         else:
@@ -1083,33 +1086,6 @@ class CorpMenu(QWidget):
         current_group = self.col_layouts[i-1].itemAt(self.col_layouts[i-1].count() - 1).widget()
         self.col_layouts[i-1].replaceWidget(current_group, new_piece_group)
         current_group.setParent(None)
-
-
-
-
-
-    """
-    def create_group(self, labels, outer_layout):
-        items_per_row = 3
-        num_rows = len(labels) / items_per_row
-        for i in range(round(num_rows) + 1):
-            piece_row = QHBoxLayout()
-            if len(labels) <= 0:
-                return
-            elif len(labels) >= items_per_row:
-                cur_row_items = items_per_row
-            else:
-                cur_row_items = len(labels)
-            for i in range(cur_row_items):
-                    label_name = piece_to_img_name(labels.pop())
-                    label = corpVis(label_name, 50)
-                    piece_row.addWidget(label)
-                    if not len(labels):
-                        piece_row.addStretch()
-            piece_row.addSpacing(0)
-            outer_layout.addLayout(piece_row)
-
-    """
 
 
 
