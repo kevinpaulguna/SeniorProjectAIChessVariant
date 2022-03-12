@@ -283,7 +283,7 @@ class BoardVis(QMainWindow):
         self.offhighlight = QRadioButton("Off", self)
         self.onhighlight = QRadioButton("On", self)
         self.medievalButton = QRadioButton("Medieval", self)
-        self.corpCommanderButton = QRadioButton("Corp Commander", self)
+        self.corpCommanderButton = QRadioButton("Corp Command", self)
 
         # Set up the roll dice screen
         self.pauseBackground = QLabel(self)
@@ -370,7 +370,7 @@ class BoardVis(QMainWindow):
         self.moveIndicator.move(int(self.boardSize), int(self.boardSize /2)
                                 - (self.moveIndicator.height()) * 0.5)
 
-    #highlight button setup:
+    #manage corp button setup:
         self.__set_button(self.corpButton, 0.7)
         self.corpButton.setCheckable(True)
         self.corpButton.clicked.connect(self.corpBClicked)
@@ -378,17 +378,23 @@ class BoardVis(QMainWindow):
         self.corpButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 25,
                              25)
 
+        self.corpButton.adjustSize()
+
     #Create stop button properties
         self.__set_button(self.stopButton, 0.7)
         self.stopButton.clicked.connect(self.stopButtonClicked)
         self.stopButton.move(int(self.boardSize - ((self.stopButton.width() - self.tableOption.width()) / 2)),
                               int(self.boardSize / 2 + 250) - (self.stopButton.height() * 0.5))
 
+        self.stopButton.adjustSize()
+
     #Create restart button properties
 
         self.__set_button(self.newGameButton, 0.7)
         self.newGameButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)),
                              int(self.boardSize / 2 + 300) - (self.newGameButton.height() * 0.5))
+
+        self.newGameButton.adjustSize()
 
         # Create StartScreen properties
         self.startScreen.setAlignment(Qt.AlignCenter)
@@ -421,14 +427,7 @@ class BoardVis(QMainWindow):
         self.pauseBackground.move(0, 0)
         self.pauseBackground.hide()
 
-        # Set up for okay button properties
-        self.okayButton.clicked.connect(self.okayButtonClicked)
-        self.okayButton.resize(150, 40)
-        font = QFont()
-        font.setFamily('Arial')
-        font.setPixelSize(self.okayButton.height() * 0.4)
-        self.okayButton.setFont(font)
-        self.okayButton.setStyleSheet( '''
+        mainAreaButtonCSS = '''
             QPushButton {
                 background-color: rgb(0, 204, 204);
                 color: black;
@@ -439,7 +438,16 @@ class BoardVis(QMainWindow):
                 color: rgb(0, 204, 204);
                 border-color: rgb(0, 204, 204);
             }
-            ''')
+            '''
+
+        # Set up for okay button properties
+        self.okayButton.clicked.connect(self.okayButtonClicked)
+        self.okayButton.resize(150, 40)
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPixelSize(self.okayButton.height() * 0.4)
+        self.okayButton.setFont(font)
+        self.okayButton.setStyleSheet(mainAreaButtonCSS)
         self.okayButton.move(int((self.boardSize / 2) - (self.okayButton.width() / 2))
                              , int((self.boardSize / 2) + 250))
         self.okayButton.hide()
@@ -459,21 +467,7 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.startGame.height() * 0.4)
         self.startGame.setFont(font)
-        self.startGame.setStyleSheet(
-            '''
-            QPushButton {
-                background-color: rgb(0, 204, 204);
-                color: black;
-                border: 0.1em solid #000000;
-                box-shadow:
-            }
-            QPushButton:hover {
-                background-color: black;
-                color: rgb(0, 204, 204);
-                border-color: rgb(0, 204, 204);
-            }
-            '''
-            )
+        self.startGame.setStyleSheet(mainAreaButtonCSS)
         self.startGame.move(int((self.boardSize / 2) - (self.startGame.width() / 2))
                             , int((self.boardSize / 2) + 250))
         self.startGame.hide()
@@ -530,6 +524,8 @@ class BoardVis(QMainWindow):
                                int((self.boardSize / 2) + 85))
         self.gameTypeText.hide()
 
+        radioButtonTextCSS = 'color: white'
+
         #set up white/black button properties
         self.team_group = QButtonGroup()
 
@@ -546,8 +542,13 @@ class BoardVis(QMainWindow):
                               , int((self.boardSize / 2) - 100))
         self.whiteButton.setChecked(True)
 
+        self.whiteButton.setStyleSheet(radioButtonTextCSS)
+        self.blackButton.setStyleSheet(radioButtonTextCSS)
+
+
         #set up human/computer button properties
         self.opponent_group = QButtonGroup(self)
+
         self.opponent_group.addButton(self.humanButton, 1)
         self.__set_button(self.humanButton, 0.4)
         self.humanButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
@@ -559,8 +560,12 @@ class BoardVis(QMainWindow):
                                  , int((self.boardSize / 2) - 10))
         self.humanButton.setChecked(True)
 
+        self.humanButton.setStyleSheet(radioButtonTextCSS)
+        self.computerButton.setStyleSheet(radioButtonTextCSS)
+
         #set up highlight on/off button properties
         self.highlight_group = QButtonGroup(self)
+
         self.highlight_group.addButton(self.onhighlight, 1)
         self.__set_button(self.onhighlight, 0.4)
         self.onhighlight.move(int((self.boardSize / 2) - (self.onhighlight.width() / 2))
@@ -572,8 +577,13 @@ class BoardVis(QMainWindow):
                                , int((self.boardSize / 2) + 80))
         self.onhighlight.setChecked(True)
 
+        self.onhighlight.setStyleSheet(radioButtonTextCSS)
+        self.offhighlight.setStyleSheet(radioButtonTextCSS)
+
+
         #set up medieval/corp button properties
         self.gameType_group = QButtonGroup(self)
+
         self.gameType_group.addButton(self.medievalButton, 1)
         self.__set_button(self.medievalButton, 0.4)
         self.medievalButton.move(int((self.boardSize / 2) - (self.medievalButton.width() / 2))
@@ -584,6 +594,12 @@ class BoardVis(QMainWindow):
         self.corpCommanderButton.move(int((self.boardSize / 2) - (self.corpCommanderButton.width() / 2))
                                       , int((self.boardSize / 2) + 170))
         self.corpCommanderButton.setChecked(True)
+
+        self.medievalButton.setStyleSheet(radioButtonTextCSS)
+        self.corpCommanderButton.setStyleSheet(radioButtonTextCSS)
+        self.corpCommanderButton.adjustSize()
+
+
 
     def startGameClicked(self):
         if self.blackButton.isChecked():
