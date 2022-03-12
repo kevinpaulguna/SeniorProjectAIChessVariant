@@ -527,6 +527,10 @@ class Game:
             if not p:
                 return False
 
+            if not to_c.checkLeng():
+                print("corp exceeds max length")
+                return False
+            
             to_c.request_piece(pc)
             self.tracker.use_delegation_move()
             return True
