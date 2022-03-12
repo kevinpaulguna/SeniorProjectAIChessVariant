@@ -623,37 +623,33 @@ class BoardVis(QMainWindow):
             self.__game_type = "Corp"
             self.corpButton.show()
         self.controller = chess_game(game_type=self.__game_type)
-        self.corp_menu = CorpMenu(self)
 
         self._update_pieces()
         self.update_labels()
+
         if self.blackButton.isChecked():
             self.blackButtonClicked()
-        if self.whiteButton.isChecked():
+        elif self.whiteButton.isChecked():
             self.whiteButtonClicked()
-        """
-        if self.humanButton.isChecked():
-            self.humanButtonClicked()
-        if self.computerButton.isChecked():
-            self.computerButtonClicked()
-        """
+
+        # TODO: Handle once AI is enabled
+        # if self.humanButton.isChecked():
+        #     self.humanButtonClicked()
+        # elif self.computerButton.isChecked():
+        #     self.computerButtonClicked()
 
         if self.onhighlight.isChecked():
             self.h_mode = True
-        if self.offhighlight.isChecked():
+        elif self.offhighlight.isChecked():
             self.h_mode = False
 
-        """
-        if self.medievalButton.isChecked():
-            self.medievalButtonClicked()
-        if self.corpCommanderButton.isChecked():
-            self.corpCommanderButtonClicked()
-        """
         self.hideStartScreen()
         self.tableOption.show()
         self.moveIndicator.show()
         self.newGameButton.show()
         self.stopButton.show()
+
+        self.corp_menu = CorpMenu(self)
 
     def __rolldiceWork(self):
         # Set up roll dice text properties
