@@ -622,6 +622,7 @@ class BoardVis(QMainWindow):
         elif self.corpCommanderButton.isChecked():
             self.__game_type = "Corp"
             self.corpButton.show()
+            self.corp_menu = CorpMenu(self)
         self.controller = chess_game(game_type=self.__game_type)
 
         self._update_pieces()
@@ -648,8 +649,6 @@ class BoardVis(QMainWindow):
         self.moveIndicator.show()
         self.newGameButton.show()
         self.stopButton.show()
-
-        self.corp_menu = CorpMenu(self)
 
     def __rolldiceWork(self):
         # Set up roll dice text properties
