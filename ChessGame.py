@@ -200,6 +200,7 @@ class Game:
         if (abs(from_spot.x_loc - to_spot.x_loc) <= 1 and
                 abs(from_spot.y_loc - to_spot.y_loc) <= 1 and
                 (from_spot.piece.get_type() == 'Bishop' or from_spot.piece.get_type() == 'King') and
+                not to_spot.has_piece() and
                 not from_spot.piece.corp.commanderMoved()):
                     useOne = True
 
@@ -278,7 +279,7 @@ class Game:
         piece = self.__board[from_y][from_x].piece
 
         # Checks to see if this piece's corp has already used its command authority
-        if piece and piece.has_moved() and self.__board[to_y][to_x].piece is not None:
+        if piece and piece.has_moved() and self.__board[to_y][to_x].has_piece():
             print('This corp has already used its authority')
             return False
 
@@ -530,7 +531,7 @@ class Game:
             if not to_c.checkLeng():
                 print("corp exceeds max length")
                 return False
-            
+
             to_c.request_piece(pc)
             self.tracker.use_delegation_move()
             return True
