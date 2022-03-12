@@ -180,7 +180,7 @@ class PieceVis(QLabel):
                                                              to_x=self.end[0], to_y=self.end[1])        # or whatever the show dice roll function is
 
         if moveSuccessful:
-            self.parent()._update_pieces(self.parent().controller.get_board())
+            self.parent()._update_pieces()
             new_spot = board_to_screen(self.end[0], self.end[1],
                                        self.parent().tileSize)  # create pixel position of new piece
 
@@ -360,7 +360,7 @@ class BoardVis(QMainWindow):
                               - (self.tableOption.height()) * 0.5)
 
     #Create show information of move indicator
-        self.moveIndicator.setText("Remaining Move:")                              
+        self.moveIndicator.setText("Remaining Move:")
         self.moveIndicator.setAlignment(Qt.AlignCenter)
         self.moveIndicator.resize(200, 100)
         font = QFont()
@@ -537,7 +537,7 @@ class BoardVis(QMainWindow):
         self.__set_button(self.whiteButton, 0.4)
         self.whiteButton.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2))
                               , int((self.boardSize / 2) - 130))
-        
+
 
         # Set up for black button properties
         self.team_group.addButton(self.blackButton)
@@ -705,11 +705,11 @@ class BoardVis(QMainWindow):
         if self.controller.tracker.get_current_player():
             self.tableOption.setText("Current Turn: White")
             self.moveIndicator.setText("Remaining Move:" + str( self.controller.tracker.get_number_of_available_moves() ))
-                                       
+
         else:
             self.tableOption.setText("Current Turn: Black")
             self.moveIndicator.setText("Remaining Move:" + str(self.controller.tracker.get_number_of_available_moves() ))
-                                       
+
 
 
     def showSideChoice(self):
@@ -1004,7 +1004,7 @@ class KingBox(LeaderBox):
         for i in range(1,4):
             options[self.corps_ref[i]['name']] = self.corps_ref[i]['commanding']
         return options
-    
+
     def update_deleg_line(self):
         data = self.get_corp_options()
         self.swap_line.set_corp_data(data)
@@ -1038,7 +1038,7 @@ class CorpMenu(QWidget):
         self.update_data()
         self.king_box.corps_ref = self.corps_ref
         self.king_box.update_deleg_line()
-        self.king_box.disable_button(self.controller.tracker.delegation_move_has_been_used())   
+        self.king_box.disable_button(self.controller.tracker.delegation_move_has_been_used())
         self.update_all_groups()
         self.main_window._update_pieces()
 
