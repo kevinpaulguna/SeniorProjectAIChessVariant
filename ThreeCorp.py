@@ -103,7 +103,7 @@ class Corp:
         if not self.checkLeng():
             return
         if self.checkKing == True:
-            self.Command()
+            self.command()
         else:
             piece.corp.command()
         print('moving ', piece.get_name(), ' to ', self.__name )
