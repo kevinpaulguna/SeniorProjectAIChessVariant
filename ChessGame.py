@@ -183,10 +183,12 @@ class Game:
         # checks for same piece
         if from_x == to_x and from_y == to_y:
             return
-
+        if self.__last_move_knight:
+            print('stored', self.__last_move_knight[1])
+        print('current', self.tracker.get_turn_count())
         # checks if last moved piece was the same knight, handles if not
-        if self.__last_move_knight and self.__last_move_knight.get_name() != from_spot.piece.get_name():
-            self.tracker.use_action(piece_used=self.__last_move_knight, small_move=useOne)
+        if self.__last_move_knight and self.__last_move_knight[0].get_name() != from_spot.piece.get_name():
+            self.tracker.use_action(piece_used=self.__last_move_knight[0], small_move=useOne)
             self.__last_move_knight = None
 
         # Checks what team the piece is on
@@ -252,7 +254,7 @@ class Game:
 
             # doesn't count move for knight if not attacking
             if self.__last_dice_roll==-1 and from_spot.piece.get_type() == 'Knight':
-                self.__last_move_knight = from_spot.piece
+                self.__last_move_knight = (from_spot.piece, self.tracker.get_turn_count())
                 print('using command authority')
             else:
                 self.__last_move_knight = None
@@ -277,6 +279,9 @@ class Game:
         self.__move_list = []
 
         piece = self.__board[from_y][from_x].piece
+
+        if self.__last_move_knight and self.__last_move_knight[1] != self.tracker.get_turn_count():
+            self.__last_move_knight = None
 
         # Checks to see if this piece's corp has already used its command authority
         if piece and piece.has_moved() and self.__board[to_y][to_x].has_piece():
@@ -304,12 +309,12 @@ class Game:
 
         if self.__last_move_knight:
             # valid moves for knight attacking after move
-            if self.__last_move_knight.get_name() == piece.get_name():
+            if self.__last_move_knight[0].get_name() == piece.get_name():
                 return ((abs(to_x-from_x)==1 and abs(to_y-from_y)==1 or
                         abs(to_x-from_x)==0 and abs(to_y-from_y)==1 or
                         abs(to_x-from_x)==1 and abs(to_y-from_y)==0) and
                         self.__board[to_y][to_x].has_piece())
-            if self.__last_move_knight.corp == piece.corp:
+            if self.__last_move_knight[0].corp == piece.corp:
                 return False
 
         if piece_type == 'Pawn':
@@ -435,7 +440,7 @@ class Game:
     def __is_attack_successful(self, current_piece: Piece, target_piece: Piece):
         self.__last_dice_roll = random.randint(1, 6)
         # add +1 if knight is attackiing after a move
-        if (self.__last_move_knight and self.__last_move_knight.get_name() == current_piece.get_name()
+        if (self.__last_move_knight and self.__last_move_knight[0].get_name() == current_piece.get_name()
             and self.__last_dice_roll<6):
             self.__last_dice_roll += 1
 

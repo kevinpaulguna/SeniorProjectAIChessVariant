@@ -4,6 +4,7 @@ class MedievalTurnManager:
     def __init__(self, players=2):
         self.players = players
         # 0 black, 1 white
+        self.__turnCounter = 0
         self.current_player = 1   # who's turn it is currently. starts with 1 because of bool to int translation
         self.max_actions = [1 for _ in range(self.players)]    # number of actions a given team starts with
         self.current_actions = self.max_actions[self.current_player]      # the active players actions left this turn
@@ -24,6 +25,10 @@ class MedievalTurnManager:
         if self.current_player >= self.players:
             self.current_player = 0
         self.current_actions = self.get_max_actions(self.current_player)
+        self.__turnCounter += 1
+
+    def get_turn_count(self):
+        return self.__turnCounter
 
     # this should be called when the current player
     # uses an action on his turn
@@ -46,7 +51,7 @@ class CorpCommandTurnManager():
         # 0 black, 1 white
         self.current_player = 1   # who's turn it is currently. starts with 1 because of bool to int translation
         self.__delegation_move_used = False
-
+        self.__turnCounter = 0
         # initialize corp storage
         self.__corps = {
             'white': [Corp],
@@ -63,6 +68,10 @@ class CorpCommandTurnManager():
         if self.current_player >= self.players:
             self.current_player = 0
         self.__reset_turn()
+        self.__turnCounter += 1
+
+    def get_turn_count(self):
+        return self.__turnCounter
 
     # this should be called when the current player
     # uses an action on his turn
