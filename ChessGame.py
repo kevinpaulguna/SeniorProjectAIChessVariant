@@ -1,13 +1,19 @@
 import random
 from ChessGameHelpers import Piece, Spot
-from turnManager import CorpCommandTurnManager
+from turnManager import MedievalTurnManager, CorpCommandTurnManager
 from ThreeCorp import Corp
 
 class Game:
-    def __init__(self):
+    def __init__(self, game_type = "Corp"):
         self.__gameOver = False
 
-        self.tracker = CorpCommandTurnManager()
+        gametypes = ['Corp', 'Medieval']
+        if game_type not in gametypes:
+            raise ValueError("Invalid game type. Expected one of: ", gametypes)
+        else:
+            self.__is_corp_command_game = (game_type == "Corp")
+
+        self.tracker = CorpCommandTurnManager() if self.__is_corp_command_game else MedievalTurnManager()
 
         # board
         self.__board = [[Spot(x, y) for x in range(0, 8)] for y in range(0, 8)]
@@ -45,60 +51,61 @@ class Game:
                    Piece(3, 7, 'wQ', white=True, type="Queen"), Piece(3, 0, 'bQ', white=False, type="Queen"),
                    Piece(4, 7, 'wKg', white=True, type="King"), Piece(4, 0, 'bKg', white=False, type="King")])
 
-        # creating the three corps for each color and adding the pieces to them
-        print('\n')
-        self.corpW1 = Corp('corpW1', pieces[16])
-        pieces[16].corp = self.corpW1
-        self.corpW1.addToCorp(pieces[0])
-        self.corpW1.addToCorp(pieces[1])
-        self.corpW1.addToCorp(pieces[2])
-        self.corpW1.addToCorp(pieces[24])
-        # corpW1.printCorp()
+        if self.__is_corp_command_game:
+            # creating the three corps for each color and adding the pieces to them
+            print('\n')
+            self.corpW1 = Corp('corpW1', pieces[16])
+            pieces[16].corp = self.corpW1
+            self.corpW1.addToCorp(pieces[0])
+            self.corpW1.addToCorp(pieces[1])
+            self.corpW1.addToCorp(pieces[2])
+            self.corpW1.addToCorp(pieces[24])
+            # corpW1.printCorp()
 
-        self.corpW2 = Corp('corpW2', pieces[30])
-        pieces[30].corp = self.corpW2
-        self.corpW2.addToCorp(pieces[3])
-        self.corpW2.addToCorp(pieces[4])
-        self.corpW2.addToCorp(pieces[20])
-        self.corpW2.addToCorp(pieces[21])
-        self.corpW2.addToCorp(pieces[28])
-        # corpW2.printCorp()
+            self.corpW2 = Corp('corpW2', pieces[30])
+            pieces[30].corp = self.corpW2
+            self.corpW2.addToCorp(pieces[3])
+            self.corpW2.addToCorp(pieces[4])
+            self.corpW2.addToCorp(pieces[20])
+            self.corpW2.addToCorp(pieces[21])
+            self.corpW2.addToCorp(pieces[28])
+            # corpW2.printCorp()
 
-        self.corpW3 = Corp('corpW3', pieces[17])
-        pieces[17].corp = self.corpW3
-        self.corpW3.addToCorp(pieces[5])
-        self.corpW3.addToCorp(pieces[6])
-        self.corpW3.addToCorp(pieces[7])
-        self.corpW3.addToCorp(pieces[25])
-        # corpW3.printCorp()
+            self.corpW3 = Corp('corpW3', pieces[17])
+            pieces[17].corp = self.corpW3
+            self.corpW3.addToCorp(pieces[5])
+            self.corpW3.addToCorp(pieces[6])
+            self.corpW3.addToCorp(pieces[7])
+            self.corpW3.addToCorp(pieces[25])
+            # corpW3.printCorp()
 
-        self.corpB1 = Corp('corpB1', pieces[18])
-        pieces[18].corp = self.corpB1
-        self.corpB1.addToCorp(pieces[8])
-        self.corpB1.addToCorp(pieces[9])
-        self.corpB1.addToCorp(pieces[10])
-        self.corpB1.addToCorp(pieces[26])
-        # corpB1.printCorp()
+            self.corpB1 = Corp('corpB1', pieces[18])
+            pieces[18].corp = self.corpB1
+            self.corpB1.addToCorp(pieces[8])
+            self.corpB1.addToCorp(pieces[9])
+            self.corpB1.addToCorp(pieces[10])
+            self.corpB1.addToCorp(pieces[26])
+            # corpB1.printCorp()
 
-        self.corpB2 = Corp('corpB2', pieces[31])
-        pieces[31].corp = self.corpB2
-        self.corpB2.addToCorp(pieces[11])
-        self.corpB2.addToCorp(pieces[12])
-        self.corpB2.addToCorp(pieces[22])
-        self.corpB2.addToCorp(pieces[23])
-        self.corpB2.addToCorp(pieces[29])
-        # corpB2.printCorp()
+            self.corpB2 = Corp('corpB2', pieces[31])
+            pieces[31].corp = self.corpB2
+            self.corpB2.addToCorp(pieces[11])
+            self.corpB2.addToCorp(pieces[12])
+            self.corpB2.addToCorp(pieces[22])
+            self.corpB2.addToCorp(pieces[23])
+            self.corpB2.addToCorp(pieces[29])
+            # corpB2.printCorp()
 
-        self.corpB3 = Corp('corpB3', pieces[19])
-        pieces[19].corp = self.corpB3
-        self.corpB3.addToCorp(pieces[13])
-        self.corpB3.addToCorp(pieces[14])
-        self.corpB3.addToCorp(pieces[15])
-        self.corpB3.addToCorp(pieces[27])
-        # corpB3.printCorp()
+            self.corpB3 = Corp('corpB3', pieces[19])
+            pieces[19].corp = self.corpB3
+            self.corpB3.addToCorp(pieces[13])
+            self.corpB3.addToCorp(pieces[14])
+            self.corpB3.addToCorp(pieces[15])
+            self.corpB3.addToCorp(pieces[27])
+            # corpB3.printCorp()
 
-        self.tracker.set_corps(w1=self.corpW1, w2=self.corpW2, w3=self.corpW3,
-                               b1=self.corpB1, b2=self.corpB2, b3=self.corpB3)
+            self.tracker.set_corps(w1=self.corpW1, w2=self.corpW2, w3=self.corpW3,
+                                b1=self.corpB1, b2=self.corpB2, b3=self.corpB3)
 
         # assign pieces to board
         for p in pieces:
@@ -183,9 +190,7 @@ class Game:
         # checks for same piece
         if from_x == to_x and from_y == to_y:
             return
-        if self.__last_move_knight:
-            print('stored', self.__last_move_knight[1])
-        print('current', self.tracker.get_turn_count())
+
         # checks if last moved piece was the same knight, handles if not
         if self.__last_move_knight and self.__last_move_knight[0].get_name() != from_spot.piece.get_name():
             self.tracker.use_action(piece_used=self.__last_move_knight[0], small_move=useOne)
@@ -197,9 +202,7 @@ class Game:
             print(self.__move_message)
             return False
 
-
-
-        if (abs(from_spot.x_loc - to_spot.x_loc) <= 1 and
+        if self.__is_corp_command_game and (abs(from_spot.x_loc - to_spot.x_loc) <= 1 and
                 abs(from_spot.y_loc - to_spot.y_loc) <= 1 and
                 (from_spot.piece.get_type() == 'Bishop' or from_spot.piece.get_type() == 'King') and
                 not to_spot.has_piece() and
@@ -230,12 +233,12 @@ class Game:
                             self.__move_message += "You Win! "
                             self.__gameOver = True
                             #return True
-                        elif to_spot.piece.get_type() == 'Bishop':
+                        elif self.__is_corp_command_game and to_spot.piece.get_type() == 'Bishop':
                             if to_spot.piece.is_white():
                                 to_spot.piece.corp.captured(self.corpW2)
                             else:
                                 to_spot.piece.corp.captured(self.corpB2)
-                        else:
+                        elif self.__is_corp_command_game:
                             to_spot.piece.corp.removeFromCorp(to_spot.piece)
                         rook_attack = (from_spot.piece.get_type() == 'Rook')
                         to_spot.piece.set_killed()
@@ -244,7 +247,10 @@ class Game:
                     else:
                         self.__move_message += "Attack failed! Move unsuccessful! "
                         # we still technicly used an action so we must progress turnManager
-                        self.tracker.use_action(piece_used=from_spot.piece, small_move=useOne)
+                        if self.__is_corp_command_game:
+                            self.tracker.use_action(piece_used=from_spot.piece, small_move=useOne)
+                        else:
+                            self.tracker.use_action()
                         print(self.__move_message)
                         self.__last_move_knight = None
                         return False
@@ -259,7 +265,10 @@ class Game:
             else:
                 self.__last_move_knight = None
 
-                self.tracker.use_action(piece_used=from_spot.piece, small_move=useOne)
+                if self.__is_corp_command_game:
+                    self.tracker.use_action(piece_used=from_spot.piece, small_move=useOne)
+                else:
+                    self.tracker.use_action()
 
             if rook_attack:
                 to_spot.piece = None
@@ -284,21 +293,22 @@ class Game:
             self.__last_move_knight = None
 
         # Checks to see if this piece's corp has already used its command authority
-        if piece and piece.has_moved() and self.__board[to_y][to_x].has_piece():
+        if self.__is_corp_command_game and piece and piece.has_moved() and self.__board[to_y][to_x].has_piece():
             print('This corp has already used its authority')
             return False
 
-        if abs(from_x - to_x) <= 1 and abs(from_y - to_y) <= 1 and (
-                piece.get_type() == 'Bishop' or piece.get_type() == 'King'):
-            # print(from_spot.x_loc, from_spot.y_loc)
-            if piece.corp.commanderMoved():
-                if piece.has_moved():
-                    print('has used all moves')
-                    return False
-                # print('using command authority')
-        elif piece.has_moved() == True:
-            print('This corp has already used its authority')
-            return False
+        if self.__is_corp_command_game:
+            if abs(from_x - to_x) <= 1 and abs(from_y - to_y) <= 1 and (
+                    piece.get_type() == 'Bishop' or piece.get_type() == 'King'):
+                # print(from_spot.x_loc, from_spot.y_loc)
+                if piece.corp.commanderMoved():
+                    if piece.has_moved():
+                        print('has used all moves')
+                        return False
+                    # print('using command authority')
+            elif piece.has_moved() == True:
+                print('This corp has already used its authority')
+                return False
 
         # check for bounds
         if to_x > 7 or to_y > 7 or to_x < 0 or to_y < 0:
@@ -507,7 +517,7 @@ class Game:
         self.__move_message = ""
 
     def delegate_or_recall(self, *, piece: str, from_corp: str, to_corp: str):
-        if not self.tracker.delegation_move_has_been_used():
+        if self.__is_corp_command_game and not self.tracker.delegation_move_has_been_used():
             # locates piece and corps based on string names and calls the request_piece func from Corp
             # returns false if failed to find corp or piece, returns true if found and delegation happens
             corps = [self.corpW1, self.corpW2, self.corpW3, self.corpB1, self.corpB2, self.corpB3]
@@ -547,42 +557,43 @@ class Game:
         return self.__captured_by
 
     def get_corp_info(self, *, white:bool):
-        if white:
-            return {
-                1: {
-                    'name': self.corpW1.get_name(),
-                    'commander': self.corpW1.commander.get_name(),
-                    'commanding': [piece.get_name() for piece in self.corpW1.commanding]
-                },
-                2: {
-                    'name': self.corpW2.get_name(),
-                    'commander': self.corpW2.commander.get_name(),
-                    'commanding': [piece.get_name() for piece in self.corpW2.commanding]
-                },
-                3: {
-                    'name': self.corpW3.get_name(),
-                    'commander': self.corpW3.commander.get_name(),
-                    'commanding': [piece.get_name() for piece in self.corpW3.commanding]
-                },
-            }
-        else:
-            return {
-                1: {
-                    'name': self.corpB1.get_name(),
-                    'commander': self.corpB1.commander.get_name(),
-                    'commanding': [piece.get_name() for piece in self.corpB1.commanding]
-                },
-                2: {
-                    'name': self.corpB2.get_name(),
-                    'commander': self.corpB2.commander.get_name(),
-                    'commanding': [piece.get_name() for piece in self.corpB2.commanding]
-                },
-                3: {
-                    'name': self.corpB3.get_name(),
-                    'commander': self.corpB3.commander.get_name(),
-                    'commanding': [piece.get_name() for piece in self.corpB3.commanding]
-                },
-            }
+        if self.__is_corp_command_game:
+            if white:
+                return {
+                    1: {
+                        'name': self.corpW1.get_name(),
+                        'commander': self.corpW1.commander.get_name(),
+                        'commanding': [piece.get_name() for piece in self.corpW1.commanding]
+                    },
+                    2: {
+                        'name': self.corpW2.get_name(),
+                        'commander': self.corpW2.commander.get_name(),
+                        'commanding': [piece.get_name() for piece in self.corpW2.commanding]
+                    },
+                    3: {
+                        'name': self.corpW3.get_name(),
+                        'commander': self.corpW3.commander.get_name(),
+                        'commanding': [piece.get_name() for piece in self.corpW3.commanding]
+                    },
+                }
+            else:
+                return {
+                    1: {
+                        'name': self.corpB1.get_name(),
+                        'commander': self.corpB1.commander.get_name(),
+                        'commanding': [piece.get_name() for piece in self.corpB1.commanding]
+                    },
+                    2: {
+                        'name': self.corpB2.get_name(),
+                        'commander': self.corpB2.commander.get_name(),
+                        'commanding': [piece.get_name() for piece in self.corpB2.commanding]
+                    },
+                    3: {
+                        'name': self.corpB3.get_name(),
+                        'commander': self.corpB3.commander.get_name(),
+                        'commanding': [piece.get_name() for piece in self.corpB3.commanding]
+                    },
+                }
 
     def get_result_of_dice_roll(self):
         return self.__last_dice_roll
@@ -592,8 +603,9 @@ class Game:
 
     def get_board(self):
         # returns 2d list of tuples (piece name, corp of piece)
-        return [
-            [((spot.piece.get_name(), spot.piece.corp.get_name()) if spot.has_piece() else ("___", None)) for spot in row]
+        return [[(
+            (spot.piece.get_name(), spot.piece.corp.get_name() if self.__is_corp_command_game else 0)
+            if spot.has_piece() else ("___", None)) for spot in row]
             for row in self.__board]
 
     def game_status(self):
