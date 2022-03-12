@@ -359,6 +359,7 @@ class BoardVis(QMainWindow):
         self.tableOption.setFont(font)
         self.tableOption.move(int(self.boardSize), int(self.boardSize /2 -75)
                               - (self.tableOption.height()) * 0.5)
+        self.tableOption.hide()
 
     #Create show information of move indicator
         self.moveIndicator.setText("Remaining Move:")
@@ -370,35 +371,37 @@ class BoardVis(QMainWindow):
         self.moveIndicator.setFont(font)
         self.moveIndicator.move(int(self.boardSize), int(self.boardSize /2)
                                 - (self.moveIndicator.height()) * 0.5)
+        self.moveIndicator.hide()
 
     #manage corp button setup:
         self.__set_button(self.corpButton, 0.7)
         self.corpButton.setCheckable(True)
         self.corpButton.clicked.connect(self.corpBClicked)
-        self.corpButton.resize(155,40)
-        self.corpButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 25,
+        self.corpButton.resize(180,40)
+        self.corpButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 50,
                              25)
 
-        self.corpButton.adjustSize()
         if self.__game_type != "Corp":
             self.corpButton.hide()
 
     #Create stop button properties
         self.__set_button(self.stopButton, 0.7)
         self.stopButton.clicked.connect(self.stopButtonClicked)
-        self.stopButton.move(int(self.boardSize - ((self.stopButton.width() - self.tableOption.width()) / 2)),
-                              int(self.boardSize / 2 + 250) - (self.stopButton.height() * 0.5))
+        self.stopButton.move(int(self.boardSize - ((self.stopButton.width() - self.tableOption.width()) / 2))-50,
+                              int(self.boardSize / 2 + 250) - (self.stopButton.height() * 0.5)-20)
 
-        self.stopButton.adjustSize()
+        self.stopButton.resize(180,40)
+        self.stopButton.hide()
 
     #Create restart button properties
 
         self.__set_button(self.newGameButton, 0.7)
-        self.newGameButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)),
-                             int(self.boardSize / 2 + 300) - (self.newGameButton.height() * 0.5))
+        self.newGameButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2))-50,
+                             int(self.boardSize / 2 + 300) - (self.newGameButton.height() * 0.5)-20)
 
-        self.newGameButton.adjustSize()
+        self.newGameButton.resize(180,40)
         self.newGameButton.clicked.connect(self.returnToStartScreen)
+        self.newGameButton.hide()
 
         # Create StartScreen properties
         self.startScreen.setAlignment(Qt.AlignCenter)
@@ -476,6 +479,8 @@ class BoardVis(QMainWindow):
                             , int((self.boardSize / 2) + 250))
         self.startGame.hide()
 
+        optionsTitlesCSS = 'font-weight: bold; color: rgb(0, 204, 204)'
+
         #set up team text properties
         self.teamText.setAlignment(Qt.AlignCenter)
         self.teamText.setText("Team:")
@@ -484,7 +489,7 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.teamText.height() * 0.2)
         self.teamText.setFont(font)
-        self.teamText.setStyleSheet('font-weight: bold; color: rgba(0, 204, 204, 255)')
+        self.teamText.setStyleSheet(optionsTitlesCSS)
         self.teamText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
                                   int((self.boardSize / 2) - 175))
         self.teamText.hide()
@@ -497,7 +502,7 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.teamText.height() * 0.2)
         self.opponentText.setFont(font)
-        self.opponentText.setStyleSheet('font-weight: bold; color: rgba(0, 204, 204, 255)')
+        self.opponentText.setStyleSheet(optionsTitlesCSS)
         self.opponentText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
                                int((self.boardSize / 2) - 95))
         self.opponentText.hide()
@@ -510,7 +515,7 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.teamText.height() * 0.2)
         self.highlightText.setFont(font)
-        self.highlightText.setStyleSheet('font-weight: bold; color: rgba(0, 204, 204, 255)')
+        self.highlightText.setStyleSheet(optionsTitlesCSS)
         self.highlightText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
                                 int((self.boardSize / 2) - 5))
         self.highlightText.hide()
@@ -523,12 +528,12 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.teamText.height() * 0.2)
         self.gameTypeText.setFont(font)
-        self.gameTypeText.setStyleSheet('font-weight: bold; color: rgba(0, 204, 204, 255)')
+        self.gameTypeText.setStyleSheet(optionsTitlesCSS)
         self.gameTypeText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
                                int((self.boardSize / 2) + 85))
         self.gameTypeText.hide()
 
-        radioButtonTextCSS = 'color: white'
+        radioButtonTextCSS = 'color: white; font-size: 15px'
 
         #set up white/black button properties
         self.team_group = QButtonGroup()
@@ -548,7 +553,8 @@ class BoardVis(QMainWindow):
 
         self.whiteButton.setStyleSheet(radioButtonTextCSS)
         self.blackButton.setStyleSheet(radioButtonTextCSS)
-
+        self.whiteButton.adjustSize()
+        self.blackButton.adjustSize()
 
         #set up human/computer button properties
         self.opponent_group = QButtonGroup(self)
@@ -566,6 +572,8 @@ class BoardVis(QMainWindow):
 
         self.humanButton.setStyleSheet(radioButtonTextCSS)
         self.computerButton.setStyleSheet(radioButtonTextCSS)
+        self.humanButton.adjustSize()
+        self.computerButton.adjustSize()
 
         #set up highlight on/off button properties
         self.highlight_group = QButtonGroup(self)
@@ -583,7 +591,8 @@ class BoardVis(QMainWindow):
 
         self.onhighlight.setStyleSheet(radioButtonTextCSS)
         self.offhighlight.setStyleSheet(radioButtonTextCSS)
-
+        self.onhighlight.adjustSize()
+        self.offhighlight.adjustSize()
 
         #set up medieval/corp button properties
         self.gameType_group = QButtonGroup(self)
@@ -601,7 +610,9 @@ class BoardVis(QMainWindow):
 
         self.medievalButton.setStyleSheet(radioButtonTextCSS)
         self.corpCommanderButton.setStyleSheet(radioButtonTextCSS)
+        self.medievalButton.adjustSize()
         self.corpCommanderButton.adjustSize()
+
 
 
 
@@ -639,6 +650,10 @@ class BoardVis(QMainWindow):
             self.corpCommanderButtonClicked()
         """
         self.hideStartScreen()
+        self.tableOption.show()
+        self.moveIndicator.show()
+        self.newGameButton.show()
+        self.stopButton.show()
 
     def __rolldiceWork(self):
         # Set up roll dice text properties
@@ -731,13 +746,8 @@ class BoardVis(QMainWindow):
         self.corp_menu.show()
 
     def update_labels(self):
-        if self.controller.tracker.get_current_player():
-            self.tableOption.setText("Current Turn: White")
-            self.moveIndicator.setText("Remaining Move:" + str( self.controller.tracker.get_number_of_available_moves() ))
-
-        else:
-            self.tableOption.setText("Current Turn: Black")
-            self.moveIndicator.setText("Remaining Move:" + str(self.controller.tracker.get_number_of_available_moves() ))
+        self.tableOption.setText("Current Player: " + "White" if self.controller.tracker.get_current_player() else "Black")
+        self.moveIndicator.setText("Remaining Moves: " + str(self.controller.tracker.get_number_of_available_moves() ))
 
 
 
@@ -799,6 +809,10 @@ class BoardVis(QMainWindow):
     def returnToStartScreen(self):
         global game_over
         game_over = False
+        self.newGameButton.hide()
+        self.stopButton.hide()
+        self.moveIndicator.hide()
+        self.tableOption.hide()
         self.corpButton.hide()
         self.hidepauseBackground()
         self.showSideChoice()
