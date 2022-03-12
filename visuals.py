@@ -395,6 +395,7 @@ class BoardVis(QMainWindow):
                              int(self.boardSize / 2 + 300) - (self.newGameButton.height() * 0.5))
 
         self.newGameButton.adjustSize()
+        self.newGameButton.clicked.connect(self.showStartScreen)
 
         # Create StartScreen properties
         self.startScreen.setAlignment(Qt.AlignCenter)
@@ -602,6 +603,9 @@ class BoardVis(QMainWindow):
 
 
     def startGameClicked(self):
+        self.controller = chess_game()
+        self._update_pieces()
+        self.update_labels()
         if self.blackButton.isChecked():
             self.blackButtonClicked()
         if self.whiteButton.isChecked():
@@ -782,6 +786,41 @@ class BoardVis(QMainWindow):
         self.highlightText.hide()
         self.gameTypeText.hide()
         self.startGame.hide()
+
+    def showStartScreen(self):
+        self.startScreen.show()
+        self.chooseSideText.show()
+        self.whiteButton.show()
+        self.blackButton.show()
+        self.teamText.show()
+        self.optionScreen.show()
+        self.opponentText.show()
+        self.computerButton.show()
+        self.humanButton.show()
+        self.offhighlight.show()
+        self.onhighlight.show()
+        self.medievalButton.show()
+        self.corpCommanderButton.show()
+        self.highlightText.show()
+        self.gameTypeText.show()
+        self.startGame.show()
+        self.startScreen.raise_()
+        self.optionScreen.raise_()
+        self.chooseSideText.raise_()
+        self.whiteButton.raise_()
+        self.blackButton.raise_()
+        self.teamText.raise_()
+        self.opponentText.raise_()
+        self.computerButton.raise_()
+        self.humanButton.raise_()
+        self.offhighlight.raise_()
+        self.onhighlight.raise_()
+        self.medievalButton.raise_()
+        self.corpCommanderButton.raise_()
+        self.highlightText.raise_()
+        self.gameTypeText.raise_()
+        self.startGame.raise_()
+
 
     def whiteButtonClicked(self):
         self.controller.tracker.current_player = 1
