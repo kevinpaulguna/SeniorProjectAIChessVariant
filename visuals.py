@@ -223,6 +223,7 @@ class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
         self.controller = chess_game()
+        self.__game_type = ""
         self.h_mode = True
         self.white_pov = True
         #This block sets up the window properties
@@ -379,6 +380,8 @@ class BoardVis(QMainWindow):
                              25)
 
         self.corpButton.adjustSize()
+        if self.__game_type != "Corp":
+            self.corpButton.hide()
 
     #Create stop button properties
         self.__set_button(self.stopButton, 0.7)
@@ -603,7 +606,14 @@ class BoardVis(QMainWindow):
 
 
     def startGameClicked(self):
-        self.controller = chess_game()
+        if self.medievalButton.isChecked():
+            self.__game_type = "Medieval"
+            self.corpButton.hide()
+        elif self.corpCommanderButton.isChecked():
+            self.__game_type = "Corp"
+            self.corpButton.show()
+        self.controller = chess_game(game_type=self.__game_type)
+
         self._update_pieces()
         self.update_labels()
         if self.blackButton.isChecked():
@@ -789,6 +799,7 @@ class BoardVis(QMainWindow):
     def returnToStartScreen(self):
         global game_over
         game_over = False
+        self.corpButton.hide()
         self.hidepauseBackground()
         self.startScreen.show()
         self.chooseSideText.show()
@@ -908,6 +919,7 @@ class BoardVis(QMainWindow):
                 if cur_p and cur_p != "0":
                         cur_p.clear()
                 piece, corp_name = pieces_array[y][x]
+                color_name = ""
                 if corp_name:
                     corp_num = corp_name[-1]
                     color_name = corp_to_color(int(corp_num))
