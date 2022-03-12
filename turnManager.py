@@ -73,6 +73,8 @@ class CorpCommandTurnManager():
         else:
             print('using command authority')
             piece_used.set_moved()
+            if piece_used == piece_used.corp.commander:
+                piece_used.corp.movedOne()
 
         self.__update_corps()
 
