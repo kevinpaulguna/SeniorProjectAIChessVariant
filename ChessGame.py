@@ -562,17 +562,17 @@ class Game:
                 return {
                     1: {
                         'name': self.corpW1.get_name(),
-                        'commander': self.corpW1.commander.get_name(),
+                        'commander': self.corpW1.commander.get_name() if self.corpW1.commander else "",
                         'commanding': [piece.get_name() for piece in self.corpW1.commanding]
                     },
                     2: {
                         'name': self.corpW2.get_name(),
-                        'commander': self.corpW2.commander.get_name(),
+                        'commander': self.corpW2.commander.get_name() if self.corpW2.commander else "",
                         'commanding': [piece.get_name() for piece in self.corpW2.commanding]
                     },
                     3: {
                         'name': self.corpW3.get_name(),
-                        'commander': self.corpW3.commander.get_name(),
+                        'commander': self.corpW3.commander.get_name() if self.corpW3.commander else "",
                         'commanding': [piece.get_name() for piece in self.corpW3.commanding]
                     },
                 }
@@ -580,17 +580,17 @@ class Game:
                 return {
                     1: {
                         'name': self.corpB1.get_name(),
-                        'commander': self.corpB1.commander.get_name(),
+                        'commander': self.corpB1.commander.get_name() if self.corpB1.commander else "",
                         'commanding': [piece.get_name() for piece in self.corpB1.commanding]
                     },
                     2: {
                         'name': self.corpB2.get_name(),
-                        'commander': self.corpB2.commander.get_name(),
+                        'commander': self.corpB2.commander.get_name() if self.corpB2.commander else "",
                         'commanding': [piece.get_name() for piece in self.corpB2.commanding]
                     },
                     3: {
                         'name': self.corpB3.get_name(),
-                        'commander': self.corpB3.commander.get_name(),
+                        'commander': self.corpB3.commander.get_name() if self.corpB3.commander else "",
                         'commanding': [piece.get_name() for piece in self.corpB3.commanding]
                     },
                 }
