@@ -746,7 +746,7 @@ class BoardVis(QMainWindow):
         self.corp_menu.show()
 
     def update_labels(self):
-        self.tableOption.setText("Current Player: " + "White" if self.controller.tracker.get_current_player() else "Black")
+        self.tableOption.setText("Current Player: " + ("White" if self.controller.tracker.get_current_player() else "Black"))
         self.moveIndicator.setText("Remaining Moves: " + str(self.controller.tracker.get_number_of_available_moves() ))
 
 

@@ -196,7 +196,7 @@ class Game:
             if self.__is_corp_command_game:
                 self.tracker.use_action(piece_used=self.__last_move_knight[0], small_move=useOne)
             else:
-                self.tracker.use_action()
+                self.tracker.use_action(piece_used=self.__last_move_knight[0])
             self.__last_move_knight = None
 
         # Checks what team the piece is on
@@ -253,7 +253,7 @@ class Game:
                         if self.__is_corp_command_game:
                             self.tracker.use_action(piece_used=from_spot.piece, small_move=useOne)
                         else:
-                            self.tracker.use_action()
+                            self.tracker.use_action(piece_used=from_spot.piece)
                         print(self.__move_message)
                         self.__last_move_knight = None
                         return False
@@ -271,7 +271,7 @@ class Game:
                 if self.__is_corp_command_game:
                     self.tracker.use_action(piece_used=from_spot.piece, small_move=useOne)
                 else:
-                    self.tracker.use_action()
+                    self.tracker.use_action(piece_used=from_spot.piece)
 
             if rook_attack:
                 to_spot.piece = None
@@ -288,7 +288,7 @@ class Game:
                     if self.__is_corp_command_game:
                         self.tracker.use_action(piece_used=self.__last_move_knight[0], small_move=useOne)
                     else:
-                        self.tracker.use_action()
+                        self.tracker.use_action(piece_used=self.__last_move_knight[0])
                     self.__last_move_knight = None
 
         print("~~~~~")
@@ -302,6 +302,9 @@ class Game:
 
         if self.__last_move_knight and self.__last_move_knight[1] != self.tracker.get_turn_count():
             self.__last_move_knight = None
+
+        if not self.__is_corp_command_game and (piece.get_name() in self.tracker._get_pieces_used()):
+            return False
 
         # Checks to see if this piece's corp has already used its command authority
         if self.__is_corp_command_game and piece and piece.has_moved() and self.__board[to_y][to_x].has_piece():

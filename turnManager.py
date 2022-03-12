@@ -5,9 +5,10 @@ class MedievalTurnManager:
         self.players = players
         # 0 black, 1 white
         self.current_player = 1   # who's turn it is currently. starts with 1 because of bool to int translation
-        self.max_actions = [1 for _ in range(self.players)]    # number of actions a given team starts with
+        self.max_actions = [3 for _ in range(self.players)]    # number of actions a given team starts with
         self.current_actions = self.max_actions[self.current_player]      # the active players actions left this turn
         self.__turnCounter = 0
+        self.__pieces_used = []
 
     def get_current_player(self):
         return self.current_player
@@ -18,6 +19,9 @@ class MedievalTurnManager:
     def get_number_of_available_moves(self):
         return self.current_actions
 
+    def _get_pieces_used(self):
+        return [p.get_name() for p in self.__pieces_used]
+
     # if either player runs out of actions on their turns
     # or ends their turn early this moves to next player and resets counters
     def end_turn(self):
@@ -25,6 +29,7 @@ class MedievalTurnManager:
         if self.current_player >= self.players:
             self.current_player = 0
         self.current_actions = self.get_max_actions(self.current_player)
+        self.__pieces_used = []
         self.__turnCounter += 1
 
     def get_turn_count(self):
@@ -32,7 +37,8 @@ class MedievalTurnManager:
 
     # this should be called when the current player
     # uses an action on his turn
-    def use_action(self):
+    def use_action(self, piece_used:Piece):
+        self.__pieces_used.append(piece_used)
         self.current_actions -= 1
         if self.current_actions <= 0:
             self.end_turn()
