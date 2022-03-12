@@ -41,8 +41,6 @@ def piece_to_img_name(piece):
         piece_name = piece[:2]
     return piece_name
 
-#pieceVis  is a representation of the pieces in the game
-#movableVis is the movable pieces
 
 class corpVis(QLabel):
     def __init__(self, vis, name, size, parent=None):
@@ -55,11 +53,6 @@ class corpVis(QLabel):
         self.setPixmap(self.default_vis)
     #This function is snap the piece back to it place when the person releases wrong place
     #obsoleted
-
-class LeaderVis(QLabel):
-    def __init__(self, vis, parent=None):
-        super(LeaderVis, self).__init__()
-
 
 
 class PieceVis(QLabel):
@@ -200,8 +193,12 @@ class TileVis(QLabel):
         super(TileVis, self).__init__(parent)
         # Set up some properties
         self.is_active = False
-        self.move_vis = QPixmap('./picture/' + move)
-        self.atk_vis = QPixmap('./picture/' + attack)
+        self.move_highlight = QLabel(parent=self)
+        self.move_highlight.setStyleSheet("background-color: rgba(255,255,0,150)")
+        self.move_highlight.resize(75, 75)
+        self.atk_highlight = QLabel(parent=self)
+        self.atk_highlight.setStyleSheet("background-color: rgba(255,69,0,150)")
+        self.atk_highlight.resize(75, 75)
         self.default_vis = QPixmap('./picture/' + visual)
         self.set_img(False)
 
@@ -211,8 +208,10 @@ class TileVis(QLabel):
 
     def set_img(self, atk):
         if self.is_active:
-            self.setPixmap(self.atk_vis) if atk else self.setPixmap(self.move_vis)
+            self.atk_highlight.show() if atk else self.move_highlight.show()
         else:
+            self.move_highlight.hide()
+            self.atk_highlight.hide()
             self.setPixmap(self.default_vis)
 
     def get_active(self):
@@ -624,6 +623,7 @@ class BoardVis(QMainWindow):
             self.__game_type = "Corp"
             self.corpButton.show()
         self.controller = chess_game(game_type=self.__game_type)
+        self.corp_menu = CorpMenu(self)
 
         self._update_pieces()
         self.update_labels()
@@ -895,6 +895,7 @@ class BoardVis(QMainWindow):
         return label
 
     def _update_pieces(self):
+        print("updating pieces")
         pieces_array = self.controller.get_board()
         for y in range(8):
             for x in range(8):
