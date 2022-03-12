@@ -102,10 +102,10 @@ class Corp:
             return
         if not self.checkLeng():
             return
-        if self.checkKing == True:
-            self.command()
-        else:
-            piece.corp.command()
+        #if self.checkKing == True:   removed because delagation action is not command action
+            #self.command()
+        #else:
+            #piece.corp.command()
         print('moving ', piece.get_name(), ' to ', self.__name )
         piece.corp.removeFromCorp(piece)
         self.addToCorp(piece)
