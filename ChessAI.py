@@ -9,12 +9,12 @@ class AIFunctions:
     def __init__(self, game, color):
         self.game = game
         self.color = color
-        self.board = game.get__board()
+        self.board = game._get_board()
         self.total_success_moves = 0
         self.total_moves_attempted = 0
 
-    def updateBoard(self, board):
-        self.board = game.get__board()
+    def updateBoard(self):
+        self.board = game._get_board()
 
     # weights attack areas based on friendly piece power
     def attackRef(self, x, y, piece):
@@ -77,7 +77,7 @@ class AIFunctions:
 
     # returns piece object and its potential movement areas
     def moveMap(self):
-        self.updateBoard(self.board)
+        self.updateBoard()
         moveData = []
         heatmap = [[0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 0, 0],

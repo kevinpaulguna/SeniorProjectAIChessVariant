@@ -622,6 +622,9 @@ class Game:
             if spot.has_piece() else ("___", None)) for spot in row]
             for row in self.__board]
 
+    def _get_board(self):
+        return self.__board
+
     def game_status(self):
         return self.__gameOver
 
