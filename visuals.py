@@ -621,8 +621,9 @@ class BoardVis(QMainWindow):
         elif self.corpCommanderButton.isChecked():
             self.__game_type = "Corp"
             self.corpButton.show()
-            self.corp_menu = CorpMenu(self)
         self.controller = chess_game(game_type=self.__game_type)
+        if self.__game_type == "Corp":
+            self.corp_menu = CorpMenu(self)
 
         self._update_pieces()
         self.update_labels()
