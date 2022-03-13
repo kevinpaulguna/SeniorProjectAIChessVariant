@@ -24,6 +24,7 @@ def board_to_screen(x, y, size):
 def screen_to_board(x, y, size):
     b_x = int(x / size) -1
     b_y = int(y / size) -1
+    
     return (b_x, b_y)
 
 def piece_to_img_name(piece):
@@ -56,7 +57,7 @@ class corpVis(QLabel):
 
 
 class PieceVis(QLabel):
-    def __init__(self, visual, visual_h, parent=None):
+    def __init__(self, visual, x_pos, y_pos, parent=None):
         super(PieceVis, self).__init__(parent)
 
         # Set up some properties
@@ -65,18 +66,9 @@ class PieceVis(QLabel):
         self.onBoarder = False
         self._h_mode = False
         self.moves = []                    # is only accurate between picking up and placing a piece
-        self.start = [0, 0]     # and boardvis will no longer be in charge of whether a piece can move.
+        self.start = [x_pos ,y_pos ]     # and boardvis will no longer be in charge of whether a piece can move.
         self.end = [0, 0]       # pieces will ask chessgame if they can move
         self.default_vis = QPixmap('./picture/' + visual)
-        self.active_vis = QPixmap('./picture/' + visual_h)
-        self.is_active = False
-        self.set_img()
-
-    def get_active(self):
-        return self.is_active
-
-    def set_active(self, val):
-        self.is_active = val
         self.set_img()
 
     def set_h_mode(self, val):
@@ -86,18 +78,17 @@ class PieceVis(QLabel):
         return self._h_mode
 
     def set_img(self):
-        if self.is_active:
-            self.setPixmap(self.active_vis)
-        else:
-            self.setPixmap(self.default_vis)
+        self.setPixmap(self.default_vis)
 
     def mousePressEvent(self, ev: QMouseEvent) -> None:
         if game_over == True:
             return
         #If user clicks on a piece, it will be moved to the starting position
-        self.start =  screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
+        #self.start =  screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
+        #print("start x: ", self.start[0], " y: ", self.start[1])
         self.moves = self.parent().controller.get_possible_moves_for_piece_at(x=self.start[0], y=self.start[1])
         self.raise_()
+
     # Set the region limits of the board that the piece can move to
     def mouseMoveEvent(self, ev: QMouseEvent) -> None:
         if game_over == True:
@@ -158,9 +149,11 @@ class PieceVis(QLabel):
         self.onBoarder = False
 
         self.end = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
-        if self.start == self.end:
+        print(self.start, self.end)
+        if self.same_loc(self.start, self.end):
             # we did not move, just clicked the piece
             self.set_h_mode(not self._h_mode)
+            print("was same spot")
         else:
             self.set_h_mode(False)
         self.parent().remove_all_h()
@@ -176,7 +169,8 @@ class PieceVis(QLabel):
             self.parent()._update_pieces()
             new_spot = board_to_screen(self.end[0], self.end[1],
                                        self.parent().tileSize)  # create pixel position of new piece
-
+            self.start[0] = self.end[0]
+            self.start[1] = self.end[1]
         else:
             new_spot = board_to_screen(self.start[0], self.start[1], self.parent().tileSize)
         self.move(new_spot[0], new_spot[1])
@@ -184,9 +178,12 @@ class PieceVis(QLabel):
         if isAttack:
             self.parent().rollDiceScreen(moveSuccessful)
         self.parent().update_labels()
+
         #self.parent().movePieceRelease(self.start, self.end)
-    def loc_changed(self, s_loc, f_loc):
-        return s_loc != f_loc
+    def same_loc(self, s_loc, f_loc):
+        return (s_loc[0] == f_loc[0]) and (s_loc[1] == f_loc[1])
+
+
 
 class TileVis(QLabel):
     def __init__(self, visual, move, attack, parent=None):
@@ -912,7 +909,7 @@ class BoardVis(QMainWindow):
                 piece = piece_to_img_name(piece)
                 if not piece:
                     continue
-                label = PieceVis(piece + color_name, piece + 'bl', parent=self)
+                label = PieceVis(piece + color_name, x, y, parent=self)
                     # Set the image based on the array element.
                 label.resize(75, 75)
                 label.setScaledContents(True)
