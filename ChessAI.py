@@ -196,7 +196,7 @@ class AIFunctions:
 
                                 elif weight == max_weight_piece[2]:
                                     SameScore.append((x, y, weight, element.get_name() + element.corp.get_name(), element.x_loc, element.y_loc))
-            
+
             # # to check max weight piece after every from piece is checked
             # if max_weight_piece:
             #     print('max pc', max_weight_piece)
@@ -205,18 +205,22 @@ class AIFunctions:
                 # Shuffles the SameScore Array twice to pull a random move
                 random.shuffle(SameScore)
                 max_weight_piece = SameScore[0]
-            
+
                 if not max_weight:
                     max_weight = max_weight_piece[2]
                 elif max_weight < max_weight_piece[2]:
                     BestSameScore = []
                     max_weight = max_weight_piece[2]
-                    
+
                 if max_weight==max_weight_piece[2]:
                     BestSameScore.append(max_weight_piece)
 
         random.shuffle(BestSameScore)
-        BestMove = BestSameScore[0]
+        if len(BestSameScore)==0:
+            game.tracker.end_turn()
+            BestMove = self.best_move(self.moveMap())
+        else:
+            BestMove = BestSameScore[0]
 
         # print('end check, result', BestMove)
 
@@ -236,7 +240,7 @@ class AIFunctions:
             self.total_success_moves+=1
         self.total_moves_attempted += 1
         #self.displayMoveData(moveData)
-    
+
     def make_move(self):
         print("starting new move:")
         player = "white" if game.tracker.get_current_player() else "black"
@@ -246,7 +250,7 @@ class AIFunctions:
         self.AI_move(y)
         colour = "white" if self.color else "black"
         print(colour, "team had", self.total_success_moves, 'successful moves out of', self.total_moves_attempted)
-        
+
 
 
 aiAssistWhite = AIFunctions(game, True)
@@ -254,9 +258,13 @@ aiAssistBlack = AIFunctions(game, False)
 
 
 for num in range (44):
-    if game.tracker.get_current_player():
-        aiAssistWhite.make_move()
+    if not game.game_status():
+        if game.tracker.get_current_player():
+            aiAssistWhite.make_move()
+        else:
+            aiAssistBlack.make_move()
     else:
-        aiAssistBlack.make_move()
+        print("Game Over!")
+        break
 
 
