@@ -3,18 +3,19 @@ import random
 
 from ChessGame import Game
 
-game = Game()
+# game = Game()
 
 class AIFunctions:
-    def __init__(self, game, color):
+    def __init__(self, game:Game, color):
         self.game = game
         self.color = color
-        self.board = game._get_board()
+        self.board = self.game._get_board()
         self.total_success_moves = 0
         self.total_moves_attempted = 0
+        self.last_turn = 0
 
     def updateBoard(self):
-        self.board = game._get_board()
+        self.board = self.game._get_board()
 
     # weights attack areas based on friendly piece power
     def attackRef(self, x, y, piece):
@@ -91,13 +92,13 @@ class AIFunctions:
         x = 0
         y = 0
 
-        player = "white" if game.tracker.get_current_player() else "black"
+        player = "white" if self.game.tracker.get_current_player() else "black"
 
         for item in self.board:
             for item2 in item:
                 if item2.piece:
                     if self.color == item2.piece.is_white():
-                        moveList = game.get_possible_moves_for_piece_at(x=y, y=x)
+                        moveList = self.game.get_possible_moves_for_piece_at(x=y, y=x)
 
                         if (item2.piece.get_type() == 'Pawn'):
                             spotVal = 2
@@ -187,15 +188,15 @@ class AIFunctions:
                         if weight != 0:
                             if not max_weight_piece:
                                 # sets up a max weight if there is not one already set
-                                max_weight_piece = (x, y, weight, element.get_name() + element.corp.get_name(), element.x_loc, element.y_loc)
+                                max_weight_piece = (x, y, weight, element.get_name() , element.x_loc, element.y_loc)
                                 SameScore = [max_weight_piece]
                             else:
                                 if weight > max_weight_piece[2]:
-                                    max_weight_piece = (x, y, weight, element.get_name() + element.corp.get_name(), element.x_loc, element.y_loc)
+                                    max_weight_piece = (x, y, weight, element.get_name() , element.x_loc, element.y_loc)
                                     SameScore = [max_weight_piece]
 
                                 elif weight == max_weight_piece[2]:
-                                    SameScore.append((x, y, weight, element.get_name() + element.corp.get_name(), element.x_loc, element.y_loc))
+                                    SameScore.append((x, y, weight, element.get_name() , element.x_loc, element.y_loc))
 
             # # to check max weight piece after every from piece is checked
             # if max_weight_piece:
@@ -216,8 +217,8 @@ class AIFunctions:
                     BestSameScore.append(max_weight_piece)
 
         if len(BestSameScore)==0:
-            game.tracker.end_turn()
-            BestMove = (element.x_loc, element.x_loc, 0, element.get_name() + element.corp.get_name(), element.x_loc, element.y_loc)
+            self.game.tracker.end_turn()
+            BestMove = (element.x_loc, element.x_loc, 0, element.get_name() , element.x_loc, element.y_loc)
         else:
             random.shuffle(BestSameScore)
             BestMove = BestSameScore[0]
@@ -236,35 +237,40 @@ class AIFunctions:
         print(BestMove)
         print("Moving ", BestMove[3], " from x: ", BestMove[4], " y: ", BestMove[5], "Moving to x: ", BestMove[0], " y: ", BestMove[1])
 
-        if game.move_piece(from_x=BestMove[4], from_y=BestMove[5], to_x=BestMove[0], to_y=BestMove[1]):
+        if self.game.move_piece(from_x=BestMove[4], from_y=BestMove[5], to_x=BestMove[0], to_y=BestMove[1]):
             self.total_success_moves+=1
         self.total_moves_attempted += 1
         #self.displayMoveData(moveData)
 
     def make_move(self):
-        print("starting new move:")
-        player = "white" if game.tracker.get_current_player() else "black"
-        print('current player:', player)
-        x = self.moveMap()
-        y = self.best_move(x)
-        self.AI_move(y)
-        colour = "white" if self.color else "black"
-        print(colour, "team had", self.total_success_moves, 'successful moves out of', self.total_moves_attempted)
+        if not self.game.game_status():
+            if self.last_turn != self.game.tracker.get_turn_count():
+                self.total_success_moves = 0
+                self.total_moves_attempted = 0
+            print("starting new move:")
+            player = "white" if self.game.tracker.get_current_player() else "black"
+            print('current player:', player)
+            x = self.moveMap()
+            y = self.best_move(x)
+            self.AI_move(y)
+            self.last_turn = self.game.tracker.get_turn_count()
+            colour = "white" if self.color else "black"
+            print(colour, "team had", self.total_success_moves, 'successful moves out of', self.total_moves_attempted, 'this turn')
 
 
 
-aiAssistWhite = AIFunctions(game, True)
-aiAssistBlack = AIFunctions(game, False)
+# aiAssistWhite = AIFunctions(game, True)
+# aiAssistBlack = AIFunctions(game, False)
 
 
-for num in range (44):
-    if not game.game_status():
-        if game.tracker.get_current_player():
-            aiAssistWhite.make_move()
-        else:
-            aiAssistBlack.make_move()
-    else:
-        print("Game Over!")
-        break
+# for num in range (44):
+#     if not game.game_status():
+#         if game.tracker.get_current_player():
+#             aiAssistWhite.make_move()
+#         else:
+#             aiAssistBlack.make_move()
+#     else:
+#         print("Game Over!")
+#         break
 
 

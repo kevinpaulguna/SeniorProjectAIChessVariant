@@ -1,11 +1,14 @@
 from ast import Del
 from math import floor
+from shutil import move
+import time
 from turtle import color
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
-from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout,QComboBox, QRadioButton, QButtonGroup
+from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout,QComboBox, QRadioButton, QButtonGroup, QApplication
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
+from ChessAI import AIFunctions
 
 
 from ChessGame import Game as chess_game, Piece
@@ -24,7 +27,7 @@ def board_to_screen(x, y, size):
 def screen_to_board(x, y, size):
     b_x = int(x / size) -1
     b_y = int(y / size) -1
-    
+
     return (b_x, b_y)
 
 def piece_to_img_name(piece):
@@ -179,6 +182,8 @@ class PieceVis(QLabel):
             self.parent().rollDiceScreen(moveSuccessful)
         self.parent().update_labels()
 
+        self.parent().make_AI_move()
+
         #self.parent().movePieceRelease(self.start, self.end)
     def same_loc(self, s_loc, f_loc):
         return (s_loc[0] == f_loc[0]) and (s_loc[1] == f_loc[1])
@@ -289,7 +294,7 @@ class BoardVis(QMainWindow):
         self.okayButton = QPushButton("Return to Board", self)
         self.attackSuccess = None
 
-
+        self.ai_player = None
 
         self.showBoard()
 
@@ -608,8 +613,23 @@ class BoardVis(QMainWindow):
         self.medievalButton.adjustSize()
         self.corpCommanderButton.adjustSize()
 
-
-
+    def make_AI_move(self):
+        white_player = (self.controller.tracker.get_current_player()==1)
+        if self.computerButton.isChecked() and self.whiteButton.isChecked()!=white_player and not self.controller.game_status():
+            while self.whiteButton.isChecked()!=white_player and not self.controller.game_status():
+                self.ai_player.make_move()
+                white_player = (self.controller.tracker.get_current_player()==1)
+                self._update_pieces()
+                self.update_labels()
+                if self.controller.game_status():
+                    global game_over
+                    game_over = True
+                    self.stopButton.hide()
+                    self.moveIndicator.hide()
+                    self.tableOption.setText("Winner: " +
+                                            ("White" if self.controller.tracker.get_current_player() else "Black") +
+                                            " Team!")
+                    return
 
     def startGameClicked(self):
         if self.medievalButton.isChecked():
@@ -630,6 +650,9 @@ class BoardVis(QMainWindow):
         elif self.whiteButton.isChecked():
             self.whiteButtonClicked()
 
+        if self.computerButton.isChecked():
+            self.ai_player = AIFunctions(self.controller, self.blackButton.isChecked())
+
         # TODO: Handle once AI is enabled
         # if self.humanButton.isChecked():
         #     self.humanButtonClicked()
@@ -646,6 +669,9 @@ class BoardVis(QMainWindow):
         self.moveIndicator.show()
         self.newGameButton.show()
         self.stopButton.show()
+
+        if self.blackButton.isChecked():
+            self.make_AI_move()
 
     def __rolldiceWork(self):
         moveIntoSidePanel = ((925-self.boardSize)/2)
@@ -737,6 +763,7 @@ class BoardVis(QMainWindow):
     def stopButtonClicked(self):
         self.controller.tracker.end_turn()
         self.update_labels()
+        self.make_AI_move()
 
     def corpBClicked(self):
         for i in range(1,4):
