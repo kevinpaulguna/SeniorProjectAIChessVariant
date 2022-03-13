@@ -404,12 +404,11 @@ class BoardVis(QMainWindow):
 
         # Create StartScreen properties
         self.startScreen.setAlignment(Qt.AlignCenter)
-        self.startScreen.resize(self.boardSize, self.boardSize)
-        self.startScreen.setStyleSheet("background-image: url(./picture/startscreen.jpg);"
-                                       "background-repeat: no-repeat;"
-                                       "background-position: center;")
+        self.startScreen.resize(925, 675)
+        self.startScreen.setStyleSheet("background-image: url(./picture/fullstartscreen.png);")
         self.startScreen.move(0, 0)
-        self.startScreen.hide()
+
+        moveIntoSidePanel = ((925-self.boardSize)/2)
 
         # Set up choose side text properties
         self.chooseSideText.setAlignment(Qt.AlignCenter)
@@ -421,7 +420,7 @@ class BoardVis(QMainWindow):
         font.setPixelSize(self.chooseSideText.height() * 0.4)
         self.chooseSideText.setFont(font)
         self.chooseSideText.setStyleSheet('font-weight: bold; color: rgba(0, 204, 204, 255)')
-        self.chooseSideText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)),
+        self.chooseSideText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + moveIntoSidePanel,
                                  int((self.boardSize / 2) - 300))
         self.chooseSideText.hide()
 
@@ -462,7 +461,7 @@ class BoardVis(QMainWindow):
         self.optionScreen.setAlignment(Qt.AlignCenter)
         self.optionScreen.resize(self.boardSize / 1.5, self.boardSize / 2)
         self.optionScreen.setStyleSheet('background-color: rgba(0, 0, 0, .8)')
-        self.optionScreen.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2)) - 180
+        self.optionScreen.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2)) - 180 + moveIntoSidePanel
                                , int((self.boardSize / 2) - 150))
         self.optionScreen.hide()
 
@@ -474,7 +473,7 @@ class BoardVis(QMainWindow):
         font.setPixelSize(self.startGame.height() * 0.4)
         self.startGame.setFont(font)
         self.startGame.setStyleSheet(mainAreaButtonCSS)
-        self.startGame.move(int((self.boardSize / 2) - (self.startGame.width() / 2))
+        self.startGame.move(int((self.boardSize / 2) - (self.startGame.width() / 2)) + moveIntoSidePanel
                             , int((self.boardSize / 2) + 250))
         self.startGame.hide()
 
@@ -489,7 +488,7 @@ class BoardVis(QMainWindow):
         font.setPixelSize(self.teamText.height() * 0.2)
         self.teamText.setFont(font)
         self.teamText.setStyleSheet(optionsTitlesCSS)
-        self.teamText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
+        self.teamText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200 + moveIntoSidePanel,
                                   int((self.boardSize / 2) - 175))
         self.teamText.hide()
 
@@ -502,7 +501,7 @@ class BoardVis(QMainWindow):
         font.setPixelSize(self.teamText.height() * 0.2)
         self.opponentText.setFont(font)
         self.opponentText.setStyleSheet(optionsTitlesCSS)
-        self.opponentText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
+        self.opponentText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200 + moveIntoSidePanel,
                                int((self.boardSize / 2) - 95))
         self.opponentText.hide()
 
@@ -515,7 +514,7 @@ class BoardVis(QMainWindow):
         font.setPixelSize(self.teamText.height() * 0.2)
         self.highlightText.setFont(font)
         self.highlightText.setStyleSheet(optionsTitlesCSS)
-        self.highlightText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
+        self.highlightText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200 + moveIntoSidePanel,
                                 int((self.boardSize / 2) - 5))
         self.highlightText.hide()
 
@@ -528,7 +527,7 @@ class BoardVis(QMainWindow):
         font.setPixelSize(self.teamText.height() * 0.2)
         self.gameTypeText.setFont(font)
         self.gameTypeText.setStyleSheet(optionsTitlesCSS)
-        self.gameTypeText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200,
+        self.gameTypeText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200 + moveIntoSidePanel,
                                int((self.boardSize / 2) + 85))
         self.gameTypeText.hide()
 
@@ -539,14 +538,14 @@ class BoardVis(QMainWindow):
 
         self.team_group.addButton(self.whiteButton)
         self.__set_button(self.whiteButton, 0.4)
-        self.whiteButton.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2))
+        self.whiteButton.move(int((self.boardSize / 2) - (self.whiteButton.width() / 2)) + moveIntoSidePanel
                               , int((self.boardSize / 2) - 130))
 
 
         # Set up for black button properties
         self.team_group.addButton(self.blackButton)
         self.__set_button(self.blackButton, 0.4)
-        self.blackButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
+        self.blackButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2)) + moveIntoSidePanel
                               , int((self.boardSize / 2) - 100))
         self.whiteButton.setChecked(True)
 
@@ -560,12 +559,12 @@ class BoardVis(QMainWindow):
 
         self.opponent_group.addButton(self.humanButton, 1)
         self.__set_button(self.humanButton, 0.4)
-        self.humanButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
+        self.humanButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2)) + moveIntoSidePanel
                               , int((self.boardSize / 2) - 40))
 
         self.opponent_group.addButton(self.computerButton, 2)
         self.__set_button(self.computerButton, 0.4)
-        self.computerButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2))
+        self.computerButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2)) + moveIntoSidePanel
                                  , int((self.boardSize / 2) - 10))
         self.humanButton.setChecked(True)
 
@@ -579,12 +578,12 @@ class BoardVis(QMainWindow):
 
         self.highlight_group.addButton(self.onhighlight, 1)
         self.__set_button(self.onhighlight, 0.4)
-        self.onhighlight.move(int((self.boardSize / 2) - (self.onhighlight.width() / 2))
+        self.onhighlight.move(int((self.boardSize / 2) - (self.onhighlight.width() / 2)) + moveIntoSidePanel
                               , int((self.boardSize / 2) + 50))
 
         self.highlight_group.addButton(self.offhighlight, 2)
         self.__set_button(self.offhighlight, 0.4)
-        self.offhighlight.move(int((self.boardSize / 2) - (self.offhighlight.width() / 2))
+        self.offhighlight.move(int((self.boardSize / 2) - (self.offhighlight.width() / 2)) + moveIntoSidePanel
                                , int((self.boardSize / 2) + 80))
         self.onhighlight.setChecked(True)
 
@@ -598,12 +597,12 @@ class BoardVis(QMainWindow):
 
         self.gameType_group.addButton(self.medievalButton, 1)
         self.__set_button(self.medievalButton, 0.4)
-        self.medievalButton.move(int((self.boardSize / 2) - (self.medievalButton.width() / 2))
+        self.medievalButton.move(int((self.boardSize / 2) - (self.medievalButton.width() / 2)) + moveIntoSidePanel
                                  , int((self.boardSize / 2) + 140))
 
         self.gameType_group.addButton(self.corpCommanderButton, 2)
         self.__set_button(self.corpCommanderButton, 0.4)
-        self.corpCommanderButton.move(int((self.boardSize / 2) - (self.corpCommanderButton.width() / 2))
+        self.corpCommanderButton.move(int((self.boardSize / 2) - (self.corpCommanderButton.width() / 2)) + moveIntoSidePanel
                                       , int((self.boardSize / 2) + 170))
         self.corpCommanderButton.setChecked(True)
 
