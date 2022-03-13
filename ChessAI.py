@@ -218,7 +218,7 @@ class AIFunctions:
         random.shuffle(BestSameScore)
         if len(BestSameScore)==0:
             game.tracker.end_turn()
-            BestMove = self.best_move(self.moveMap())
+            BestMove = (element.x_loc, element.x_loc, 0, element.get_name() + element.corp.get_name(), element.x_loc, element.y_loc)
         else:
             BestMove = BestSameScore[0]
 
