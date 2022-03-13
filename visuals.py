@@ -217,7 +217,6 @@ class TileVis(QLabel):
     def get_active(self):
         return self.is_active
 
-
 class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
@@ -706,6 +705,11 @@ class BoardVis(QMainWindow):
             self.resultCaptureText.setText("Capture Successful! \n Game Over!!")
             global game_over
             game_over = True
+            self.stopButton.hide()
+            self.moveIndicator.hide()
+            self.tableOption.setText("Winner: " +
+                                    ("White" if self.controller.tracker.get_current_player() else "Black") +
+                                    " Team!")
         else:
             self.resultCaptureText.setText("Capture " + ("Successful!" if self.attackSuccess else "Failed!"))
 
