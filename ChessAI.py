@@ -215,11 +215,11 @@ class AIFunctions:
                 if max_weight==max_weight_piece[2]:
                     BestSameScore.append(max_weight_piece)
 
-        random.shuffle(BestSameScore)
         if len(BestSameScore)==0:
             game.tracker.end_turn()
             BestMove = (element.x_loc, element.x_loc, 0, element.get_name() + element.corp.get_name(), element.x_loc, element.y_loc)
         else:
+            random.shuffle(BestSameScore)
             BestMove = BestSameScore[0]
 
         # print('end check, result', BestMove)
