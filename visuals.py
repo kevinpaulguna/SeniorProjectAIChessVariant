@@ -289,7 +289,7 @@ class BoardVis(QMainWindow):
         self.rollText = QLabel(self)
         self.rollDiceAnimation = QLabel(self)
         self.resultCaptureText = QLabel(self)
-        self.okayButton = QPushButton("Okay", self)
+        self.okayButton = QPushButton("Return to Board", self)
         self.attackSuccess = None
 
 
@@ -426,8 +426,9 @@ class BoardVis(QMainWindow):
 
         # Create start screen properties
         self.pauseBackground.setAlignment(Qt.AlignCenter)
-        self.pauseBackground.resize(self.boardSize, self.boardSize)
-        self.pauseBackground.setStyleSheet('background-color: rgba(180,180,180,1)')
+        self.pauseBackground.resize(925, 675)
+        self.pauseBackground.setStyleSheet('background-color: black')
+        self.pauseBackground.setStyleSheet("background-image: url(./picture/fullstartscreen.png);")
         self.pauseBackground.move(0, 0)
         self.pauseBackground.hide()
 
@@ -452,7 +453,7 @@ class BoardVis(QMainWindow):
         font.setPixelSize(self.okayButton.height() * 0.4)
         self.okayButton.setFont(font)
         self.okayButton.setStyleSheet(mainAreaButtonCSS)
-        self.okayButton.move(int((self.boardSize / 2) - (self.okayButton.width() / 2))
+        self.okayButton.move(int((self.boardSize / 2) - (self.okayButton.width() / 2)) + moveIntoSidePanel
                              , int((self.boardSize / 2) + 250))
         self.okayButton.hide()
 
@@ -650,6 +651,7 @@ class BoardVis(QMainWindow):
         self.stopButton.show()
 
     def __rolldiceWork(self):
+        moveIntoSidePanel = ((925-self.boardSize)/2)
         # Set up roll dice text properties
         self.rollText.setAlignment(Qt.AlignCenter)
         self.rollText.setText("Rolling Dice...")
@@ -658,8 +660,8 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.rollText.height() * 0.4)
         self.rollText.setFont(font)
-        self.rollText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255); dip')
-        self.rollText.move(int((self.boardSize / 2) - (self.rollText.width() / 2)),
+        self.rollText.setStyleSheet('font-weight: bold; color: rgb(0, 204, 204)')
+        self.rollText.move(int((self.boardSize / 2) - (self.rollText.width() / 2)) + moveIntoSidePanel,
                            int((self.boardSize / 2) - 300))
         self.rollText.hide()
 
@@ -677,10 +679,11 @@ class BoardVis(QMainWindow):
         self.timer.setInterval(2000)
         self.timer.timeout.connect(self.__roll_dice)
         self.timer.start()
-        self.rollDiceAnimation.move(300, 200)
+        self.rollDiceAnimation.move(300+moveIntoSidePanel, 200)
         self.rollDiceAnimation.hide()
 
     def __roll_dice(self):
+        moveIntoSidePanel = ((925-self.boardSize)/2)
         # Set up capture result text properties
         self.rollText.hide()
         self.resultCaptureText.setAlignment(Qt.AlignCenter)
@@ -689,15 +692,15 @@ class BoardVis(QMainWindow):
         font.setFamily('Arial')
         font.setPixelSize(self.resultCaptureText.height() * 0.4)
         self.resultCaptureText.setFont(font)
-        self.resultCaptureText.setStyleSheet('font-weight: bold; color: rgba(0, 255, 255, 255)')
-        self.resultCaptureText.move(int((self.boardSize / 2) - (self.rollText.width() / 2)),
+        self.resultCaptureText.setStyleSheet('font-weight: bold; color: rgb(0, 204, 204)')
+        self.resultCaptureText.move(int((self.boardSize / 2) - (self.rollText.width() / 2)) + moveIntoSidePanel,
                            int((self.boardSize / 2) - 300))
 
         dice = self.controller.get_result_of_dice_roll()
         pixmap1 = QPixmap('./picture/die' + str(dice))
         pixmap1 = pixmap1.scaled(128, 128)
         self.rollDiceAnimation.setPixmap(pixmap1)
-        self.rollDiceAnimation.move(300, 200)
+        self.rollDiceAnimation.move(300 + moveIntoSidePanel, 200)
 
         # update when after roll
         self.resultCaptureText.clear()
