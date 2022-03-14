@@ -137,6 +137,8 @@ class Game:
 
         elif piece_type in ('Bishop', 'Rook', 'Knight', 'King', 'Queen'):
             limit = self.__VALID_MOVE_DICT[piece_type] + 1
+            if piece_type == "Rook":
+                limit+=1
             for i in range(limit):
                 for j in range(limit):
                     if (i, j) != (0, 0):
@@ -174,10 +176,16 @@ class Game:
 
         self.__reset_move_vars()
 
+        # TODO: remove below if moving on attacks where movement is possible
         rook_attack = False
+
         useOne = False
         from_spot = self.__board[from_y][from_x]
         to_spot = self.__board[to_y][to_x]
+
+        if not (((to_x, to_y, True) in self.get_possible_moves_for_piece_at(x=from_x, y=from_y)) or
+            ((to_x, to_y, False) in self.get_possible_moves_for_piece_at(x=from_x, y=from_y))):
+            return False
 
         # check for piece at spot
 
@@ -189,7 +197,7 @@ class Game:
 
         # checks for same piece
         if from_x == to_x and from_y == to_y:
-            return
+            return False
 
         # checks if last moved piece was the same knight, handles if not
         if self.__last_move_knight and self.__last_move_knight[0].get_name() != from_spot.piece.get_name():
@@ -243,7 +251,10 @@ class Game:
                                 to_spot.piece.corp.captured(self.corpB2)
                         elif self.__is_corp_command_game:
                             to_spot.piece.corp.removeFromCorp(to_spot.piece)
+
+                        # TODO: remove below if moving on attacks where movement is possible
                         rook_attack = (from_spot.piece.get_type() == 'Rook')
+
                         to_spot.piece.set_killed()
                         piece_color = "white" if from_spot.piece.is_white else "black"
                         self.__captured_by[piece_color].append(to_spot.piece)
@@ -273,8 +284,11 @@ class Game:
                 else:
                     self.tracker.use_action(piece_used=from_spot.piece)
 
+            # TODO: use below instead of current 'if' if moving on attacks where movement is possible
+            # if self.__is_rook_shooting_attack(from_x, from_y, to_x, to_y):
+            #     to_spot.piece = None
             if rook_attack:
-                to_spot.piece = None
+                 to_spot.piece = None
             else:
                 if not self.__gameOver: self.__move_message += "Moving to spot. "
                 print(self.__move_message)
@@ -367,16 +381,16 @@ class Game:
                 return result
 
         if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
-            if (abs(to_x - from_x) > self.__VALID_MOVE_DICT[piece_type] and
-                    abs(to_y - from_y) > self.__VALID_MOVE_DICT[piece_type]):
-                self.__move_message += "Chosen move is too far away. "
-                return False
-            elif not self.__is_clear_path(from_x, from_y, to_x, to_y):
-                # allows for archer attack even when there is not a clear path to move to target
-                if piece_type=='Rook' and (self.__board[to_y][to_x].has_piece() and self.__board[to_y][to_x].piece != piece.is_white()):
-                    return True
-                self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
-                return False
+            if piece_type == 'Rook' and self.__is_rook_shooting_attack(from_x, from_y, to_x, to_y):
+                return True
+            else:
+                if (abs(to_x - from_x) > self.__VALID_MOVE_DICT[piece_type] and
+                        abs(to_y - from_y) > self.__VALID_MOVE_DICT[piece_type]):
+                    self.__move_message += "Chosen move is too far away. "
+                    return False
+                elif not self.__is_clear_path(from_x, from_y, to_x, to_y):
+                    self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
+                    return False
 
         return True
 
@@ -457,6 +471,36 @@ class Game:
                             continue
                         else:
                             return True
+            return False
+        else:
+            return False
+
+    def __is_rook_shooting_attack(self, from_x:int, from_y:int, to_x:int, to_y:int)->bool:
+        from_spot = self.__board[from_y][from_x]
+        to_spot = self.__board[to_y][to_x]
+        if (from_spot.piece.get_type() == 'Rook' and
+            (to_spot.has_piece() and from_spot.piece.is_white() != to_spot.piece.is_white())):
+            # move out of normal move range but in attack range
+            if (
+                (abs(to_x - from_x) == self.__VALID_MOVE_DICT["Rook"]+1 and
+                abs(to_y - from_y) == self.__VALID_MOVE_DICT["Rook"]+1)
+                or
+                (abs(to_x - from_x) == self.__VALID_MOVE_DICT["Rook"]+1 and
+                abs(to_y - from_y) <= self.__VALID_MOVE_DICT["Rook"])
+                or
+                (abs(to_x - from_x) <= self.__VALID_MOVE_DICT["Rook"]+1 and
+                abs(to_y - from_y) == self.__VALID_MOVE_DICT["Rook"]+1)
+            ):
+                return True
+            # no clear path but in move range
+            if (
+                abs(to_x - from_x) <= self.__VALID_MOVE_DICT["Rook"] and
+                abs(to_y - from_y) <= self.__VALID_MOVE_DICT["Rook"] and
+                not self.__is_clear_path(from_x,from_y,to_x,to_y)
+            ):
+                self.__move_list = []
+                return True
+            self.__move_list = []
             return False
         else:
             return False
