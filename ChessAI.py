@@ -1,9 +1,6 @@
-import copy
 import random
 
 from ChessGame import Game
-
-# game = Game()
 
 class AIFunctions:
     def __init__(self, game:Game, color):
@@ -16,6 +13,35 @@ class AIFunctions:
 
     def updateBoard(self):
         self.board = self.game._get_board()
+
+    def __get_position_of_piece(self, piece_name:str):
+        if len(piece_name)==0 or piece_name[0] not in ('w', 'b'):
+            print('empty or not w or not b')
+            return (-1, -1)
+
+        some_pieces = {
+            'Kt': ["1", "2"],
+            'R': ["1", "2"],
+            'B': ["1", "2"],
+            'P': ["1", "2", "3", "4", "5", "6", "7", "8"]
+        }
+
+        if "Kg" in piece_name or "Q" in piece_name:
+            if len(piece_name)!=3:
+                print('invalid royalty piece name')
+                return (-1, -1)
+        elif not (piece_name[1:-1] in some_pieces and piece_name[-1] in some_pieces[piece_name[1:-1]]):
+            print('invalid non royalty piece name')
+            return (-1, -1)
+
+        for y, row in enumerate(self.game.get_board()):
+            for x, spot in enumerate(row):
+                pc, corp = spot
+                if pc==piece_name:
+                    return (x, y)
+        print('piece not on board')
+        return (-1, -1)
+
 
     # weights attack areas based on friendly piece power
     def attackRef(self, x, y, piece):
@@ -258,10 +284,9 @@ class AIFunctions:
             print(colour, "team had", self.total_success_moves, 'successful moves out of', self.total_moves_attempted, 'this turn')
 
 
-
+# game = Game()
 # aiAssistWhite = AIFunctions(game, True)
 # aiAssistBlack = AIFunctions(game, False)
-
 
 # for num in range (44):
 #     if not game.game_status():
