@@ -163,11 +163,11 @@ class PieceVis(QLabel):
         if self._h_mode:
             self.parent().add_group_h(self.moves)
 
-
         isAttack = (self.end[0], self.end[1], True) in self.moves
         moveSuccessful = self.parent().controller.move_piece(from_x=self.start[0], from_y=self.start[1],
                                                              to_x=self.end[0], to_y=self.end[1])        # or whatever the show dice roll function is
-
+        self.parent().diceRollResult = self.parent().controller.get_result_of_dice_roll()
+        self.parent().make_AI_move()
         if moveSuccessful:
             self.parent()._update_pieces()
             new_spot = board_to_screen(self.end[0], self.end[1],
@@ -182,7 +182,6 @@ class PieceVis(QLabel):
             self.parent().rollDiceScreen(moveSuccessful)
         self.parent().update_labels()
 
-        self.parent().make_AI_move()
 
         #self.parent().movePieceRelease(self.start, self.end)
     def same_loc(self, s_loc, f_loc):
@@ -293,6 +292,7 @@ class BoardVis(QMainWindow):
         self.resultCaptureText = QLabel(self)
         self.okayButton = QPushButton("Return to Board", self)
         self.attackSuccess = None
+        self.diceRollResult = -1
 
         self.ai_player = None
 
@@ -719,8 +719,7 @@ class BoardVis(QMainWindow):
         self.resultCaptureText.move(int((self.boardSize / 2) - (self.rollText.width() / 2)) + moveIntoSidePanel,
                            int((self.boardSize / 2) - 300))
 
-        dice = self.controller.get_result_of_dice_roll()
-        pixmap1 = QPixmap('./picture/die' + str(dice))
+        pixmap1 = QPixmap('./picture/die' + str(self.diceRollResult))
         pixmap1 = pixmap1.scaled(128, 128)
         self.rollDiceAnimation.setPixmap(pixmap1)
         self.rollDiceAnimation.move(300 + moveIntoSidePanel, 200)
