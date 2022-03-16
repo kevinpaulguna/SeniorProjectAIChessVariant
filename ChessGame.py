@@ -176,7 +176,6 @@ class Game:
 
         self.__reset_move_vars()
 
-        # TODO: remove below if moving on attacks where movement is possible
         rook_attack = False
 
         useOne = False
@@ -252,7 +251,6 @@ class Game:
                         elif self.__is_corp_command_game:
                             to_spot.piece.corp.removeFromCorp(to_spot.piece)
 
-                        # TODO: remove below if moving on attacks where movement is possible
                         rook_attack = (from_spot.piece.get_type() == 'Rook')
 
                         to_spot.piece.set_killed()
@@ -284,9 +282,6 @@ class Game:
                 else:
                     self.tracker.use_action(piece_used=from_spot.piece)
 
-            # TODO: use below instead of current 'if' if moving on attacks where movement is possible
-            # if self.__is_rook_shooting_attack(from_x, from_y, to_x, to_y):
-            #     to_spot.piece = None
             if rook_attack:
                  to_spot.piece = None
             else:
