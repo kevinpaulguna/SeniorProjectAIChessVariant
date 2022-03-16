@@ -358,6 +358,48 @@ class AIFunctions:
             colour = "white" if self.color else "black"
             print(colour, "team had", self.total_success_moves, 'successful moves out of', self.total_moves_attempted,
                   'this turn')
+       
+    def evaluate(board, max_color):
+        if max_color == "White":
+            return board.whiteScore - board.blackScore
+        else:
+            return board.blackScore - board.whiteScore
+       
+    def minimax(board, depth, alpha, beta, max_player, max_color):
+        if depth == 0 or board.gameover:
+            return None, evaluate(board, max_color)
+        moves = board.get_moves()
+        best = random.choices(moves)
+        
+        if max_player:
+            max_eval = -inf
+            for move in moves:
+                board.make_move(move[0], move[1])
+                current_eval = minimax(board, depth - 1, alpha,  beta, False, maximizing_color)[1]
+                boaard.unmake_move()
+                if current_eval > max_eval:
+                    max_eval = current_eval
+                    best_move = move
+                alpha = max(alpha, current_eval)
+                if beta <= alpha:
+                    break
+                return best_move, max_eval
+            
+        else:
+            min_eval = inf
+            for move in moves:
+                board.make_move(move[0], move[1])
+                current_eval = minimax(board, depth - 1, alpha,  beta, True, maximizing_color)[1]
+                boaard.unmake_move()
+                if current_eval < min_eval:
+                    min_eval = current_eval
+                    best_move = move
+                beta = min(alpha, current_eval)
+                if beta <= alpha:
+                    break
+                return best_move, min_eval
+            
+            
 
 # aiAssistWhite = AIFunctions(game, True)
 # aiAssistBlack = AIFunctions(game, False)
