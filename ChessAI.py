@@ -13,6 +13,15 @@ class AIFunctions:
         self.total_success_moves = 0
         self.total_moves_attempted = 0
         self.last_turn = 0
+        self.hostilemap = \
+            [[0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0]]
 
     def updateBoard(self):
         self.board = self.game._get_board()
@@ -104,9 +113,43 @@ class AIFunctions:
             else:
                 return 3
 
+    def genHostileMap(self):
+        x = 0
+        y = 0
+        self.hostilemap = [[0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0]]
+
+        for item in self.board:
+            for item2 in item:
+                if item2.piece:
+                    if self.color != item2.piece.is_white():
+                        moveList = self.game.get_possible_moves_for_piece_at(x=y, y=x, ai_backdoor=True)
+
+                        if (item2.piece.get_type() == 'Pawn'):
+                            spotVal = .2
+                        elif (item2.piece.get_type() == 'Bishop' or item2.piece.get_type() == 'King'):
+                            spotVal = .3
+                        else:
+                            spotVal = .4
+                        for a, b, c in moveList:
+                            self.hostilemap[b][a] += spotVal
+                y = y + 1
+            x = x + 1
+            y = 0
+
+
+
+
     # returns piece object and its potential movement areas
     def moveMap(self):
         self.updateBoard()
+        self.genHostileMap()
         moveData = []
         heatmap = [[0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 0, 0],
@@ -172,10 +215,10 @@ class AIFunctions:
                                 if player == "black":
                                     if (m - x == 5 or x - m == 5 or l - y == 5):
                                         heatmap[m][l] += 1
-                            heatmap[m][l] += spotVal
+                            heatmap[m][l] += spotVal - self.hostilemap[m][l]
                         dataChunk = [item2.piece, heatmap]
 
-                        #
+
                         heatmap = [[0, 0, 0, 0, 0, 0, 0, 0],
                                    [0, 0, 0, 0, 0, 0, 0, 0],
                                    [0, 0, 0, 0, 0, 0, 0, 0],
@@ -191,7 +234,7 @@ class AIFunctions:
             y = 0
             print('\n')
 
-        # self.displayMoveData(moveData)
+        self.displayMoveData(moveData)
 
         return moveData
 
