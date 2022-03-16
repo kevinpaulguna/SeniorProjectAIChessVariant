@@ -359,24 +359,24 @@ class AIFunctions:
             print(colour, "team had", self.total_success_moves, 'successful moves out of', self.total_moves_attempted,
                   'this turn')
        
-    def evaluate(board, max_color):
+    def evaluate(self.__board, max_color):
         if max_color == "White":
-            return board.whiteScore - board.blackScore
+            return self.__board.whiteScore - board.blackScore
         else:
-            return board.blackScore - board.whiteScore
+            return self.__board.blackScore - board.whiteScore
        
-    def minimax(board, depth, alpha, beta, max_player, max_color):
-        if depth == 0 or board.gameover:
+    def minimax(self.__board, depth, alpha, beta, max_player, max_color):
+        if depth == 0 or self.__board.gameover:
             return None, evaluate(board, max_color)
-        moves = board.get_moves()
+        moves = self.__board.get_moves()
         best = random.choices(moves)
         
         if max_player:
             max_eval = -inf
             for move in moves:
-                board.make_move(move[0], move[1])
-                current_eval = minimax(board, depth - 1, alpha,  beta, False, maximizing_color)[1]
-                boaard.unmake_move()
+                self.__board.make_move(move[0], move[1])
+                current_eval = minimax(self.__board, depth - 1, alpha,  beta, False, maximizing_color)[1]
+                self.__board.unmake_move()
                 if current_eval > max_eval:
                     max_eval = current_eval
                     best_move = move
@@ -388,9 +388,9 @@ class AIFunctions:
         else:
             min_eval = inf
             for move in moves:
-                board.make_move(move[0], move[1])
-                current_eval = minimax(board, depth - 1, alpha,  beta, True, maximizing_color)[1]
-                boaard.unmake_move()
+                self.__board.make_move(move[0], move[1])
+                current_eval = minimax(self.__board, depth - 1, alpha,  beta, True, maximizing_color)[1]
+                self.__board.unmake_move()
                 if current_eval < min_eval:
                     min_eval = current_eval
                     best_move = move
