@@ -111,7 +111,7 @@ class Game:
         for p in pieces:
             self.__board[p.y_loc][p.x_loc].set_piece(p)
 
-    def get_possible_moves_for_piece_at(self, *, x: int, y: int, attack_only: bool = False):
+    def get_possible_moves_for_piece_at(self, *, x: int, y: int, attack_only: bool = False, ai_backdoor: bool = False):
         # returns array of tuples containing co-ords of possible move spots
         if self.__gameOver:
             print('game over')
@@ -123,7 +123,7 @@ class Game:
             return possibles
         piece_type = piece.get_type()
 
-        if self.tracker.current_player != int(piece.is_white()):
+        if not ai_backdoor and (self.tracker.current_player != int(piece.is_white())):
             # the piece selected is not in the active turn so it has no moves
             return possibles
 
