@@ -762,6 +762,7 @@ class BoardVis(QMainWindow):
 
     def stopButtonClicked(self):
         self.controller.tracker.end_turn()
+        self.remove_all_h()
         self.update_labels()
         self.make_AI_move()
 
@@ -948,8 +949,9 @@ class BoardVis(QMainWindow):
         pass
 
 class PieceGroup(QWidget):
-    def __init__(self, labels):
+    def __init__(self, labels, corp_num):
         super(PieceGroup, self).__init__()
+        self.corp_color = corp_to_color(corp_num)
         self.labels = labels
         self.create_group()
     # Changed layout mode to grid
@@ -969,7 +971,7 @@ class PieceGroup(QWidget):
             for j in range(cur_row_items):
                 piece_name = self.labels.pop()
                 label_name = piece_to_img_name(piece_name)
-                label = corpVis(label_name, piece_name, 50)
+                label = corpVis(label_name + self.corp_color, piece_name, 50)
                 layout.addWidget(label, i, j)
         self.setLayout(layout)
 
@@ -1036,11 +1038,11 @@ class Deleg_Label(QWidget):
 
 
 class LeaderBox(QWidget):
-    def __init__(self, leader):
+    def __init__(self, leader, corp):
 
         super(LeaderBox, self).__init__()
         self.leader = leader
-        self.commander = self.create_leader_icon()
+        self.commander = self.create_leader_icon(corp)
 
         commander_row = QHBoxLayout()
         commander_row.addStretch(1)
@@ -1059,16 +1061,17 @@ class LeaderBox(QWidget):
         layout.addWidget(top_frame)
         self.setLayout(layout)
 
-    def create_leader_icon(self):
+    def create_leader_icon(self, corp):
         size = 75
+        color = corp_to_color(corp)
         leader_img = piece_to_img_name(self.leader)
-        return corpVis(leader_img, self.leader, size)
+        return corpVis(leader_img + color, self.leader, size)
 
 
 
 class KingBox(LeaderBox):
-    def __init__(self, leader, corps):
-        super().__init__(leader)
+    def __init__(self, leader, corp, corps):
+        super().__init__(leader, corp)
         self.corps_ref = corps
 
         self.swap_line = Deleg_Label(self.get_corp_options())
@@ -1126,11 +1129,11 @@ class CorpMenu(QWidget):
         self.corps_ref = self.controller.get_corp_info(white=is_white)
 
     def create_col(self, outer_layout, leader, group, num):
-        leader_box = LeaderBox(leader)
+        leader_box = LeaderBox(leader, num)
         col = QVBoxLayout()
         self.col_layouts.append(col)
         col.addWidget(leader_box)
-        col.addWidget(PieceGroup(group))
+        col.addWidget(PieceGroup(group, num))
         col.setSpacing(0)
         col.setContentsMargins(10,0,10,0)
         col_frame = QFrame()
@@ -1144,12 +1147,12 @@ class CorpMenu(QWidget):
         self.update_data()
         leader = self.corps_ref[i]['commander']
         if i == 2:
-            new_leader = KingBox(leader, self.corps_ref)
+            new_leader = KingBox(leader, i, self.corps_ref)
             new_leader.disable_button(self.controller.tracker.delegation_move_has_been_used())
             new_leader.confirm_button.clicked.connect(self.confirm_clicked)
             self.king_box = new_leader
         else:
-            new_leader = LeaderBox(leader)
+            new_leader = LeaderBox(leader, i)
         current_leader = self.col_layouts[i-1].itemAt(0).widget()
         self.col_layouts[i-1].replaceWidget(current_leader, new_leader)
         current_leader.setParent(None)
@@ -1161,7 +1164,7 @@ class CorpMenu(QWidget):
     def update_group(self, i):
         self.update_data()
         group = self.corps_ref[i]['commanding']
-        new_piece_group = PieceGroup(group)
+        new_piece_group = PieceGroup(group, i)
         current_group = self.col_layouts[i-1].itemAt(self.col_layouts[i-1].count() - 1).widget()
         self.col_layouts[i-1].replaceWidget(current_group, new_piece_group)
         current_group.setParent(None)
