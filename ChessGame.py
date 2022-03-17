@@ -111,7 +111,7 @@ class Game:
         for p in pieces:
             self.__board[p.y_loc][p.x_loc].set_piece(p)
 
-    def get_possible_moves_for_piece_at(self, *, x: int, y: int, attack_only: bool = False):
+    def get_possible_moves_for_piece_at(self, *, x: int, y: int, attack_only: bool = False, ai_backdoor: bool = False):
         # returns array of tuples containing co-ords of possible move spots
         if self.__gameOver:
             print('game over')
@@ -123,7 +123,7 @@ class Game:
             return possibles
         piece_type = piece.get_type()
 
-        if self.tracker.current_player != int(piece.is_white()):
+        if not ai_backdoor and (self.tracker.current_player != int(piece.is_white())):
             # the piece selected is not in the active turn so it has no moves
             return possibles
 
@@ -176,7 +176,6 @@ class Game:
 
         self.__reset_move_vars()
 
-        # TODO: remove below if moving on attacks where movement is possible
         rook_attack = False
 
         useOne = False
@@ -252,7 +251,6 @@ class Game:
                         elif self.__is_corp_command_game:
                             to_spot.piece.corp.removeFromCorp(to_spot.piece)
 
-                        # TODO: remove below if moving on attacks where movement is possible
                         rook_attack = (from_spot.piece.get_type() == 'Rook')
 
                         to_spot.piece.set_killed()
@@ -284,9 +282,6 @@ class Game:
                 else:
                     self.tracker.use_action(piece_used=from_spot.piece)
 
-            # TODO: use below instead of current 'if' if moving on attacks where movement is possible
-            # if self.__is_rook_shooting_attack(from_x, from_y, to_x, to_y):
-            #     to_spot.piece = None
             if rook_attack:
                  to_spot.piece = None
             else:
@@ -662,7 +657,7 @@ class Game:
     def get_board(self):
         # returns 2d list of tuples (piece name, corp of piece)
         return [[(
-            (spot.piece.get_name(), spot.piece.corp.get_name() if self.__is_corp_command_game else 0)
+            (spot.piece.get_name(), (spot.piece.corp.get_name() if self.__is_corp_command_game else 0))
             if spot.has_piece() else ("___", None)) for spot in row]
             for row in self.__board]
 
