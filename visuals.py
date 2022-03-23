@@ -1,4 +1,5 @@
 from ast import Del
+from dataclasses import replace
 from math import floor
 from shutil import move
 import time
@@ -8,6 +9,7 @@ from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
 from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout,QComboBox, QRadioButton, QButtonGroup, QApplication
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
+import click
 from ChessAI import AIFunctions
 
 
@@ -65,11 +67,11 @@ class PieceVis(QLabel):
 
         # Set up some properties
         self.labelPos = QPoint()
-
+        self.vis = visual
         self.onBoarder = False
         self._h_mode = False
         self.moves = []                    # is only accurate between picking up and placing a piece
-        self.start = [x_pos ,y_pos ]     # and boardvis will no longer be in charge of whether a piece can move.
+        self.start = [x_pos ,y_pos ]   
         self.end = [0, 0]       # pieces will ask chessgame if they can move
         self.default_vis = QPixmap('./picture/' + visual)
         self.set_img()
@@ -147,23 +149,43 @@ class PieceVis(QLabel):
 
 
     def mouseReleaseEvent(self, ev: QMouseEvent) -> None:
+        drag_move = False
+        click_end = False
         if game_over == True:
             return
         self.onBoarder = False
+        print(self)
+        self.end = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)      # set new end pos
+        self.parent().setMoveStart(self.start)           # set movement val on board object
+        print(self.start, self.end) 
+        if self.same_loc(self.start, self.end):           
+            # we did not move, just clicked the piece, store it on the board object as start of click to move
+            self.set_h_mode(not self._h_mode)   # highlighting logic
+            if self.parent().moving_piece and self.parent().controller.is_enemy(self.end[0], self.end[1]):
+                # this is the piece getting attacked
+                click_end = True
+            # board needs reference to this piece to make changes to it
+            else:
+                self.parent().moving_piece = self
 
-        self.end = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
-        print(self.start, self.end)
-        if self.same_loc(self.start, self.end):
-            # we did not move, just clicked the piece
-            self.set_h_mode(not self._h_mode)
-            print("was same spot")
+            # we still might have moved the piece some amount so set it back to the center of its start tile
+            move_spot = board_to_screen(self.start[0], self.start[1], self.parent().tileSize)
+            self.move(move_spot[0], move_spot[1])
         else:
+            drag_move = True
             self.set_h_mode(False)
         self.parent().remove_all_h()
         if self._h_mode:
             self.parent().add_group_h(self.moves)
 
-        isAttack = (self.end[0], self.end[1], True) in self.moves
+        if drag_move:
+            self.parent().move_end = self.end
+            self.parent().do_piece_move(self)
+
+        if click_end:
+            self.parent().move_end = self.end
+            self.parent().do_piece_move(None)
+        """ isAttack = (self.end[0], self.end[1], True) in self.moves
         moveSuccessful = self.parent().controller.move_piece(from_x=self.start[0], from_y=self.start[1],
                                                              to_x=self.end[0], to_y=self.end[1])        # or whatever the show dice roll function is
         self.parent().diceRollResult = self.parent().controller.get_result_of_dice_roll()
@@ -180,7 +202,7 @@ class PieceVis(QLabel):
 
         if isAttack:
             self.parent().rollDiceScreen(moveSuccessful)
-        self.parent().update_labels()
+        self.parent().update_labels() """
 
 
         #self.parent().movePieceRelease(self.start, self.end)
@@ -218,6 +240,20 @@ class TileVis(QLabel):
     def get_active(self):
         return self.is_active
 
+    def mousePressEvent(self, ev: QMouseEvent) -> None:
+        self.start_click = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
+        
+
+    def mouseReleaseEvent(self, ev: QMouseEvent) -> None:
+        self.end_click = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
+        if self.same_loc(self.start_click, self.end_click):
+            if self.parent().moving_piece:
+                self.parent().move_end = self.end_click
+                self.parent().do_piece_move(self.parent().moving_piece)
+
+    def same_loc(self, s_loc, f_loc):
+        return (s_loc[0] == f_loc[0]) and (s_loc[1] == f_loc[1])
+
 class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
@@ -225,6 +261,9 @@ class BoardVis(QMainWindow):
         self.__game_type = ""
         self.h_mode = True
         self.white_pov = True
+        self.move_start = None
+        self.move_end = None
+        self.moving_piece = None
         #This block sets up the window properties
         #self.setGeometry(500, 200, 300, 300)
         self.setFixedSize(925, 675)
@@ -298,6 +337,39 @@ class BoardVis(QMainWindow):
 
         self.showBoard()
 
+    def do_piece_move(self, mvd_piece: PieceVis):
+        print("was called")
+        piece = mvd_piece
+        if not piece:
+            piece = self.moving_piece
+        piece.set_h_mode(False)
+        self.remove_all_h()
+        isAttack = (self.move_end[0], self.move_end[1], True) in piece.moves
+        moveSuccessful = self.controller.move_piece(from_x=self.move_start[0], from_y=self.move_start[1],
+                                                             to_x=self.move_end[0], to_y=self.move_end[1])        # or whatever the show dice roll function is
+        self.diceRollResult = self.controller.get_result_of_dice_roll()
+        self.make_AI_move()
+        if moveSuccessful:
+            new_spot = board_to_screen(self.move_end[0], self.move_end[1],
+                                       self.tileSize)  # create pixel position of new piece
+            piece.start[0] = self.move_end[0]
+            piece.start[1] = self.move_end[1]
+        else:
+            new_spot = board_to_screen(self.move_start[0], self.move_start[1], self.tileSize)
+        print("moved piece: ", piece)
+        piece.move(new_spot[0], new_spot[1])
+        self._update_pieces()
+        if isAttack:
+            self.rollDiceScreen(moveSuccessful)
+        self.update_labels()
+        
+        self.reset_movement_data()
+
+    def reset_movement_data(self):
+        self.moving_piece = None
+        self.move_start = None
+        self.move_end = None
+
     def closeEvent(self,event):
         self.corp_menu.close()
         event.accept()
@@ -334,6 +406,9 @@ class BoardVis(QMainWindow):
         tile.set_active(False, False)
         self.highlighted.remove(tile)
 
+    def setMoveStart(self, position):
+        self.move_start = position
+
     def showBoard(self):
         # Initialize the board.
         self.setBoard()
@@ -347,7 +422,6 @@ class BoardVis(QMainWindow):
         self.set_non_playables()
 
         #get data from controller and display it
-        self._update_pieces()
 
     #Create table option properties
         self.tableOption.setText("Current Turn: White")
@@ -927,7 +1001,7 @@ class BoardVis(QMainWindow):
             for x in range(8):
                 cur_p = self.piecePos[y][x]
                 if cur_p and cur_p != "0":
-                        cur_p.clear()
+                        cur_p.setParent(None)
                 piece, corp_name = pieces_array[y][x]
                 color_name = ""
                 if corp_name:
@@ -935,7 +1009,7 @@ class BoardVis(QMainWindow):
                     color_name = corp_to_color(int(corp_num))
                 piece = piece_to_img_name(piece)
                 if not piece:
-                    continue
+                    continue        
                 label = PieceVis(piece + color_name, x, y, parent=self)
                     # Set the image based on the array element.
                 label.resize(75, 75)
