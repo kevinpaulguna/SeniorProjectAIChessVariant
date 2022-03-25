@@ -345,7 +345,7 @@ class BoardVis(QMainWindow):
         self.remove_all_h()
         isAttack = (self.move_end[0], self.move_end[1], True) in piece.moves
         moveSuccessful = self.controller.move_piece(from_x=self.move_start[0], from_y=self.move_start[1],
-                                                             to_x=self.move_end[0], to_y=self.move_end[1])        # or whatever the show dice roll function is
+                                                    to_x=self.move_end[0], to_y=self.move_end[1])
         self.diceRollResult = self.controller.get_result_of_dice_roll()
         self.make_AI_move()
         if moveSuccessful:

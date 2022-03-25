@@ -376,7 +376,7 @@ class Game:
                 return result
 
         if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
-            if piece_type == 'Rook' and self.__is_rook_shooting_attack(from_x, from_y, to_x, to_y):
+            if piece_type == 'Rook' and self.__is_rook_attack(from_x, from_y, to_x, to_y):
                 return True
             else:
                 if (abs(to_x - from_x) > self.__VALID_MOVE_DICT[piece_type] and
@@ -470,35 +470,15 @@ class Game:
         else:
             return False
 
-    def __is_rook_shooting_attack(self, from_x:int, from_y:int, to_x:int, to_y:int)->bool:
-        from_spot = self.__board[from_y][from_x]
-        to_spot = self.__board[to_y][to_x]
-        if (from_spot.piece.get_type() == 'Rook' and
-            (to_spot.has_piece() and from_spot.piece.is_white() != to_spot.piece.is_white())):
-            # move out of normal move range but in attack range
-            if (
-                (abs(to_x - from_x) == self.__VALID_MOVE_DICT["Rook"]+1 and
-                abs(to_y - from_y) == self.__VALID_MOVE_DICT["Rook"]+1)
-                or
-                (abs(to_x - from_x) == self.__VALID_MOVE_DICT["Rook"]+1 and
-                abs(to_y - from_y) <= self.__VALID_MOVE_DICT["Rook"])
-                or
-                (abs(to_x - from_x) <= self.__VALID_MOVE_DICT["Rook"]+1 and
-                abs(to_y - from_y) == self.__VALID_MOVE_DICT["Rook"]+1)
-            ):
-                return True
-            # no clear path but in move range
-            if (
-                abs(to_x - from_x) <= self.__VALID_MOVE_DICT["Rook"] and
-                abs(to_y - from_y) <= self.__VALID_MOVE_DICT["Rook"] and
-                not self.__is_clear_path(from_x,from_y,to_x,to_y)
-            ):
-                self.__move_list = []
-                return True
-            self.__move_list = []
-            return False
-        else:
-            return False
+    def __is_rook_attack(self, from_x:int, from_y:int, to_x:int, to_y:int)->bool:
+        self.__move_path = []
+        return (self.__board[from_y][from_x].piece.get_type() == 'Rook' and
+            self.is_enemy(to_x, to_y) and
+            (
+                abs(to_x - from_x) <= self.__VALID_MOVE_DICT["Rook"]+1 and
+                abs(to_y - from_y) <= self.__VALID_MOVE_DICT["Rook"]+1
+            )
+            )
 
     def __is_attack_successful(self, current_piece: Piece, target_piece: Piece):
         self.__last_dice_roll = random.randint(1, 6)
