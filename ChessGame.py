@@ -107,6 +107,8 @@ class Game:
             self.tracker.set_corps(w1=self.corpW1, w2=self.corpW2, w3=self.corpW3,
                                 b1=self.corpB1, b2=self.corpB2, b3=self.corpB3)
 
+        self.__move_path = []
+
         # assign pieces to board
         for p in pieces:
             self.__board[p.y_loc][p.x_loc].set_piece(p)
@@ -293,13 +295,15 @@ class Game:
                 to_spot.piece.x_loc = to_x
                 to_spot.piece.y_loc = to_y
 
+                temp = self.__move_path
                 if self.__last_move_knight and len(self.get_possible_moves_for_piece_at(x=to_x, y=to_y))==0:
                     if self.__is_corp_command_game:
                         self.tracker.use_action(piece_used=self.__last_move_knight[0], small_move=useOne)
                     else:
                         self.tracker.use_action(piece_used=self.__last_move_knight[0])
                     self.__last_move_knight = None
-
+                self.__move_path = temp
+        print('Path:', self.__move_path)
         print("~~~~~")
         self.print_board()
         return True
@@ -343,40 +347,58 @@ class Game:
         if self.__last_move_knight:
             # valid moves for knight attacking after move
             if self.__last_move_knight[0].get_name() == piece.get_name():
-                return ((abs(to_x-from_x)==1 and abs(to_y-from_y)==1 or
+                if ((abs(to_x-from_x)==1 and abs(to_y-from_y)==1 or
                         abs(to_x-from_x)==0 and abs(to_y-from_y)==1 or
                         abs(to_x-from_x)==1 and abs(to_y-from_y)==0) and
-                        self.__board[to_y][to_x].has_piece())
+                        self.__board[to_y][to_x].has_piece()):
+                        self.__move_path = [(to_x, to_y)]
+                        return True
+                else: return False
             if self.__last_move_knight[0].corp == piece.corp:
                 return False
 
         if piece_type == 'Pawn':
-            result = (
+            in_range = (
                         (((to_y - from_y) == -1 and (to_x - from_x) == 0) or
                         ((to_y - from_y) == -1 and abs(to_x - from_x) == 1))
                         if piece.is_white() else
                         (((to_y - from_y) == 1 and (to_x - from_x) == 0) or
                         ((to_y - from_y) == 1 and abs(to_x - from_x) == 1))
                     )
-            if not result:
+            if in_range:
+                self.__move_path = [(to_x, to_y)]
+            else:
                 self.__move_message += "Chosen move is too far away. "
-            return result
+            return in_range
         if piece_type == 'Bishop':
             if ((abs(to_x - from_x) == 2 or abs(to_y - from_y) == 2) and
                 not self.__is_clear_path(from_x, from_y, to_x, to_y)):
                 self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
                 return False
             else:
-                result = ((abs(to_x - from_x) <= 2 and (to_y - from_y) == 0) or
+                in_range = ((abs(to_x - from_x) <= 2 and (to_y - from_y) == 0) or
                           (abs(to_y - from_y) <= 2 and (to_x - from_x) == 0) or
                           (abs(to_x - from_x) == 1 and abs(to_y - from_y) == 1) or
                           (abs(to_x - from_x) == 2 and abs(to_y - from_y) == 2))
-                if not result:
+                if in_range:
+                    self.__move_path = []
+                    x_diff, y_diff = to_x - from_x, to_y - from_y  # distance of move
+                    check_x, check_y = 0, 0  # distance of spot to be checked
+                    # horizontal movement
+                    if abs(x_diff) == 2:
+                        check_x = int(x_diff / 2)
+                    # vertical movement
+                    if abs(y_diff) == 2:
+                        check_y = int(y_diff / 2)
+                    if (middle := (from_x+check_x, from_y+check_y)) != (from_x, from_y):
+                        self.__move_path.append(middle)
+                    self.__move_path.append((to_x, to_y))
+                else:
                     self.__move_message += "Chosen move is too far away."
-                return result
+                return in_range
 
         if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
-            if piece_type == 'Rook' and self.__is_rook_attack(from_x, from_y, to_x, to_y):
+            if self.__is_rook_attack(from_x, from_y, to_x, to_y):
                 return True
             else:
                 if (abs(to_x - from_x) > self.__VALID_MOVE_DICT[piece_type] and
@@ -455,6 +477,7 @@ class Game:
                     if item2 == 0 and item == 0:
                         continue
                     if self.__board[target.y_loc + item2][target.x_loc + item].piece == current_piece:
+                        self.__move_path = [(spot.x_loc, spot.y_loc) for spot in reversed(self.__move_list)]
                         return True
                     if not self.__board[target.y_loc + item2][target.x_loc + item].has_piece():
                         if self.__board[target.y_loc + item2][target.x_loc + item] in self.__move_list:
@@ -465,6 +488,7 @@ class Game:
                             self.__move_list.pop()
                             continue
                         else:
+                            self.__move_path = [(spot.x_loc, spot.y_loc) for spot in reversed(self.__move_list)]
                             return True
             return False
         else:
@@ -548,6 +572,7 @@ class Game:
         # clear out prev var data
         self.__last_dice_roll = -1
         self.__move_message = ""
+        self.__move_path = []
 
     def delegate_or_recall(self, *, piece: str, from_corp: str, to_corp: str):
         if self.__is_corp_command_game and not self.tracker.delegation_move_has_been_used():
@@ -633,6 +658,9 @@ class Game:
 
     def get_move_message(self):
         return self.__move_message
+
+    def get_move_path(self):
+        return self.__move_path
 
     def get_board(self):
         # returns 2d list of tuples (piece name, corp of piece)
