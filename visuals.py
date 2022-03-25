@@ -9,7 +9,6 @@ from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
 from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout,QComboBox, QRadioButton, QButtonGroup, QApplication
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
-import click
 from ChessAI import AIFunctions
 
 
@@ -71,7 +70,7 @@ class PieceVis(QLabel):
         self.onBoarder = False
         self._h_mode = False
         self.moves = []                    # is only accurate between picking up and placing a piece
-        self.start = [x_pos ,y_pos ]   
+        self.start = [x_pos ,y_pos ]
         self.end = [0, 0]       # pieces will ask chessgame if they can move
         self.default_vis = QPixmap('./picture/' + visual)
         self.set_img()
@@ -157,8 +156,8 @@ class PieceVis(QLabel):
         print(self)
         self.end = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)      # set new end pos
         self.parent().setMoveStart(self.start)           # set movement val on board object
-        print(self.start, self.end) 
-        if self.same_loc(self.start, self.end):           
+        print(self.start, self.end)
+        if self.same_loc(self.start, self.end):
             # we did not move, just clicked the piece, store it on the board object as start of click to move
             self.set_h_mode(not self._h_mode)   # highlighting logic
             if self.parent().moving_piece and self.parent().controller.is_enemy(self.end[0], self.end[1]):
@@ -242,7 +241,7 @@ class TileVis(QLabel):
 
     def mousePressEvent(self, ev: QMouseEvent) -> None:
         self.start_click = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
-        
+
 
     def mouseReleaseEvent(self, ev: QMouseEvent) -> None:
         self.end_click = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
@@ -362,7 +361,7 @@ class BoardVis(QMainWindow):
         if isAttack:
             self.rollDiceScreen(moveSuccessful)
         self.update_labels()
-        
+
         self.reset_movement_data()
 
     def reset_movement_data(self):
@@ -916,6 +915,7 @@ class BoardVis(QMainWindow):
         self.corpButton.hide()
         self.hidepauseBackground()
         self.showSideChoice()
+        self.remove_all_h()
 
 
     def whiteButtonClicked(self):
@@ -1009,7 +1009,7 @@ class BoardVis(QMainWindow):
                     color_name = corp_to_color(int(corp_num))
                 piece = piece_to_img_name(piece)
                 if not piece:
-                    continue        
+                    continue
                 label = PieceVis(piece + color_name, x, y, parent=self)
                     # Set the image based on the array element.
                 label.resize(75, 75)
@@ -1241,8 +1241,3 @@ class CorpMenu(QWidget):
         current_group = self.col_layouts[i-1].itemAt(self.col_layouts[i-1].count() - 1).widget()
         self.col_layouts[i-1].replaceWidget(current_group, new_piece_group)
         current_group.setParent(None)
-
-
-
-
-
