@@ -371,6 +371,8 @@ class Game:
                 self.__move_message += "Chosen move is too far away. "
             return in_range
         if piece_type == 'Bishop':
+            if (abs(to_x - from_x) > 1 or abs(to_y - from_y) > 1) and self.__board[to_y][to_x].piece is not None:
+                return False
             if ((abs(to_x - from_x) == 2 or abs(to_y - from_y) == 2) and
                 not self.__is_clear_path(from_x, from_y, to_x, to_y)):
                 self.__move_message += f"No clear path to ({str(to_x)}, {str(to_y)}). "
@@ -400,6 +402,8 @@ class Game:
         if piece_type in ('Rook', 'Knight', 'King', 'Queen'):
             if self.__is_rook_attack(from_x, from_y, to_x, to_y):
                 return True
+            if (abs(to_x - from_x) > 1 or abs(to_y - from_y) > 1) and self.__board[to_y][to_x].piece is not None:
+                return False
             else:
                 if (abs(to_x - from_x) > self.__VALID_MOVE_DICT[piece_type] and
                         abs(to_y - from_y) > self.__VALID_MOVE_DICT[piece_type]):
