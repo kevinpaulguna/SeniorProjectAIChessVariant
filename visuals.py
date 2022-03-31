@@ -155,7 +155,7 @@ class PieceVis(QLabel):
         self.onBoarder = False
         print(self)
         self.end = screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)      # set new end pos
-        self.parent().setMoveStart(self.start)           # set movement val on board object
+                   # set movement val on board object
         print(self.start, self.end)
         if self.same_loc(self.start, self.end):
             # we did not move, just clicked the piece, store it on the board object as start of click to move
@@ -166,7 +166,7 @@ class PieceVis(QLabel):
             # board needs reference to this piece to make changes to it
             else:
                 self.parent().moving_piece = self
-
+                self.parent().setMoveStart(self.start)
             # we still might have moved the piece some amount so set it back to the center of its start tile
             move_spot = board_to_screen(self.start[0], self.start[1], self.parent().tileSize)
             self.move(move_spot[0], move_spot[1])
@@ -349,6 +349,7 @@ class BoardVis(QMainWindow):
         self.diceRollResult = self.controller.get_result_of_dice_roll()
         self.make_AI_move()
         if moveSuccessful:
+            self._update_pieces()
             new_spot = board_to_screen(self.move_end[0], self.move_end[1],
                                        self.tileSize)  # create pixel position of new piece
             piece.start[0] = self.move_end[0]
@@ -357,7 +358,7 @@ class BoardVis(QMainWindow):
             new_spot = board_to_screen(self.move_start[0], self.move_start[1], self.tileSize)
         print("moved piece: ", piece)
         piece.move(new_spot[0], new_spot[1])
-        self._update_pieces()
+        
         if isAttack:
             self.rollDiceScreen(moveSuccessful)
         self.update_labels()
@@ -796,7 +797,6 @@ class BoardVis(QMainWindow):
         pixmap1 = pixmap1.scaled(128, 128)
         self.rollDiceAnimation.setPixmap(pixmap1)
         self.rollDiceAnimation.move(300 + moveIntoSidePanel, 200)
-
         # update when after roll
         self.resultCaptureText.clear()
         if self.controller.game_status() == True:
@@ -836,6 +836,7 @@ class BoardVis(QMainWindow):
         self.controller.tracker.end_turn()
         self.remove_all_h()
         self.update_labels()
+        self.reset_movement_data()
         self.make_AI_move()
 
     def corpBClicked(self):
@@ -916,6 +917,7 @@ class BoardVis(QMainWindow):
         self.hidepauseBackground()
         self.showSideChoice()
         self.remove_all_h()
+        self.reset_movement_data()
 
 
     def whiteButtonClicked(self):
@@ -930,7 +932,6 @@ class BoardVis(QMainWindow):
         self.hideStartScreen()
 
     def rollDiceScreen(self, attackSuccess:bool):
-
         self.attackSuccess = attackSuccess
         self.pauseBackground.show()
         self.pauseBackground.raise_()
