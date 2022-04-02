@@ -269,6 +269,8 @@ class BoardVis(QMainWindow):
         self.setWindowTitle("Chess Board")
         self.highlighted = []
         self.corp_menu = CorpMenu(self)
+        self.ai_delay = QTimer(self)
+        self.ai_delay.timeout.connect(self.ai_single_move)
         # buttons:
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
@@ -688,22 +690,33 @@ class BoardVis(QMainWindow):
         self.corpCommanderButton.adjustSize()
 
     def make_AI_move(self):
-        white_player = (self.controller.tracker.get_current_player()==1)
-        if self.computerButton.isChecked() and self.whiteButton.isChecked()!=white_player and not self.controller.game_status():
-            while self.whiteButton.isChecked()!=white_player and not self.controller.game_status():
-                self.ai_player.make_move()
-                white_player = (self.controller.tracker.get_current_player()==1)
-                self._update_pieces()
-                self.update_labels()
-                if self.controller.game_status():
-                    global game_over
-                    game_over = True
-                    self.stopButton.hide()
-                    self.moveIndicator.hide()
-                    self.tableOption.setText("Winner: " +
-                                            ("White" if self.controller.tracker.get_current_player() else "Black") +
-                                            " Team!")
-                    return
+        if not self.computerButton.isChecked() or self.ai_turn_over():
+            return      # ai not selected, bail out of function
+        self.ai_delay.start(1500)
+                        
+    def ai_single_move(self):
+        self.ai_player.make_move()
+        self._update_pieces()
+        self.update_labels()
+        if self.ai_turn_over():
+            self.ai_delay.stop()
+
+    def ai_turn_over(self):
+        whites_turn = (self.controller.tracker.get_current_player()==1)
+        if self.controller.game_status():  # special case for gameover
+            self.handle_gameover()
+            return True   
+        return self.whiteButton.isChecked() == whites_turn    # the active color is the color the human chose, no longer computer's turn
+        
+    def handle_gameover(self):
+        global game_over
+        game_over = True
+        self.stopButton.hide()
+        self.moveIndicator.hide()
+        self.tableOption.setText("Winner: " +
+                                ("White" if self.controller.tracker.get_current_player() else "Black") +
+                                " Team!")
+        return
 
     def startGameClicked(self):
         if self.medievalButton.isChecked():
