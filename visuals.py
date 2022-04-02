@@ -697,7 +697,7 @@ class BoardVis(QMainWindow):
 
     def ai_turn_over(self):
         whites_turn = (self.controller.tracker.get_current_player()==1)
-        if self.controller.game_status():  # special case for gameover
+        if self.controller.is_game_over():  # special case for gameover
             self.handle_gameover()
             return True
         return self.whiteButton.isChecked() == whites_turn    # the active color is the color the human chose, no longer computer's turn
@@ -806,7 +806,7 @@ class BoardVis(QMainWindow):
         self.rollDiceAnimation.move(300 + moveIntoSidePanel, 200)
         # update when after roll
         self.resultCaptureText.clear()
-        if self.controller.game_status() == True:
+        if self.controller.is_game_over():
             self.resultCaptureText.setText("Capture Successful! \n Game Over!!")
             global game_over
             game_over = True

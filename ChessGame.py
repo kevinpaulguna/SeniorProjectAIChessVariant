@@ -680,7 +680,7 @@ class Game:
     def _get_board(self):
         return self.__board
 
-    def game_status(self):
+    def is_game_over(self):
         return self.__gameOver
 
     def print_board(self):
