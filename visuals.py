@@ -1,9 +1,4 @@
-from ast import Del
-from dataclasses import replace
 from math import floor
-from shutil import move
-import time
-from turtle import color
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
@@ -11,8 +6,7 @@ from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, Q
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
 from ChessAI import AIFunctions
 
-
-from ChessGame import Game as chess_game, Piece
+from ChessGame import Game as chess_game
 
 game_over = False
 
@@ -360,7 +354,7 @@ class BoardVis(QMainWindow):
             new_spot = board_to_screen(self.move_start[0], self.move_start[1], self.tileSize)
         print("moved piece: ", piece)
         piece.move(new_spot[0], new_spot[1])
-        
+
         if isAttack:
             self.rollDiceScreen(moveSuccessful)
         self.update_labels()
@@ -693,7 +687,7 @@ class BoardVis(QMainWindow):
         if not self.computerButton.isChecked() or self.ai_turn_over():
             return      # ai not selected, bail out of function
         self.ai_delay.start(1500)
-                        
+
     def ai_single_move(self):
         self.ai_player.make_move()
         self._update_pieces()
@@ -705,9 +699,9 @@ class BoardVis(QMainWindow):
         whites_turn = (self.controller.tracker.get_current_player()==1)
         if self.controller.game_status():  # special case for gameover
             self.handle_gameover()
-            return True   
+            return True
         return self.whiteButton.isChecked() == whites_turn    # the active color is the color the human chose, no longer computer's turn
-        
+
     def handle_gameover(self):
         global game_over
         game_over = True
