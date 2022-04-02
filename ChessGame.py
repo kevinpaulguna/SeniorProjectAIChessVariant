@@ -675,7 +675,7 @@ class Game:
 
     def is_enemy(self, x_pos, y_pos) -> bool:
         piece = self.__board[y_pos][x_pos].piece
-        return piece and piece.is_white != bool(self.tracker.current_player)
+        return piece and piece.is_white() != bool(self.tracker.current_player)
 
     def _get_board(self):
         return self.__board
