@@ -343,17 +343,35 @@ class BoardVis(QMainWindow):
         moveSuccessful = self.controller.move_piece(from_x=self.move_start[0], from_y=self.move_start[1],
                                                     to_x=self.move_end[0], to_y=self.move_end[1])
         self.diceRollResult = self.controller.get_result_of_dice_roll()
-        self.make_AI_move()
+        self.make_AI_move() #TODO: find place for this after update pieces is fixed
         if moveSuccessful:
-            self._update_pieces()
-            new_spot = board_to_screen(self.move_end[0], self.move_end[1],
-                                       self.tileSize)  # create pixel position of new piece
+            new_spots = []
+            for x, y in self.controller.get_move_path():
+                new_spot = board_to_screen(x, y, self.tileSize)  # create pixel position of new piece
+                new_spots.append(new_spot)
             piece.start[0] = self.move_end[0]
             piece.start[1] = self.move_end[1]
         else:
             new_spot = board_to_screen(self.move_start[0], self.move_start[1], self.tileSize)
         print("moved piece: ", piece)
-        piece.move(new_spot[0], new_spot[1])
+        # piece.move(new_spot[0], new_spot[1])
+        if len(new_spots)>1:
+            new_spots.reverse()
+
+            mv_delay = QTimer(self)
+
+            def spot_by_spot():
+                if len(new_spots)==0:
+                    mv_delay.stop()
+                    return
+                x, y = new_spots.pop()
+                print(x,y)
+                piece.move(x, y)
+
+            mv_delay.timeout.connect(spot_by_spot)
+            mv_delay.start(500)
+        else:
+            self._update_pieces()
 
         if isAttack:
             self.rollDiceScreen(moveSuccessful)
