@@ -240,6 +240,12 @@ class Game:
                 else:
                     self.__move_message += "Attempting capture... "
                     if self.__is_attack_successful(from_spot.piece, to_spot.piece):
+                        piece_color = "white" if from_spot.piece.is_white() else "black"
+                        self.__captured_by[piece_color].append(
+                            (to_spot.piece.get_name(),
+                             to_spot.piece.corp.get_name() if self.__is_corp_command_game else ""
+                            )
+                        )
                         self.__move_message += "Success! Captured piece! "
                         if to_spot.piece.get_type() == 'King':
                             self.__move_message += "You Win! "
@@ -256,8 +262,6 @@ class Game:
                         rook_attack = (from_spot.piece.get_type() == 'Rook')
 
                         to_spot.piece.set_killed()
-                        piece_color = "white" if from_spot.piece.is_white else "black"
-                        self.__captured_by[piece_color].append(to_spot.piece)
                     else:
                         self.__move_message += "Attack failed! Move unsuccessful! "
                         # we still technicly used an action so we must progress turnManager
@@ -615,8 +619,10 @@ class Game:
         else:
             return False
 
-    def get_pieces_captured_by(self):
-        return self.__captured_by
+    def get_pieces_captured_by(self, color:str):
+        if color in ("white", "black"):
+            return self.__captured_by[color]
+        else: return
 
     def get_corp_info(self, *, white:bool):
         if self.__is_corp_command_game:
