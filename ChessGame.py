@@ -257,7 +257,7 @@ class Game:
 
                         to_spot.piece.set_killed()
                         piece_color = "white" if from_spot.piece.is_white else "black"
-                        self.__captured_by[piece_color].append(to_spot.piece)
+                        self.__captured_by[piece_color].append((to_spot.piece.get_name(), to_spot.piece.corp.get_name()))
                     else:
                         self.__move_message += "Attack failed! Move unsuccessful! "
                         # we still technicly used an action so we must progress turnManager
@@ -615,8 +615,10 @@ class Game:
         else:
             return False
 
-    def get_pieces_captured_by(self):
-        return self.__captured_by
+    def get_pieces_captured_by(self, color:str):
+        if color in ("white", "black"):
+            return self.__captured_by[color]
+        else: return
 
     def get_corp_info(self, *, white:bool):
         if self.__is_corp_command_game:
