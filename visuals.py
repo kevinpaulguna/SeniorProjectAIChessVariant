@@ -1,9 +1,4 @@
-from ast import Del
-from dataclasses import replace
 from math import floor
-from shutil import move
-import time
-from turtle import color
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
@@ -11,8 +6,7 @@ from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, Q
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
 from ChessAI import AIFunctions
 
-
-from ChessGame import Game as chess_game, Piece
+from ChessGame import Game as chess_game
 
 game_over = False
 
@@ -269,6 +263,8 @@ class BoardVis(QMainWindow):
         self.setWindowTitle("Chess Board")
         self.highlighted = []
         self.corp_menu = CorpMenu(self)
+        self.ai_delay = QTimer(self)
+        self.ai_delay.timeout.connect(self.ai_single_move)
         # buttons:
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
@@ -347,18 +343,36 @@ class BoardVis(QMainWindow):
         moveSuccessful = self.controller.move_piece(from_x=self.move_start[0], from_y=self.move_start[1],
                                                     to_x=self.move_end[0], to_y=self.move_end[1])
         self.diceRollResult = self.controller.get_result_of_dice_roll()
-        self.make_AI_move()
+        self.make_AI_move() #TODO: find place for this after update pieces is fixed
         if moveSuccessful:
-            self._update_pieces()
-            new_spot = board_to_screen(self.move_end[0], self.move_end[1],
-                                       self.tileSize)  # create pixel position of new piece
+            new_spots = []
+            for x, y in self.controller.get_move_path():
+                new_spot = board_to_screen(x, y, self.tileSize)  # create pixel position of new piece
+                new_spots.append(new_spot)
             piece.start[0] = self.move_end[0]
             piece.start[1] = self.move_end[1]
         else:
             new_spot = board_to_screen(self.move_start[0], self.move_start[1], self.tileSize)
         print("moved piece: ", piece)
-        piece.move(new_spot[0], new_spot[1])
-        
+        # piece.move(new_spot[0], new_spot[1])
+        if len(new_spots)>1:
+            new_spots.reverse()
+
+            mv_delay = QTimer(self)
+
+            def spot_by_spot():
+                if len(new_spots)==0:
+                    mv_delay.stop()
+                    return
+                x, y = new_spots.pop()
+                print(x,y)
+                piece.move(x, y)
+
+            mv_delay.timeout.connect(spot_by_spot)
+            mv_delay.start(500)
+        else:
+            self._update_pieces()
+
         if isAttack:
             self.rollDiceScreen(moveSuccessful)
         self.update_labels()
@@ -688,22 +702,33 @@ class BoardVis(QMainWindow):
         self.corpCommanderButton.adjustSize()
 
     def make_AI_move(self):
-        white_player = (self.controller.tracker.get_current_player()==1)
-        if self.computerButton.isChecked() and self.whiteButton.isChecked()!=white_player and not self.controller.game_status():
-            while self.whiteButton.isChecked()!=white_player and not self.controller.game_status():
-                self.ai_player.make_move()
-                white_player = (self.controller.tracker.get_current_player()==1)
-                self._update_pieces()
-                self.update_labels()
-                if self.controller.game_status():
-                    global game_over
-                    game_over = True
-                    self.stopButton.hide()
-                    self.moveIndicator.hide()
-                    self.tableOption.setText("Winner: " +
-                                            ("White" if self.controller.tracker.get_current_player() else "Black") +
-                                            " Team!")
-                    return
+        if not self.computerButton.isChecked() or self.ai_turn_over():
+            return      # ai not selected, bail out of function
+        self.ai_delay.start(1500)
+
+    def ai_single_move(self):
+        self.ai_player.make_move()
+        self._update_pieces()
+        self.update_labels()
+        if self.ai_turn_over():
+            self.ai_delay.stop()
+
+    def ai_turn_over(self):
+        whites_turn = (self.controller.tracker.get_current_player()==1)
+        if self.controller.is_game_over():  # special case for gameover
+            self.handle_gameover()
+            return True
+        return self.whiteButton.isChecked() == whites_turn    # the active color is the color the human chose, no longer computer's turn
+
+    def handle_gameover(self):
+        global game_over
+        game_over = True
+        self.stopButton.hide()
+        self.moveIndicator.hide()
+        self.tableOption.setText("Winner: " +
+                                ("White" if self.controller.tracker.get_current_player() else "Black") +
+                                " Team!")
+        return
 
     def startGameClicked(self):
         if self.medievalButton.isChecked():
@@ -799,7 +824,7 @@ class BoardVis(QMainWindow):
         self.rollDiceAnimation.move(300 + moveIntoSidePanel, 200)
         # update when after roll
         self.resultCaptureText.clear()
-        if self.controller.game_status() == True:
+        if self.controller.is_game_over():
             self.resultCaptureText.setText("Capture Successful! \n Game Over!!")
             global game_over
             game_over = True

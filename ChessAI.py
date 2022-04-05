@@ -344,7 +344,7 @@ class AIFunctions:
         # self.displayMoveData(moveData)
 
     def make_move(self):
-        if not self.game.game_status():
+        if not self.game.is_game_over():
             if self.last_turn != self.game.tracker.get_turn_count():
                 self.total_success_moves = 0
                 self.total_moves_attempted = 0
