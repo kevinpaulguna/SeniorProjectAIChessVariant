@@ -15,6 +15,7 @@ from ChessAI import AIFunctions
 from ChessGame import Game as chess_game, Piece
 
 game_over = False
+lock_input = False
 
 def corp_to_color(corp_num):
     colors = ['', 'rd', 'bl', 'gr']
@@ -87,6 +88,8 @@ class PieceVis(QLabel):
     def mousePressEvent(self, ev: QMouseEvent) -> None:
         if game_over == True:
             return
+        if lock_input == True:
+            return
         #If user clicks on a piece, it will be moved to the starting position
         #self.start =  screen_to_board(ev.windowPos().x(), ev.windowPos().y(), self.parent().tileSize)
         #print("start x: ", self.start[0], " y: ", self.start[1])
@@ -96,6 +99,8 @@ class PieceVis(QLabel):
     # Set the region limits of the board that the piece can move to
     def mouseMoveEvent(self, ev: QMouseEvent) -> None:
         if game_over == True:
+            return
+        if lock_input == True:
             return
         if ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).x() < (0 + (self.parent().tileSize / 2)) \
                 and ((ev.globalPos() - self.parent().pos()) - QPoint(0, 30)).y() < \
@@ -151,6 +156,8 @@ class PieceVis(QLabel):
         drag_move = False
         click_end = False
         if game_over == True:
+            return
+        if lock_input == True:
             return
         self.onBoarder = False
         print(self)
@@ -318,6 +325,7 @@ class BoardVis(QMainWindow):
         self.blackButton = QRadioButton("Black side", self)
         self.humanButton = QRadioButton("Human", self)
         self.computerButton = QRadioButton("Computer", self)
+        self.AivAiButton = QRadioButton("Ai v Ai", self)
         self.offhighlight = QRadioButton("Off", self)
         self.onhighlight = QRadioButton("On", self)
         self.medievalButton = QRadioButton("Medieval", self)
@@ -580,6 +588,8 @@ class BoardVis(QMainWindow):
         self.opponentText.move(int((self.boardSize / 2) - (self.chooseSideText.width() / 2)) + 200 + moveIntoSidePanel,
                                int((self.boardSize / 2) - 95))
         self.opponentText.hide()
+        
+        
 
         #set up highlight text properties
         self.highlightText.setAlignment(Qt.AlignCenter)
@@ -648,6 +658,15 @@ class BoardVis(QMainWindow):
         self.computerButton.setStyleSheet(radioButtonTextCSS)
         self.humanButton.adjustSize()
         self.computerButton.adjustSize()
+        
+        
+        self.opponent_group.addButton(self.AivAiButton, 3)
+        self.__set_button(self.AivAiButton, 0.4)
+        self.AivAiButton.move(int((self.boardSize / 2) - (self.blackButton.width() / 2) - 100) + moveIntoSidePanel
+                              , int((self.boardSize / 2) - 10))
+        
+        self.AivAiButton.setStyleSheet(radioButtonTextCSS)
+        self.AivAiButton.adjustSize()
 
         #set up highlight on/off button properties
         self.highlight_group = QButtonGroup(self)
@@ -704,7 +723,50 @@ class BoardVis(QMainWindow):
                                             ("White" if self.controller.tracker.get_current_player() else "Black") +
                                             " Team!")
                     return
+                
+                
+                
+                
+    def AIvAI(self):
+        white_player = (self.controller.tracker.get_current_player()==1)
+        if white_player == True and not self.controller.game_status():
+            self.ai_1.make_move()
+            white_player = (self.controller.tracker.get_current_player()==1)
+            self._update_pieces()
+            self.update_labels()
+            if self.controller.game_status():
+                global game_over
+                game_over = True
+                self.stopButton.hide()
+                self.moveIndicator.hide()
+                self.tableOption.setText("Winner: " +
+                                        ("White" if self.controller.tracker.get_current_player() else "Black") +
+                                        " Team!")
+                global lock_input
+                self.timer3.stop()
+                lock_input = False
+                return
+            return
 
+        if white_player == False and not self.controller.game_status():
+            self.ai_2.make_move()
+            white_player = (self.controller.tracker.get_current_player()==1)
+            self._update_pieces()
+            self.update_labels()
+            if self.controller.game_status():
+                game_over = True
+                self.stopButton.hide()
+                self.moveIndicator.hide()
+                self.tableOption.setText("Winner: " +
+                                        ("White" if self.controller.tracker.get_current_player() else "Black") +
+                                        " Team!")
+                self.timer3.stop()
+                lock_input = False
+                return
+            return
+
+        
+        
     def startGameClicked(self):
         if self.medievalButton.isChecked():
             self.__game_type = "Medieval"
@@ -744,8 +806,22 @@ class BoardVis(QMainWindow):
         self.newGameButton.show()
         self.stopButton.show()
 
-        if self.blackButton.isChecked():
+        if self.blackButton.isChecked() and not self.AivAiButton.isChecked():
             self.make_AI_move()
+           
+        if self.AivAiButton.isChecked():
+            self.controller.tracker.current_player = 1
+            self.ai_1 = AIFunctions(self.controller, 1)
+            self.controller.tracker.current_player = 0
+            self.ai_2 = AIFunctions(self.controller, 0)
+            self.controller.tracker.current_player = 1
+
+            self.timer3 = QTimer(self)
+            self.timer3.setSingleShot(False)
+            self.timer3.setInterval(300)
+            self.timer3.timeout.connect(lambda: self.AIvAI())
+            lock_input = True
+            self.timer3.start()
 
     def __rolldiceWork(self):
         moveIntoSidePanel = ((925-self.boardSize)/2)
@@ -876,6 +952,8 @@ class BoardVis(QMainWindow):
         self.computerButton.raise_()
         self.humanButton.show()
         self.humanButton.raise_()
+        self.AivAiButton.show()
+        self.AivAiButton.raise_()
         self.offhighlight.show()
         self.offhighlight.raise_()
         self.onhighlight.show()
@@ -898,6 +976,7 @@ class BoardVis(QMainWindow):
         self.opponentText.hide()
         self.computerButton.hide()
         self.humanButton.hide()
+        self.AivAiButton.hide()
         self.offhighlight.hide()
         self.onhighlight.hide()
         self.medievalButton.hide()
