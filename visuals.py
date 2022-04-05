@@ -344,6 +344,7 @@ class BoardVis(QMainWindow):
                                                     to_x=self.move_end[0], to_y=self.move_end[1])
         self.diceRollResult = self.controller.get_result_of_dice_roll()
         self.make_AI_move() #TODO: find place for this after update pieces is fixed
+        new_spots = []
         if moveSuccessful:
             new_spots = []
             for x, y in self.controller.get_move_path():
@@ -371,9 +372,10 @@ class BoardVis(QMainWindow):
             mv_delay.timeout.connect(spot_by_spot)
             mv_delay.start(500)
         else:
-            self._update_pieces()
+            piece.move(new_spot[0], new_spot[1])
 
         if isAttack:
+            self._update_pieces()
             self.rollDiceScreen(moveSuccessful)
         self.update_labels()
 
