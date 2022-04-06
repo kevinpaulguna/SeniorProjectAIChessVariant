@@ -173,6 +173,7 @@ class PieceVis(QLabel):
             self.parent().add_group_h(self.moves)
 
         if drag_move:
+            self.parent().setMoveStart(self.start)
             self.parent().move_end = self.end
             self.parent().do_piece_move(self)
 
