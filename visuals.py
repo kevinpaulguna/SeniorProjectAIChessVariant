@@ -450,7 +450,7 @@ class BoardVis(QMainWindow):
         font.setPixelSize(self.tableOption.height() * 0.8)
         self.tableOption.setFont(font)
         self.tableOption.move(int(self.boardSize) - 10,
-                              int(self.boardSize /2 -75) - (self.tableOption.height()) * 0.5)
+                              int(self.boardSize /2 -75) - (self.tableOption.height()) * 0.5 +20)
         self.tableOption.hide()
 
     #Create show information of move indicator
@@ -462,7 +462,7 @@ class BoardVis(QMainWindow):
         font.setPixelSize(self.moveIndicator.height() * 0.8)
         self.moveIndicator.setFont(font)
         self.moveIndicator.move(int(self.boardSize) - 10,
-                                int(self.boardSize /2)- (self.moveIndicator.height()) * 0.5)
+                                int(self.boardSize /2)- (self.moveIndicator.height()) * 0.5 - 20)
         self.moveIndicator.hide()
 
     #manage corp button setup:
@@ -480,14 +480,15 @@ class BoardVis(QMainWindow):
         self.bCapturedFrame = QFrame(self)
 
         # Create white pieces captured
-        self.wCapturedText.setText("white captured")
+        self.wCapturedText.setText("Captured by White")
         self.wCapturedText.setAlignment(Qt.AlignCenter)
         self.wCapturedText.resize(200, 25)
         font = QFont()
-        font.setFamily("impact")
-        font.setPixelSize(self.moveIndicator.height() * 0.8)
+        font.setBold(True)
+        font.setFamily("castellar")
+        font.setPixelSize(self.moveIndicator.height() * 0.6)
         self.wCapturedText.setFont(font)
-        self.wCapturedText.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 50,
+        self.wCapturedText.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 60,
                              380)
 
         #set frame for wCapturedPic:
@@ -500,15 +501,16 @@ class BoardVis(QMainWindow):
 
 
         # Create black pieces captured
-        self.bCapturedText.setText("Black captured")
+        self.bCapturedText.setText("Captured by Black")
         self.bCapturedText.setAlignment(Qt.AlignCenter)
         self.bCapturedText.resize(200, 25)
         font = QFont()
-        font.setFamily("impact")
-        font.setPixelSize(self.moveIndicator.height() * 0.8)
+        font.setBold(True)
+        font.setFamily("castellar")
+        font.setPixelSize(self.moveIndicator.height() * 0.6)
         self.bCapturedText.setFont(font)
         self.bCapturedText.move(
-            int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 50,
+            int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 60,
             85)
 
         # set frame for bCapturedPic:
