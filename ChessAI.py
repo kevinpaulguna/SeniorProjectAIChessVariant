@@ -89,9 +89,11 @@ class AIFunctions:
         if(korder):
             list = self.game.get_possible_moves_for_piece_at(x = y, y = x, ai_backdoor=True)
             for l,m,p in list:
-                #sets spot values near the moved king piece to be higher, therefore more defensive
-                if(l-x == 1 or x-l == 1 and m-y == 1 or y-m == 1):
+                #sets spot values near the moved king piece to be higher
+                #also increases the danger of hostile pieces to encourage shorter moves.
+                if(l - x == 1 or x - l == 1 and m - y == 1 or y - m == 1):
                     self.kingOrderGrid[m][l] = 2
+                    self.kingmod = 3
         #else the AI has piece advantage, make more aggressive moves
         else:
             #applies to the hostilemap, reducing the impact of dangerous spots,
@@ -195,7 +197,10 @@ class AIFunctions:
                         else:
                             spotVal = .4
                         for a, b, c in moveList:
-                            self.hostilemap[b][a] += spotVal * self.kingmod
+                            if (a - x == 1 or x - a == 1 and b - y == 1 or b - a == 1):
+                                self.hostilemap[b][a] += spotVal * self.kingmod
+                            elif(item2.piece.get_type() == 'Knight'):
+                                self.hostilemap[b][a] += spotVal * self.kingmod
                 y = y + 1
             x = x + 1
             y = 0
