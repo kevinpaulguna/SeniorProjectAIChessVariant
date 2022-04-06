@@ -2,7 +2,8 @@ from math import floor
 from typing import Tuple
 from xmlrpc.client import Boolean
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
-from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout,QComboBox, QRadioButton, QButtonGroup, QApplication
+from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout, \
+    QComboBox, QRadioButton, QButtonGroup
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
 from ChessAI import AIFunctions
 
@@ -471,6 +472,51 @@ class BoardVis(QMainWindow):
         self.corpButton.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 50,
                              25)
 
+        self.wCapturedText = QLabel(self)
+        self.wCapturedFrame = QFrame(self)
+
+        self.bCapturedText = QLabel(self)
+        self.bCapturedFrame = QFrame(self)
+
+        # Create white pieces captured
+        self.wCapturedText.setText("white captured")
+        self.wCapturedText.setAlignment(Qt.AlignCenter)
+        self.wCapturedText.resize(200, 25)
+        font = QFont()
+        font.setFamily("impact")
+        font.setPixelSize(self.moveIndicator.height() * 0.8)
+        self.wCapturedText.setFont(font)
+        self.wCapturedText.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 50,
+                             380)
+
+        #set frame for wCapturedPic:
+        self.wCapturedFrame.setFrameShape(QFrame.Box)
+        self.wCapturedFrame.setLineWidth(2)
+        self.wCapturedFrame.setGeometry(int(self.boardSize) - 10,
+                                      420,
+                                      200, 140)
+
+
+
+        # Create black pieces captured
+        self.bCapturedText.setText("Black captured")
+        self.bCapturedText.setAlignment(Qt.AlignCenter)
+        self.bCapturedText.resize(200, 25)
+        font = QFont()
+        font.setFamily("impact")
+        font.setPixelSize(self.moveIndicator.height() * 0.8)
+        self.bCapturedText.setFont(font)
+        self.bCapturedText.move(
+            int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 50,
+            85)
+
+        # set frame for bCapturedPic:
+        self.bCapturedFrame.setFrameShape(QFrame.Box)
+        self.bCapturedFrame.setLineWidth(2)
+        self.bCapturedFrame.setGeometry(int(self.boardSize) - 10,
+                                        125,
+                                        200, 140)
+
         if self.__game_type != "Corp":
             self.corpButton.hide()
 
@@ -703,6 +749,50 @@ class BoardVis(QMainWindow):
         self.medievalButton.adjustSize()
         self.corpCommanderButton.adjustSize()
 
+        self.captured_by = {
+            "white": [],
+            "black": []
+        }
+
+    def update_captured_pieces(self):
+        self.updated_captured_by('black')
+        self.updated_captured_by('white')
+        self.show_captured_pieces()
+
+    def updated_captured_by(self, color:str):
+        if color == 'white':
+            starting = 425
+        elif color == 'black':
+            starting = 130
+        else:
+            return
+
+        captured = [piece_to_img_name(piece[0]).lower()+".png" for piece in self.controller.get_pieces_captured_by(color)]
+
+        self.captured_by[color] = []
+
+        img_size = 35
+        offset = 40
+        for i, pc in enumerate(captured):
+
+            captured_pc = QLabel(self)
+            captured_pc.setAlignment(Qt.AlignCenter)
+            cap = QPixmap('./picture/' + pc)
+            cap = cap.scaled(img_size, img_size)
+            captured_pc.setPixmap(cap)
+            captured_pc.resize(img_size, img_size)
+            captured_pc.move(
+                int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 10 + (img_size*(i%5)),
+                    starting + (offset*int(i/5))
+            )
+            self.captured_by[color].append(captured_pc)
+            # setattr(self, "wCapturedPic{}".format(i), self.wCapturedPic)
+
+    def show_captured_pieces(self):
+        for team in self.captured_by.values():
+            for captured in team:
+                captured.show()
+
     def make_AI_move(self):
         if not self.computerButton.isChecked() or self.ai_turn_over():
             return      # ai not selected, bail out of function
@@ -712,6 +802,7 @@ class BoardVis(QMainWindow):
         self.ai_player.make_move()
         self._update_pieces()
         self.update_labels()
+        self.update_captured_pieces()
         if self.ai_turn_over():
             self.ai_delay.stop()
 
@@ -847,6 +938,7 @@ class BoardVis(QMainWindow):
 
     def okayButtonClicked(self):
         self.hidepauseBackground()
+        self.update_captured_pieces()
 
     def __set_button(self, button: QPushButton, scale):
         font = QFont()
