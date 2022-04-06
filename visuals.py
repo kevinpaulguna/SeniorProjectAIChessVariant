@@ -759,6 +759,7 @@ class BoardVis(QMainWindow):
         }
 
     def update_captured_pieces(self):
+        self.delete_captured_pieces()
         self.updated_captured_by('black')
         self.updated_captured_by('white')
         self.show_captured_pieces()
@@ -796,6 +797,11 @@ class BoardVis(QMainWindow):
         for team in self.captured_by.values():
             for captured in team:
                 captured.show()
+
+    def delete_captured_pieces(self):
+        for team in self.captured_by.values():
+            for captured in team:
+                captured.setParent(None)
 
     def make_AI_move(self):
         if not self.computerButton.isChecked() or self.ai_turn_over():
@@ -840,6 +846,7 @@ class BoardVis(QMainWindow):
 
         self._update_pieces()
         self.update_labels()
+        self.update_captured_pieces()
 
         if self.blackButton.isChecked():
             self.blackButtonClicked()
