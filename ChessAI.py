@@ -13,7 +13,18 @@ class AIFunctions:
         self.total_success_moves = 0
         self.total_moves_attempted = 0
         self.last_turn = 0
+        self.kingmod = 1
         self.hostilemap = \
+            [[0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0]]
+
+        self.kingOrderGrid = \
             [[0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -53,6 +64,52 @@ class AIFunctions:
                     return (x, y)
         print('piece not on board')
         return (-1, -1)
+
+    #feed x,y of moved king corp piece for orders
+    def kingOrders(self, x, y):
+        self.resetKingOrders()
+
+        #determine piece advantage
+        white = 0
+        black = 0
+
+        for item in self.board:
+            for item2 in item:
+                if item2.piece:
+                    if item2.piece.is_white():
+                        white = white+1
+                    else:
+                        black = black+1
+
+        korder = True
+        if(white > black and self.color == True or black > white and self.color == False):
+            korder = False
+
+        #if the AI does not have piece advantage, make more defensive moves
+        if(korder):
+            list = self.game.get_possible_moves_for_piece_at(x = y, y = x, ai_backdoor=True)
+            for l,m,p in list:
+                #sets spot values near the moved king piece to be higher, therefore more defensive
+                if(l-x == 1 or x-l == 1 and m-y == 1 or y-m == 1):
+                    self.kingOrderGrid[m][l] = 2
+        #else the AI has piece advantage, make more aggressive moves
+        else:
+            #applies to the hostilemap, reducing the impact of dangerous spots,
+            #therefore permitting more aggressive movement
+            self.kingmod = .2
+            self.genHostileMap()
+
+    def resetKingOrders(self):
+        self.kingmod = 1
+        self.kingOrderGrid = \
+            [[0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0]]
 
     # weights attack areas based on friendly piece power
     def attackRef(self, x, y, piece):
@@ -138,19 +195,19 @@ class AIFunctions:
                         else:
                             spotVal = .4
                         for a, b, c in moveList:
-                            self.hostilemap[b][a] += spotVal
+                            self.hostilemap[b][a] += spotVal * self.kingmod
                 y = y + 1
             x = x + 1
             y = 0
-
-
-
 
     # returns piece object and its potential movement areas
     def moveMap(self):
         self.updateBoard()
         self.genHostileMap()
-        moveData = []
+        kCore = []
+        xCore = []
+        yCore = []
+
         heatmap = [[0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 0, 0],
@@ -187,37 +244,43 @@ class AIFunctions:
                                 heatmap[m][l] += 1
                                 if player == "white":
                                     if (m - x == 2 or x - m == 2 or y - l == 2):
-                                        heatmap[m][l] += 4
+                                        heatmap[m][l] += 1
                                 if player == "black":
                                     if (m - x == 2 or x - m == 2 or l - y == 2):
-                                        heatmap[m][l] += 4
+                                        heatmap[m][l] += 1
                             elif (m - x == 3 or x - m == 3 or y - l == 3 or l - y == 3):
                                 heatmap[m][l] += 2
                                 if player == "white":
                                     if (m - x == 3 or x - m == 3 or y - l == 3):
-                                        heatmap[m][l] += 4
+                                        heatmap[m][l] += 1
                                 if player == "black":
                                     if (m - x == 3 or x - m == 3 or l - y == 3):
-                                        heatmap[m][l] += 4
+                                        heatmap[m][l] += 1
                             elif (m - x == 4 or x - m == 4 or y - l == 4 or l - y == 4):
-                                heatmap[m][l] += 3
+                                heatmap[m][l] += 2
                                 if player == "white":
                                     if (m - x == 4 or x - m == 4 or y - l == 4):
-                                        heatmap[m][l] += 4
+                                        heatmap[m][l] += 1
                                 if player == "black":
                                     if (m - x == 2 or x - m == 2 or l - y == 2):
-                                        heatmap[m][l] += 4
+                                        heatmap[m][l] += 1
                             elif (m - x == 5 or x - m == 5 or y - l == 5 or l - y == 5):
                                 heatmap[m][l] += 3
                                 if player == "white":
                                     if (m - x == 5 or x - m == 5 or y - l == 5):
-                                        heatmap[m][l] += 4
+                                        heatmap[m][l] += 1
                                 if player == "black":
                                     if (m - x == 5 or x - m == 5 or l - y == 5):
-                                        heatmap[m][l] += 4
-                            heatmap[m][l] += spotVal - self.hostilemap[m][l]
-                        dataChunk = [item2.piece, heatmap]
+                                        heatmap[m][l] += 1
+                            heatmap[m][l] += spotVal - self.hostilemap[m][l] + self.kingOrderGrid[m][l]
 
+                        dataChunk = [item2.piece, heatmap]
+                        if (item2.piece.get_corp() == 'corpW1' or item2.piece.get_corp() == 'corpB1'):
+                            kCore.append(dataChunk)
+                        elif (item2.piece.get_corp() == 'corpW2' or item2.piece.get_corp() == 'corpB2'):
+                            xCore.append(dataChunk)
+                        else:
+                            yCore.append(dataChunk)
 
                         heatmap = [[0, 0, 0, 0, 0, 0, 0, 0],
                                    [0, 0, 0, 0, 0, 0, 0, 0],
@@ -228,15 +291,14 @@ class AIFunctions:
                                    [0, 0, 0, 0, 0, 0, 0, 0],
                                    [0, 0, 0, 0, 0, 0, 0, 0]]
 
-                        moveData.append(dataChunk)
+
+
                 y = y + 1
             x = x + 1
             y = 0
             print('\n')
-
-        self.displayMoveData(moveData)
-
-        return moveData
+        #self.corpSplitData(moveData)
+        return kCore, xCore, yCore
 
     def displayMoveData(self, moveData):
 
@@ -344,7 +406,7 @@ class AIFunctions:
         # self.displayMoveData(moveData)
 
     def make_move(self):
-        if not self.game.is_game_over():
+        if not self.game.game_status():
             if self.last_turn != self.game.tracker.get_turn_count():
                 self.total_success_moves = 0
                 self.total_moves_attempted = 0

@@ -22,6 +22,9 @@ class Piece:
     def get_type(self):
         return self.__type
 
+    def get_corp(self):
+        return self.corp
+
     def set_corp(self, corp: Corp):
         self.corp = corp
 
