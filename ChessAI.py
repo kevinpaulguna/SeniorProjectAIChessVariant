@@ -199,7 +199,7 @@ class AIFunctions:
                         for a, b, c in moveList:
                             if (a - x == 1 or x - a == 1 and b - y == 1 or b - a == 1):
                                 self.hostilemap[b][a] += spotVal * self.kingmod
-                            elif(item2.piece.get_type() == 'Knight'):
+                            elif(item2.piece.get_type() == 'Rook' or item2.piece.get_type() == 'Knight'):
                                 self.hostilemap[b][a] += spotVal * self.kingmod
                 y = y + 1
             x = x + 1
