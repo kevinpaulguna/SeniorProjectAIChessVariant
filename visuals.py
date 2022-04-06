@@ -481,16 +481,16 @@ class BoardVis(QMainWindow):
         self.bCapturedFrame = QFrame(self)
 
         # Create white pieces captured
-        self.wCapturedText.setText("Captured by White")
+        self.wCapturedText.setText("CAPTURED BY WHITE")
         self.wCapturedText.setAlignment(Qt.AlignCenter)
         self.wCapturedText.resize(200, 25)
         font = QFont()
         font.setBold(True)
-        font.setFamily("castellar")
+        font.setFamily("Castellar, Baskerville")
         font.setPixelSize(self.moveIndicator.height() * 0.6)
         self.wCapturedText.setFont(font)
         self.wCapturedText.move(int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 60,
-                             380)
+                             390)
 
         #set frame for wCapturedPic:
         self.wCapturedFrame.setFrameShape(QFrame.Box)
@@ -502,17 +502,17 @@ class BoardVis(QMainWindow):
 
 
         # Create black pieces captured
-        self.bCapturedText.setText("Captured by Black")
+        self.bCapturedText.setText("CAPTURED BY BLACK")
         self.bCapturedText.setAlignment(Qt.AlignCenter)
         self.bCapturedText.resize(200, 25)
         font = QFont()
         font.setBold(True)
-        font.setFamily("castellar")
+        font.setFamily("Castellar, Baskerville")
         font.setPixelSize(self.moveIndicator.height() * 0.6)
         self.bCapturedText.setFont(font)
         self.bCapturedText.move(
             int(self.boardSize - ((self.newGameButton.width() - self.tableOption.width()) / 2)) - 60,
-            85)
+            95)
 
         # set frame for bCapturedPic:
         self.bCapturedFrame.setFrameShape(QFrame.Box)
