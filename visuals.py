@@ -344,10 +344,8 @@ class BoardVis(QMainWindow):
         moveSuccessful = self.controller.move_piece(from_x=self.move_start[0], from_y=self.move_start[1],
                                                     to_x=self.move_end[0], to_y=self.move_end[1])
         self.diceRollResult = self.controller.get_result_of_dice_roll()
-        self.make_AI_move() #TODO: find place for this after update pieces is fixed
         new_spots = []
         if moveSuccessful:
-            new_spots = []
             for x, y in self.controller.get_move_path():
                 new_spot = board_to_screen(x, y, self.tileSize)  # create pixel position of new piece
                 new_spots.append(new_spot)
@@ -378,6 +376,9 @@ class BoardVis(QMainWindow):
         if isAttack:
             self._update_pieces()
             self.rollDiceScreen(moveSuccessful)
+        else:
+            self.make_AI_move() #TODO: find place for this after update pieces is fixed
+
         self.update_labels()
 
         self.reset_movement_data()
@@ -939,6 +940,7 @@ class BoardVis(QMainWindow):
     def okayButtonClicked(self):
         self.hidepauseBackground()
         self.update_captured_pieces()
+        self.make_AI_move() #TODO: find place for this after update pieces is fixed
 
     def __set_button(self, button: QPushButton, scale):
         font = QFont()
@@ -967,7 +969,6 @@ class BoardVis(QMainWindow):
     def update_labels(self):
         self.tableOption.setText("Current Player: " + ("White" if self.controller.tracker.get_current_player() else "Black"))
         self.moveIndicator.setText("Remaining Moves: " + str(self.controller.tracker.get_number_of_available_moves() ))
-
 
 
     def showSideChoice(self):
