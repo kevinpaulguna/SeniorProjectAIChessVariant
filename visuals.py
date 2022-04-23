@@ -1,15 +1,22 @@
+import subprocess
 from math import floor
 from typing import Tuple
 from xmlrpc.client import Boolean
-from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
+# from PyQt5 import QtWebEngine
+from PyQt5 import QtWebEngineWidgets, QtCore
+from PyQt5.QtCore import Qt, QPoint, QSize, QTimer, pyqtSlot,QFile, QUrl
 from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout, \
-    QComboBox, QRadioButton, QButtonGroup
-from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie
+    QComboBox, QRadioButton, QButtonGroup, QApplication, QLineEdit, QFormLayout
+from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie, QFileOpenEvent
 from ChessAI import AIFunctions
-
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+import PyPDF2 as pdf2
+import webbrowser
+import os
 from ChessGame import Game as chess_game
 
 game_over = False
+pdf_path = "FL-Chess__DistAI_V5d.pdf"
 
 def corp_to_color(corp_num):
     colors = ['', 'rd', 'bl', 'gr']
@@ -54,11 +61,9 @@ class corpVis(QLabel):
     #This function is snap the piece back to it place when the person releases wrong place
     #obsoleted
 
-
 class PieceVis(QLabel):
     def __init__(self, visual, x_pos, y_pos, parent=None):
         super(PieceVis, self).__init__(parent)
-
         # Set up some properties
         self.labelPos = QPoint()
         self.vis = visual
@@ -78,6 +83,7 @@ class PieceVis(QLabel):
 
     def set_img(self):
         self.setPixmap(self.default_vis)
+
 
     def mousePressEvent(self, ev: QMouseEvent) -> None:
         if game_over == True:
@@ -249,6 +255,7 @@ class TileVis(QLabel):
     def same_loc(self, s_loc, f_loc):
         return (s_loc[0] == f_loc[0]) and (s_loc[1] == f_loc[1])
 
+
 class BoardVis(QMainWindow):
     def __init__(self):
         super(BoardVis,self).__init__()
@@ -267,6 +274,7 @@ class BoardVis(QMainWindow):
         self.corp_menu = CorpMenu(self)
         self.ai_delay = QTimer(self)
         self.ai_delay.timeout.connect(self.ai_single_move)
+
         # buttons:
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
@@ -274,6 +282,9 @@ class BoardVis(QMainWindow):
         # This button allow you can reset the game when you want to start new game
         self.newGameButton = QPushButton("Restart", self)
 
+        # This button can display the rules
+        self.helperButton = QPushButton("""Show
+Rules""", self)
 
         # choose highlight mode on/off
         self.corpButton = QPushButton("Manage Corps", self)
@@ -333,6 +344,7 @@ class BoardVis(QMainWindow):
         self.ai_player = None
 
         self.showBoard()
+
 
     def do_piece_move(self, mvd_piece: PieceVis):
         print("was called")
@@ -543,7 +555,19 @@ class BoardVis(QMainWindow):
         self.newGameButton.clicked.connect(self.returnToStartScreen)
         self.newGameButton.hide()
 
-        # Create StartScreen properties
+        # create properties for the helper button
+        font = QFont()
+        font.setFamily('Arial')
+        font.setPointSize(6)
+        font.Bold
+        self.helperButton.setFont(font)
+        self.__set_button(self.helperButton, 0.5)
+        self.helperButton.clicked.connect(self.helperButtonClicked)
+        self.helperButton.move(-7, -7)
+        self.helperButton.resize(100, 100)
+        self.helperButton.hide()
+
+       # Create StartScreen properties
         self.startScreen.setAlignment(Qt.AlignCenter)
         self.startScreen.resize(925, 675)
         self.startScreen.setStyleSheet("background-image: url(./picture/fullstartscreen.png);")
@@ -872,6 +896,7 @@ class BoardVis(QMainWindow):
         self.moveIndicator.show()
         self.newGameButton.show()
         self.stopButton.show()
+        self.helperButton.show()
 
         if self.blackButton.isChecked():
             self.make_AI_move()
@@ -939,13 +964,14 @@ class BoardVis(QMainWindow):
                                     " Team!")
         else:
             self.resultCaptureText.setText("Capture " + ("Successful!" if self.attackSuccess else "Failed!"))
-
-        self.okayButton.show()
         self.okayButton.raise_()
 
         #clear attack var
         self.attackSuccess = None
 
+    def helperButtonClicked(self):
+        os.system('open ' + pdf_path)
+        self.show()
 
     def okayButtonClicked(self):
         self.hidepauseBackground()
@@ -1048,7 +1074,7 @@ class BoardVis(QMainWindow):
         self.showSideChoice()
         self.remove_all_h()
         self.reset_movement_data()
-
+        self.helperButton.hide()
 
     def whiteButtonClicked(self):
         self.controller.tracker.current_player = 1
@@ -1082,8 +1108,8 @@ class BoardVis(QMainWindow):
         self.okayButton.hide()
 
     def set_non_playables(self):
-        label = self.mk_basic_label("yt")
-        label.move(0, 0)
+        # label = self.mk_basic_label("yt")
+        # label.move(0, 0)
         self.set_emptys("wt", "bt", "gt", "ot")
         self.set_lets_and_nums()
 
@@ -1096,11 +1122,12 @@ class BoardVis(QMainWindow):
             nums.reverse()
         combo = [(letters[i], nums[i]) for i in range(8)]
         for i in range(8):
+            # i = 1
             name1, name2 = combo[i]
             l1 = self.mk_basic_label(name1)
             l2 = self.mk_basic_label(name2)
             l1.move(int( (i + 1) * self.tileSize), 0)
-            l2.move(0, int( (i + 1) * self.tileSize))
+            l2.move(0, int((i + 1) * self.tileSize))
             l1.show()
             l2.show()
 
