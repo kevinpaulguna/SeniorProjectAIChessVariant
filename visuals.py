@@ -7,16 +7,18 @@ from PyQt5 import QtWebEngineWidgets, QtCore
 from PyQt5.QtCore import Qt, QPoint, QSize, QTimer, pyqtSlot,QFile, QUrl
 from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout, \
     QComboBox, QRadioButton, QButtonGroup, QApplication, QLineEdit, QFormLayout
+from PyQt5 import QtGui
 from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie, QFileOpenEvent
+# from numpy import w
 from ChessAI import AIFunctions
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 import PyPDF2 as pdf2
 import webbrowser
-import os
+import os, sys
 from ChessGame import Game as chess_game
 
 game_over = False
-pdf_path = "FL-Chess__DistAI_V5d.pdf"
+# pdf_path = "FL-Chess__DistAI_V5d.pdf"
 
 def corp_to_color(corp_num):
     colors = ['', 'rd', 'bl', 'gr']
@@ -274,18 +276,14 @@ class BoardVis(QMainWindow):
         self.corp_menu = CorpMenu(self)
         self.ai_delay = QTimer(self)
         self.ai_delay.timeout.connect(self.ai_single_move)
-
         # buttons:
         # This button allow you can stop your turn
         self.stopButton = QPushButton("End Turn", self)
-
         # This button allow you can reset the game when you want to start new game
         self.newGameButton = QPushButton("Restart", self)
 
         # This button can display the rules
-        self.helperButton = QPushButton("""Show
-Rules""", self)
-
+        self.helperButton = QPushButton("?", self)
         # choose highlight mode on/off
         self.corpButton = QPushButton("Manage Corps", self)
 
@@ -402,6 +400,8 @@ Rules""", self)
         self.move_end = None
 
     def closeEvent(self,event):
+        self.show_the_rules.close()
+        # displayRules.close()
         self.corp_menu.close()
         event.accept()
 
@@ -556,16 +556,24 @@ Rules""", self)
         self.newGameButton.hide()
 
         # create properties for the helper button
+        # self.corpButton.setCheckable(True)
         font = QFont()
         font.setFamily('Arial')
-        font.setPointSize(6)
+        font.setPointSize(14)
         font.Bold
         self.helperButton.setFont(font)
-        self.__set_button(self.helperButton, 0.5)
+        self.__set_button(self.helperButton, 2.0)
+        self.show_the_rules = displayRules()
         self.helperButton.clicked.connect(self.helperButtonClicked)
+        self.helperButton.setCheckable(True)
         self.helperButton.move(-7, -7)
         self.helperButton.resize(100, 100)
-        self.helperButton.hide()
+        self.helperButton.setStyleSheet("background-color: rgba(255, 255, 255, 0)")
+        self.helperButton.setStyleSheet("QPushButton{background: transparent}")
+        self.helperButton.show()
+        self.helperButton.raise_()
+
+
 
        # Create StartScreen properties
         self.startScreen.setAlignment(Qt.AlignCenter)
@@ -970,8 +978,8 @@ Rules""", self)
         self.attackSuccess = None
 
     def helperButtonClicked(self):
-        os.system('open ' + pdf_path)
-        self.show()
+        self.show_the_rules.show()
+
 
     def okayButtonClicked(self):
         self.hidepauseBackground()
@@ -1000,6 +1008,7 @@ Rules""", self)
         for i in range(1,4):
             self.corp_menu.update_leader(i)
             self.corp_menu.update_group(i)
+        print("corp button clicked")
         self.corp_menu.show()
 
     def update_labels(self):
@@ -1108,8 +1117,8 @@ Rules""", self)
         self.okayButton.hide()
 
     def set_non_playables(self):
-        # label = self.mk_basic_label("yt")
-        # label.move(0, 0)
+        label = self.mk_basic_label("yt")
+        self.mk_basic_label("yt").move(0, 0)
         self.set_emptys("wt", "bt", "gt", "ot")
         self.set_lets_and_nums()
 
@@ -1399,3 +1408,13 @@ class CorpMenu(QWidget):
         current_group = self.col_layouts[i-1].itemAt(self.col_layouts[i-1].count() - 1).widget()
         self.col_layouts[i-1].replaceWidget(current_group, new_piece_group)
         current_group.setParent(None)
+
+class displayRules(QtWebEngineWidgets.QWebEngineView):
+# class displayRules(QWidget):
+    def __init__(self):
+        super(displayRules, self).__init__()
+        self.resize(600, 600)
+        self.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.PluginsEnabled, True)
+        self.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.PdfViewerEnabled, True)
+        self.load(QtCore.QUrl.fromLocalFile(QtCore.QDir.current().filePath('FL-Chess__DistAI_V5d.pdf')))
+
