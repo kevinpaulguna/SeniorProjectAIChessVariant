@@ -575,11 +575,11 @@ class BoardVis(QMainWindow):
 
        # Create StartScreen properties
         self.startScreen.setAlignment(Qt.AlignCenter)
-        self.startScreen.resize(925, 675)
+        self.startScreen.resize(self.width(), self.height())
         self.startScreen.setStyleSheet("background-image: url(./picture/fullstartscreen.png);")
         self.startScreen.move(0, 0)
 
-        moveIntoSidePanel = ((925-self.boardSize)/2)
+        moveIntoSidePanel = ((self.width()-self.boardSize)/2)
 
         # Set up choose side text properties
         self.chooseSideText.setAlignment(Qt.AlignCenter)
@@ -598,7 +598,7 @@ class BoardVis(QMainWindow):
 
         # Create start screen properties
         self.pauseBackground.setAlignment(Qt.AlignCenter)
-        self.pauseBackground.resize(925, 675)
+        self.pauseBackground.resize(self.width(), self.height())
         self.pauseBackground.setStyleSheet('background-color: black')
         self.pauseBackground.setStyleSheet("background-image: url(./picture/fullstartscreen.png);")
         self.pauseBackground.move(0, 0)
@@ -908,7 +908,7 @@ class BoardVis(QMainWindow):
             self.make_AI_move()
 
     def __rolldiceWork(self):
-        moveIntoSidePanel = ((925-self.boardSize)/2)
+        moveIntoSidePanel = ((self.width()-self.boardSize)/2)
         # Set up roll dice text properties
         self.rollText.setAlignment(Qt.AlignCenter)
         self.rollText.setText("Rolling Dice...")
@@ -940,7 +940,7 @@ class BoardVis(QMainWindow):
         self.rollDiceAnimation.hide()
 
     def __roll_dice(self):
-        moveIntoSidePanel = ((925-self.boardSize)/2)
+        moveIntoSidePanel = ((self.width()-self.boardSize)/2)
         # Set up capture result text properties
         self.rollText.hide()
         self.resultCaptureText.setAlignment(Qt.AlignCenter)
