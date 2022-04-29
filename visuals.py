@@ -1,20 +1,11 @@
-import subprocess
 from math import floor
 from typing import Tuple
-from xmlrpc.client import Boolean
-# from PyQt5 import QtWebEngine
-from PyQt5 import QtWebEngineWidgets, QtCore
-from PyQt5.QtCore import Qt, QPoint, QSize, QTimer, pyqtSlot,QFile, QUrl
+from PyQt5.QtCore import Qt, QPoint, QSize, QTimer, QDir, QUrl
 from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QGridLayout, \
-    QComboBox, QRadioButton, QButtonGroup, QApplication, QLineEdit, QFormLayout
-from PyQt5 import QtGui
-from PyQt5.QtGui import QPixmap, QMouseEvent, QFont,QMovie, QFileOpenEvent
-# from numpy import w
+    QComboBox, QRadioButton, QButtonGroup
+from PyQt5.QtGui import QPixmap, QMouseEvent, QFont, QMovie
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 from ChessAI import AIFunctions
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-import PyPDF2 as pdf2
-import webbrowser
-import os, sys
 from ChessGame import Game as chess_game
 
 game_over = False
@@ -283,7 +274,9 @@ class BoardVis(QMainWindow):
         self.newGameButton = QPushButton("Restart", self)
 
         # This button can display the rules
-        self.helperButton = QPushButton("?", self)
+        self.helperButton = QPushButton("i", self)
+        self.show_the_rules = displayRules()
+
         # choose highlight mode on/off
         self.corpButton = QPushButton("Manage Corps", self)
 
@@ -405,7 +398,7 @@ class BoardVis(QMainWindow):
         self.corp_menu.close()
         event.accept()
 
-    def set_h_mode(self, val: Boolean):
+    def set_h_mode(self, val: bool):
         self.h_mode = val
 
     def add_to_h(self, tile: TileVis):
@@ -556,20 +549,25 @@ class BoardVis(QMainWindow):
         self.newGameButton.hide()
 
         # create properties for the helper button
-        # self.corpButton.setCheckable(True)
-        font = QFont()
-        font.setFamily('Arial')
-        font.setPointSize(14)
-        font.Bold
-        self.helperButton.setFont(font)
         self.__set_button(self.helperButton, 2.0)
-        self.show_the_rules = displayRules()
-        self.helperButton.clicked.connect(self.helperButtonClicked)
-        self.helperButton.setCheckable(True)
-        self.helperButton.move(-7, -7)
-        self.helperButton.resize(100, 100)
-        self.helperButton.setStyleSheet("background-color: rgba(255, 255, 255, 0)")
-        self.helperButton.setStyleSheet("QPushButton{background: transparent}")
+        self.helperButton.clicked.connect(lambda: self.show_the_rules.show())
+        self.helperButton.move(25/2, 25/2)
+        self.helperButton.resize(50, 50)
+        self.helperButton.setStyleSheet('''
+            QPushButton {
+                font-family: "Times New Roman";
+                font-size: 25px;
+                background-color: rgb(0, 204, 204);
+                color: black;
+                border: 0.1em solid #000000;
+                border-radius: 25px;
+            }
+            QPushButton:hover {
+                background-color: black;
+                color: rgb(0, 204, 204);
+                border-color: rgb(0, 204, 204);
+            }
+            ''')
         self.helperButton.show()
         self.helperButton.raise_()
 
@@ -976,10 +974,6 @@ class BoardVis(QMainWindow):
 
         #clear attack var
         self.attackSuccess = None
-
-    def helperButtonClicked(self):
-        self.show_the_rules.show()
-
 
     def okayButtonClicked(self):
         self.hidepauseBackground()
@@ -1409,12 +1403,11 @@ class CorpMenu(QWidget):
         self.col_layouts[i-1].replaceWidget(current_group, new_piece_group)
         current_group.setParent(None)
 
-class displayRules(QtWebEngineWidgets.QWebEngineView):
+class displayRules(QWebEngineView):
 # class displayRules(QWidget):
     def __init__(self):
         super(displayRules, self).__init__()
         self.resize(600, 600)
-        self.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.PluginsEnabled, True)
-        self.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.PdfViewerEnabled, True)
-        self.load(QtCore.QUrl.fromLocalFile(QtCore.QDir.current().filePath('FL-Chess__DistAI_V5d.pdf')))
-
+        self.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
+        self.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
+        self.load(QUrl.fromLocalFile(QDir.current().filePath('FL-Chess__DistAI_V5d.pdf')))
